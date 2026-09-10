@@ -8,8 +8,10 @@ Global communication and execution rules remain in
 For the redesign, start at [the construction blueprint](docs/rag-v1-blueprint.md)
 and [the module map](docs/design/rag-v1/README.md). Read the selected module's
 contract and relevant ADRs before changing its behavior. The old Python tree is retired. For historical behavior or recovery, read
-[the retirement record](docs/history/retirement.md). Current repository checks run
-with `bun scripts/check-docs.mjs`; #2 introduces application build/test commands.
+[the retirement record](docs/history/retirement.md). Current runtime and validation commands are documented in [README](README.md)
+and owned by root package scripts. The application is a local scripted bootstrap;
+read the selected live ticket before adding production behavior. Vendor edits
+require updating the pinned provenance and attributable patch record.
 
 For domain terminology, read [CONTEXT.md](CONTEXT.md). For the source of a
 decision, consult [the discussion record](docs/rag-optimization-design.md).

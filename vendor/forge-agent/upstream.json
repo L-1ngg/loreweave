@@ -1,0 +1,277 @@
+{
+  "repository": "https://github.com/L-1ngg/forge-agent",
+  "commit": "c5a4291def7f5346c428fe1c22d7b4d411742e23",
+  "importedPaths": [
+    "packages/core",
+    "packages/protocol",
+    "packages/tools",
+    "LICENSE",
+    "patches",
+    "tsconfig.base.json"
+  ],
+  "localPatches": [
+    "local-patches/0001-request-admission.patch"
+  ],
+  "files": {
+    "LICENSE": {
+      "upstreamSha256": "be6998d8dcc0f48a7810a37b8acaeec72ef82b4043bb9cb75fb059847e5f9afe"
+    },
+    "packages/core/package.json": {
+      "upstreamSha256": "3ab98f88a28da0dba7adb25752effb915095e4867b76cbffd2247164831bb662"
+    },
+    "packages/core/src/agent-port.ts": {
+      "upstreamSha256": "482f309eafe2f3b14a90e96fa9c7c94282de119925ba24ee351289673c8b4d14"
+    },
+    "packages/core/src/agent-session.ts": {
+      "upstreamSha256": "bc74bdc3b04e36869ea2d3f72e7a2105879119e271011976f92e48a8de8cbe81"
+    },
+    "packages/core/src/agent.ts": {
+      "upstreamSha256": "057e8d8f3590d91003276151e4bf364c6e3ac3067b6fd025de446dfa2b3c3b5e",
+      "patchedSha256": "33ec119fbc14cb5d2fccc527b0482584c50f8dfc3f9d7de01ad8eaf083760176"
+    },
+    "packages/core/src/config.ts": {
+      "upstreamSha256": "2eb928b3c38416b79a0f3f94ceaf1457338c7a65cde057509bee403b0d105453"
+    },
+    "packages/core/src/configuration.ts": {
+      "upstreamSha256": "27b57fb4d065962e77a93ca451d373efee899afeceeb6666bfc25ea1cfeeb3ff"
+    },
+    "packages/core/src/context/compaction.ts": {
+      "upstreamSha256": "578363fa4e664f2eb4259bf5d8267f22686bccdfa2850950ab00f999e59e1d91"
+    },
+    "packages/core/src/diff.ts": {
+      "upstreamSha256": "fc691f148773385baa9c5a3469bec85d301f7c55c13cd6309bca65cc105a5f0b"
+    },
+    "packages/core/src/digest.ts": {
+      "upstreamSha256": "f80748bcc878904c6efaf9921ec0d042a6bad52abf0b7747d5c2e1963ccc0b94"
+    },
+    "packages/core/src/event-projection.ts": {
+      "upstreamSha256": "2fa3284ab69fe99b3a714053991d4090db8b59165506b55874ca980204c48c96"
+    },
+    "packages/core/src/index.ts": {
+      "upstreamSha256": "3ea54ed02afbe11da4a3185b46e334d824fe90ade6c9cc79f8c5aca5127e68f3"
+    },
+    "packages/core/src/input/completion.ts": {
+      "upstreamSha256": "2e33404e67d8f9d687585167aa531a9fafb8d134690b347b633ea1aeb3417798"
+    },
+    "packages/core/src/input/index.ts": {
+      "upstreamSha256": "f5f456953cb7cc352cf45a6b8347d607d50748840a7931cae8b9d327e238f20f"
+    },
+    "packages/core/src/input/mention.ts": {
+      "upstreamSha256": "66be6960aa39f20a33899422587f72be217864825ef110e4c30f6b2e01543e69"
+    },
+    "packages/core/src/input/slash.ts": {
+      "upstreamSha256": "8c6608aac6c6eae370ff8987fe4b4bac6b73c163d883793d36d8fc34885424b7"
+    },
+    "packages/core/src/permission/danger-list.ts": {
+      "upstreamSha256": "1a535262cdd299019a622558fc51d72446c33db35db659e97451f578e64baa29"
+    },
+    "packages/core/src/permission/decide.ts": {
+      "upstreamSha256": "2b9d901c1b3810c229ce27e8c6cbecfbd478799d2acc5dcde74d62d624ecdd68"
+    },
+    "packages/core/src/permission/index.ts": {
+      "upstreamSha256": "367dfef1be12b53d63a3114cdd0e10f33cb33d4ade4e0a77427cbaba4e6e7f10"
+    },
+    "packages/core/src/permission/memory.ts": {
+      "upstreamSha256": "9f8a717b6a3f14de6af5000ead9a88544882effafed10446346fb9a944c16360"
+    },
+    "packages/core/src/permission/rules.ts": {
+      "upstreamSha256": "5ec8caf32c18dec0690babd6421c9998b1592de405a25609bfc049e0db3314ba"
+    },
+    "packages/core/src/pi-port.ts": {
+      "upstreamSha256": "9f087ed3087491c85aabb532ace167b7cb34b713b49dc99b02d73a09349d29c8",
+      "patchedSha256": "d5a2581f4c0d1e732326c08e5f58b6cf097e8bb34fce0abbd3cd98d3709a8c39"
+    },
+    "packages/core/src/request-bus.ts": {
+      "upstreamSha256": "550b45faa02542b762d88f1a9f9fcda43452021a9a11830ac9ea48a7ac56dd72"
+    },
+    "packages/core/src/runtime/LICENSE": {
+      "upstreamSha256": "0457f5bcec3b3b211605dfb5d1a49042fd638f3686a410fe099c24a25af13c48"
+    },
+    "packages/core/src/runtime/README.md": {
+      "upstreamSha256": "4954e8ca97c331c9ebbcf30c324737cffff2d0a1b48938e0d72bb4b05e30f7e7"
+    },
+    "packages/core/src/runtime/agent-loop.ts": {
+      "upstreamSha256": "e501e3d08552e8f28b151e5d3144d254ca3a9600643a3b6277e28dec299c0ca6"
+    },
+    "packages/core/src/runtime/agent.ts": {
+      "upstreamSha256": "673c51a16cda3043f773f3d8e5216675f2e48e9992a1f6a4e989f1be9d580c35"
+    },
+    "packages/core/src/runtime/index.ts": {
+      "upstreamSha256": "79561257e908a8d67cede7c90ea5f7a21d635c14564e9012309721cf7eda847a"
+    },
+    "packages/core/src/runtime/local-changes.md": {
+      "upstreamSha256": "6cd1788f368cc1048565bd299e6043713aa3c0f59239fbff2d4031c8ba4349fb"
+    },
+    "packages/core/src/runtime/stream-fn.ts": {
+      "upstreamSha256": "1f9dee101a5ce1052558458d9ce47e53e05187224e879217899059a80d90bc45"
+    },
+    "packages/core/src/runtime/types.ts": {
+      "upstreamSha256": "80dcd1118a35d8556ed6a98565e6179c8babdc0a62cccae68b66f84f73114dfb"
+    },
+    "packages/core/src/runtime/upstream.json": {
+      "upstreamSha256": "94c606e8abb2f2956609bb5a5a9de86cd92998df4747081a1f1a68de98bcc2be"
+    },
+    "packages/core/src/sdk.ts": {
+      "upstreamSha256": "cbe40fd237ab1c1e4e8b4a89593c97dbd4c5bd483ed4a389ca37a401caa0761b"
+    },
+    "packages/core/src/session-search.ts": {
+      "upstreamSha256": "cf7e16a7c14b128105f5b994f754a4227754f5a4659a82c98a5b9b4d3c46fee8"
+    },
+    "packages/core/src/session-storage.ts": {
+      "upstreamSha256": "2c0e3e822cf559013741af65b869171c98c6303a60631be3d1c5924aa29068d8"
+    },
+    "packages/core/src/session-store.ts": {
+      "upstreamSha256": "abe31b3369b195b0453863bbd85564360844db1c1dd3431f8c08ee968914099d"
+    },
+    "packages/core/src/usage.ts": {
+      "upstreamSha256": "642dce940e6c74807753d55b36bdaeea05c9b907f3f1bfe19c8910cc5de59575"
+    },
+    "packages/core/test/blocks.test.ts": {
+      "upstreamSha256": "10a96bdfe642b962bf2b274c73391e4053a8551b409c746e83bec17f5a303b5c"
+    },
+    "packages/core/test/compaction.test.ts": {
+      "upstreamSha256": "b76d6b946c60c433355fe2ecd9181eaae9f97750bbd9cf2dd79d05cbe78345be"
+    },
+    "packages/core/test/context-http.test.ts": {
+      "upstreamSha256": "63e2a6a794867614c1abbb1e132f30c0103f821a6747344de76f1ee4c56d762f"
+    },
+    "packages/core/test/helpers/create-test-agent.ts": {
+      "upstreamSha256": "7419d0bbd371f3205e1e5cc0e1324adb8620d1951a069008936303d93f98a84e"
+    },
+    "packages/core/test/helpers/model-response.ts": {
+      "upstreamSha256": "3acfba8405a622bd64eecec5ef7b86e58dfb810dfccbef05e8b7c5ba4355bdda"
+    },
+    "packages/core/test/helpers/scripted-session.ts": {
+      "upstreamSha256": "047db3c718143b46b0fefb045fa99437311cb1f9959b193d9da83bc6adde9625"
+    },
+    "packages/core/test/incremental-session.test.ts": {
+      "upstreamSha256": "6e6deff54c57242884737b447ac994d36621c0b4dc0814e7f38dfe74ec79ba9e"
+    },
+    "packages/core/test/input-ownership.test.ts": {
+      "upstreamSha256": "079ac3199ea50959a5c0361f263ce817e58e3c4eb2a55e659499a68d35e88aa0"
+    },
+    "packages/core/test/input.test.ts": {
+      "upstreamSha256": "cd2438ce5346acba21ad731d63a0e8d6966d84f0bd5501e82362f17b9be5d081"
+    },
+    "packages/core/test/permission.test.ts": {
+      "upstreamSha256": "1dd9e8e9e55cf343ff3c98590c8cdb32e2da3e9dd4969aea7715a760429f4afe"
+    },
+    "packages/core/test/pi-port.test.ts": {
+      "upstreamSha256": "bdaf48be2a30a947cb57ec55b38e08859087cfc52cf0c4ff9ac3ce18c68e085b"
+    },
+    "packages/core/test/provider-replay.test.ts": {
+      "upstreamSha256": "40a164e79de36596c1ec347e9e4f58815d1863bca5e1c9078209db3fdb66c0a3"
+    },
+    "packages/core/test/responses-terminal.test.ts": {
+      "upstreamSha256": "2ecad8119aad2378b123f9cb2f17cf6a40dd73aaf2800558069a44ab765cef7d"
+    },
+    "packages/core/test/runtime-configuration.test.ts": {
+      "upstreamSha256": "bb8769752d8cddbe89a18ac31f10b586cf737e2d32e20329138cd4dca64e4e01"
+    },
+    "packages/core/test/runtime-context.test.ts": {
+      "upstreamSha256": "6d22f099a2a19811d16af61c38d91b9e7cc4328e5b1f517183756273457362d1"
+    },
+    "packages/core/test/runtime-retry.test.ts": {
+      "upstreamSha256": "e836b50c60723f97bee5e48d2b0aff6bb718ae13fa877432c57fb473010f4d5d"
+    },
+    "packages/core/test/runtime-session.test.ts": {
+      "upstreamSha256": "d7e0c27936bf95c4fd4053178100b7e77e1aadf7073e8f01eb5953ff4a14e3f0"
+    },
+    "packages/core/test/runtime-tools.test.ts": {
+      "upstreamSha256": "3ea998ec2d1e21706fff137a5181ee43128f3537590e7a61cbfed57a2df78f08"
+    },
+    "packages/core/test/runtime/agent-loop.test.ts": {
+      "upstreamSha256": "821650c8914a92b962c6cfc2c53dd10aad8ff461ffca7f2f0d6db4332e7aaf5d"
+    },
+    "packages/core/test/runtime/agent.test.ts": {
+      "upstreamSha256": "0cc11a5cfc26c2590a499fd54e280e779ef769231af0507835ac247ecced670a"
+    },
+    "packages/core/test/sdk-integration.test.ts": {
+      "upstreamSha256": "55dcb6cb9c5f33078677284306044d3b00d719561d4222bd5f04444124a7e724"
+    },
+    "packages/core/test/sdk.test.ts": {
+      "upstreamSha256": "b7a6ed6dcc05c1e794b659c575cf8de97f7c8a936b86f7775c94c832eec904ce"
+    },
+    "packages/core/test/session-conversion.test.ts": {
+      "upstreamSha256": "cd11d3c4038d2e81db31ca38f93b76e954f62b9944769c87b897abd6365f2c7d"
+    },
+    "packages/core/test/session.test.ts": {
+      "upstreamSha256": "72bac1a6ee3f6b67871b2e5e4485c8ed7a5b6ae2f79925078e4b6e88e808cef1"
+    },
+    "packages/core/test/usage.test.ts": {
+      "upstreamSha256": "b41c58db82dd9f06c362ac9787d1806e5f191e9ded846085e5585cac1d2c3683"
+    },
+    "packages/core/tsconfig.json": {
+      "upstreamSha256": "4b38b08c19c5f05ac530df7f10a1c3563dea21e37e8763c9173eddd847f32c71"
+    },
+    "packages/protocol/package.json": {
+      "upstreamSha256": "75e0b260f4974af3300332772907a0e4981d845dadabdc3f9b916ff06f55b913"
+    },
+    "packages/protocol/src/blocks.ts": {
+      "upstreamSha256": "240ec084b2c13d8caf5d08440657f223307e92c5c32e289f069b58f12b35f488"
+    },
+    "packages/protocol/src/events.ts": {
+      "upstreamSha256": "af130e780bec6911b5cdfd0d87a342bf0ebebaa4927e340755f24ebadde21be4"
+    },
+    "packages/protocol/src/index.ts": {
+      "upstreamSha256": "10c62ec2c79d1b9a4213400a6dbf9a584874a364b0a9a5afff2d7f67e49e9f67"
+    },
+    "packages/protocol/src/input.ts": {
+      "upstreamSha256": "b859f0b4d64f0e84c6651607438bc6166f085b5a018d36e67cd75a458c860347"
+    },
+    "packages/protocol/src/requests.ts": {
+      "upstreamSha256": "7b6e38406c06f1a1dbeefe2221bd065e947467e18c4f18172c181927ade48072"
+    },
+    "packages/protocol/src/usage.ts": {
+      "upstreamSha256": "10c8df88a3e23aef21b27a4193bd56ad373db91fbb31df6c2bb4bf1590a39294"
+    },
+    "packages/protocol/tsconfig.json": {
+      "upstreamSha256": "9e388ea60852028037c4fd8a6e0311c02d4ff1703d66e5f9b22276b07dcb82d2"
+    },
+    "packages/tools/package.json": {
+      "upstreamSha256": "0430011998cfddc575c436a0517867ee9c100027df932e22034e6bbeb2fe9ea1"
+    },
+    "packages/tools/src/bash.ts": {
+      "upstreamSha256": "f993a827d461499d3449d8053a1f3f362be4a6443baf05ad2fe95663b88aad02"
+    },
+    "packages/tools/src/define-builtin.ts": {
+      "upstreamSha256": "e420a86ff5e177a433f34c8834f562493277776f202bbaeced929b6c90853b1a"
+    },
+    "packages/tools/src/edit.ts": {
+      "upstreamSha256": "fc77cee368e031828edf2aa29125ffb0f7d5f12f7da49e990fe7c29cde0b7674"
+    },
+    "packages/tools/src/errors.ts": {
+      "upstreamSha256": "21e2f41f37d2d768907e7e9db6958756a805974869f1bc28dc179f465f742560"
+    },
+    "packages/tools/src/index.ts": {
+      "upstreamSha256": "317c2fbdd5ffc5edd13bb9d46975238349b713cdde5d3bee2222dcc0001eb546"
+    },
+    "packages/tools/src/read.ts": {
+      "upstreamSha256": "afb534a341aed2b3e7c14f7b951b39abdbf34bd780ed9d796fc218c283f57453"
+    },
+    "packages/tools/src/types.ts": {
+      "upstreamSha256": "2712fcd5250859f173b4f0f1c3d407343f62416310558ed9171a904ef53bacdb"
+    },
+    "packages/tools/src/wrap.ts": {
+      "upstreamSha256": "c4992647d0abc6057ffc81cf7abebbb56cebdf5e5d2c41b03d1658457671125e"
+    },
+    "packages/tools/src/write.ts": {
+      "upstreamSha256": "0919ff2cb3ab718a775d2f1d3d5e6c6e13ae692302bd39df99fd83dabdc56d95"
+    },
+    "packages/tools/test/tools.test.ts": {
+      "upstreamSha256": "917fcd10d92edb00aa90110af85d0363c6d360ef8aa707b9ad29c57c1a61b719"
+    },
+    "packages/tools/test/wrap.test.ts": {
+      "upstreamSha256": "c497a4a9ad6fad29176ab85ad78d08db2613d433fc675fa383ecf0c8ce7f0c26"
+    },
+    "packages/tools/tsconfig.json": {
+      "upstreamSha256": "4b38b08c19c5f05ac530df7f10a1c3563dea21e37e8763c9173eddd847f32c71"
+    },
+    "patches/@earendil-works%2Fpi-ai@0.85.1.patch": {
+      "upstreamSha256": "a3b6f032585c6fe69d68892e600fe93b6c5e5fd06efe51cc961316eeefeaac95"
+    },
+    "tsconfig.base.json": {
+      "upstreamSha256": "32d5b057ae67e2486b93b54a3b9a0b37502736bcd61675647c8493004f25cb2e"
+    }
+  }
+}

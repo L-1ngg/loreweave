@@ -1,5 +1,9 @@
 # Forge Agent Reuse for My-RAG
 
+Implementation update: #2 adopts this pinned snapshot under
+[the vendor record](../../vendor/forge-agent/README.md). The investigation and
+43-test result below remain historical evidence from before integration.
+
 Inspected: 2026-09-10. Design and controlled verification only; no Forge source
 has been copied into My-RAG, no My-RAG runtime has been implemented, and no paid
 provider request was made. The user authorizes using or referencing Forge Agent,

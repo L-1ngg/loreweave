@@ -1,0 +1,43 @@
+--- a/packages/core/src/agent.ts
++++ b/packages/core/src/agent.ts
+@@ -11,6 +11,8 @@
+ import { randomUUID } from "node:crypto";
+ 
+ export interface CreateAgentOptions extends InputQueueOptions {
++	/** Host admission runs synchronously before each task/summary provider request. */
++	beforeModelRequest?: (request: { kind: "task" | "summary"; signal?: AbortSignal }) => void;
+ 	toolHooks?: ToolHooks;
+ 	/** Shared task/summary routing identity; supply it to retain affinity across reopening. */
+ 	sessionId?: string;
+@@ -65,6 +67,7 @@
+ 		const history = await storage.load();
+ 		const port = await portFactory({
+ 			sessionId: options.sessionId ?? randomUUID(),
++			...(options.beforeModelRequest ? { beforeModelRequest: options.beforeModelRequest } : {}),
+ 			provider: options.provider,
+ 			model: options.model,
+ 			systemPrompt: options.systemPrompt,
+--- a/packages/core/src/pi-port.ts
++++ b/packages/core/src/pi-port.ts
+@@ -35,6 +35,8 @@
+ export type ToolHooks = Pick<RuntimeOptions, "beforeToolCall" | "afterToolCall" | "toolExecution">;
+ 
+ export interface PiPortOptions extends InputQueueOptions {
++	/** Host admission runs synchronously before each task/summary provider request. */
++	beforeModelRequest?: (request: { kind: "task" | "summary"; signal?: AbortSignal }) => void;
+ 	toolHooks?: ToolHooks;
+ 	sessionId?: string;
+ 	context?: Partial<ContextSettings>;
+@@ -151,7 +153,11 @@
+ 		throw new Error(`Provider is not configured: ${options.provider}. Set apiKey in .forge-agent/config.json, FORGE_AGENT_API_KEY, or the provider's API key environment variable.`);
+ 	}
+ 	const model = options.baseUrl ? { ...catalogModel, baseUrl: options.baseUrl } : catalogModel;
+-	return { ...options, sessionId: options.sessionId ?? randomUUID(), model, stream: models.streamSimple.bind(models) };
++	return { ...options, sessionId: options.sessionId ?? randomUUID(), model, stream: (model, context, settings) => {
++		settings?.signal?.throwIfAborted();
++		options.beforeModelRequest?.({ kind: context.systemPrompt === SUMMARY_SYSTEM ? "summary" : "task", ...(settings?.signal ? { signal: settings.signal } : {}) });
++		return models.streamSimple(model, context, settings);
++	} };
+ }
+ 
+ /** Assemble the single source-owned session runtime. */
