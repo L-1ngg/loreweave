@@ -3,7 +3,7 @@
 An agent-powered knowledge base with a living wiki, graph-assisted retrieval,
 and source-backed answers.
 
-**Current capability: authenticated local development conversations (#2–#4).** A browser question runs
+**Current capability: authenticated conversations and durable Markdown imports (#2–#5).** A browser question runs
 through the pinned Forge SDK, a scripted original-evidence tool, and separate
 fixture generation/review requests. Cancel, observe progress and follow an original
 citation. The example corpus and model responses are scripted; this is not yet
@@ -41,8 +41,13 @@ Use “成员与项目管理” to create members, revoke their existing logins 
 project classifications. A selected project also searches applicable shared material;
 projects do not create member visibility ACLs. Try “项目日志保留多久？” and follow the citation. The fixed example answers only
 demonstrate the execution pipeline. Unrelated questions do not measure retrieval
-or model understanding. Runs and Forge history persist across process restarts. Source fixtures are still
-scripted. The conversation URL restores progress without submitting another turn. This entry point remains a local scripted development service.
+or model understanding. Runs and Forge history persist across process restarts. Imports preserve original UTF-8 bytes, versioned passages and Chinese/technical lexical fields.
+Choose a Markdown file (up to 1 MiB), then use “直接导入” or ask “请把附件导入知识库”.
+Source preparation survives browser and process restarts; the source becomes searchable
+only after all vectors and lexical records are committed. The current embedding adapter
+is a deterministic integration fixture, not a semantic model. Wiki, identity and graph
+maintenance events are durably queued; their workers arrive in later slices. The question-answer
+fixture still uses the example corpus until #6. The conversation URL restores progress without submitting another turn. This entry point remains a local scripted development service.
 
 ## Checks
 
@@ -61,6 +66,7 @@ docker run --rm -d --name loreweave-test -p 127.0.0.1:45433:5432 \
 export TEST_DATABASE_URL=postgres://loreweave:loreweave_test@127.0.0.1:45433/loreweave_test
 bun run test:persistence
 bun run test:access
+bun run test:sources
 bun x playwright install chromium
 bun run test:browser
 bun run build
@@ -102,6 +108,7 @@ record the current boundary and deployment limits.
 - [Task dependency map](.scratch/rag-v1/README.md)
 - [Confirmed decisions](docs/rag-optimization-design.md) and [domain terms](CONTEXT.md)
 - [Evaluation plan](docs/rag-evaluation-plan.md)
+- [Markdown source behavior](docs/development/sources.md)
 - [Access and credential behavior](docs/development/access.md)
 - [Pinned Forge source and local patch](vendor/forge-agent/README.md)
 - [Retired Python baseline and behavior inventory](docs/history/retirement.md)

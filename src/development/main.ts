@@ -1,3 +1,5 @@
+import { SourceService } from "../sources.ts";
+import { ControlledEmbeddings } from "./embeddings.ts";
 import { AccessService } from "../access.ts";
 import { PostgresConversations } from "../conversations.ts";
 import { KnowledgeHost } from "../host.ts";
@@ -16,12 +18,33 @@ let host: KnowledgeHost | undefined;
 let provider: ReturnType<typeof startScriptedProvider> | undefined;
 let server: ReturnType<typeof Bun.serve> | undefined;
 let closing = false;
+const imports = new SourceService(
+  databaseUrl,
+  access,
+  new ControlledEmbeddings(),
+);
+let worker: Promise<void> | undefined;
+async function prepareSources() {
+  while (!closing) {
+    try {
+      if (!(await imports.workOne())) await Bun.sleep(200);
+    } catch (error) {
+      console.error(
+        "Source worker unavailable",
+        error instanceof Error ? error.name : "error",
+      );
+      await Bun.sleep(1000);
+    }
+  }
+}
 async function close() {
   if (closing) return;
   closing = true;
   await host?.close();
   server?.stop(true);
   provider?.stop();
+  await worker;
+  await imports.close();
   await conversations.close();
   await access.close();
 }
@@ -43,18 +66,21 @@ try {
     providerUrl: provider.url,
     sources,
     conversations,
+    imports,
     access,
   });
   const app = createApp(host, sources, {
+    imports,
     browserOrigin: "http://127.0.0.1:41735",
     access,
   });
   server = Bun.serve({
     hostname: "127.0.0.1",
     port: 41736,
-    maxRequestBodySize: 32768,
+    maxRequestBodySize: 2 * 1024 * 1024,
     fetch: (request) => app.fetch(request),
   });
+  worker = prepareSources();
   console.log("LoreWeave authenticated fixture API: http://127.0.0.1:41736");
   for (const signal of ["SIGINT", "SIGTERM"] as const)
     process.on(signal, () => {

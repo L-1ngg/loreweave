@@ -113,3 +113,83 @@ test("administrator creates a member and project, then revokes the member's acti
     await context.close();
   }
 });
+
+test("Markdown upload exposes searchable original blocks without executing HTML or fetching images", async ({
+  page,
+}) => {
+  let imageRequests = 0;
+  page.on("request", (request) => {
+    if (request.url().includes("example.invalid")) imageRequests++;
+  });
+  const original =
+    "# 发布文档\r\n\r\n- 日志保留 60 天\r\n\r\n| 项目 | 周期 |\r\n| --- | --- |\r\n| API | 每日 |\r\n\r\n```ts\r\nconst id = 'SKU-004';\r\n```\r\n\r\n![拓扑][diagram]\r\n\r\n[diagram]: https://example.invalid/image.png\r\n\r\n<script>window.hacked=true</script>";
+  await page.getByLabel("Markdown 文件").setInputFiles({
+    name: "release.md",
+    mimeType: "text/markdown",
+    buffer: Buffer.from(original),
+  });
+  const acceptedPromise = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/api/imports") &&
+      response.request().method() === "POST",
+  );
+  await page.getByRole("button", { name: "直接导入" }).click();
+  const accepted = (await (await acceptedPromise).json()) as { id: string };
+  const item = page.getByTestId(`import-${accepted.id}`);
+  await expect(item).toContainText("来源可检索");
+  await item.getByRole("link", { name: "查看原文" }).click();
+  await expect(page.getByRole("heading", { name: "发布文档" })).toBeVisible();
+  await expect(page.getByRole("table")).toContainText("每日");
+  await expect(page.locator("code")).toContainText("SKU-004");
+  await expect(page.locator("article img")).toHaveCount(0);
+  await expect(page.locator("article script")).toHaveCount(0);
+  expect(imageRequests).toBe(0);
+  await expect(page.getByRole("link", { name: "图片链接" })).toHaveAttribute(
+    "href",
+    "https://example.invalid/image.png",
+  );
+  await page.getByText("查看完整原文", { exact: true }).click();
+  expect(await page.getByTestId("original-markdown").textContent()).toBe(
+    original,
+  );
+  const download = await page.request.get(
+    (await page
+      .getByRole("link", { name: "下载原始 Markdown" })
+      .getAttribute("href")) ?? "",
+  );
+  expect(await download.body()).toEqual(Buffer.from(original));
+});
+
+test("natural-language attachment import survives reload and malformed UTF-8 reports failure", async ({
+  page,
+}) => {
+  await page.getByLabel("Markdown 文件").setInputFiles({
+    name: "conversation.md",
+    mimeType: "text/markdown",
+    buffer: Buffer.from("# 对话导入\n项目采用 GraphRAG"),
+  });
+  await expect(page.getByText("已附加：conversation.md")).toBeVisible();
+  await page.getByLabel("问题").fill("请把附件导入知识库");
+  await page.getByRole("button", { name: "提问", exact: true }).click();
+  await expect(page.getByTestId("answer")).toContainText("已受理 1 项导入");
+  await page.reload();
+  await expect(page.getByTestId("answer")).toContainText("已受理 1 项导入");
+  await page.getByLabel("Markdown 文件").setInputFiles({
+    name: "invalid.md",
+    mimeType: "text/markdown",
+    buffer: Buffer.from([0xff]),
+  });
+  const acceptedPromise = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/api/imports") &&
+      response.request().method() === "POST",
+  );
+  await page.getByRole("button", { name: "直接导入" }).click();
+  const accepted = (await (await acceptedPromise).json()) as { id: string };
+  await expect(page.getByTestId(`import-${accepted.id}`)).toContainText(
+    "导入失败",
+  );
+  await expect(page.getByTestId(`import-${accepted.id}`)).toContainText(
+    "invalid_encoding",
+  );
+});

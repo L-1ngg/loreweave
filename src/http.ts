@@ -1,3 +1,5 @@
+import { SourceService } from "./sources.ts";
+import { sourceRoutes, isUuid } from "./source-http.ts";
 import { AccessService } from "./access.ts";
 import { accessRoutes, credential, accessError } from "./access-http.ts";
 import { Hono } from "hono";
@@ -9,7 +11,11 @@ import { FixtureSources } from "./development/sources.ts";
 export function createApp(
   host: KnowledgeHost,
   sources: FixtureSources,
-  options: { browserOrigin?: string; access?: AccessService } = {},
+  options: {
+    browserOrigin?: string;
+    access?: AccessService;
+    imports?: SourceService;
+  } = {},
 ) {
   const app = new Hono();
   app.onError((error, context) => accessError(context, error));
@@ -34,6 +40,7 @@ export function createApp(
       await next();
     });
   }
+  if (options.imports) app.route("/api", sourceRoutes(options.imports));
   app.post("/api/runs", async (context) => {
     let input: unknown;
     try {
@@ -50,6 +57,13 @@ export function createApp(
       input.question.length > 8000
     )
       return context.json({ error: "invalid_input" }, 400);
+    if (
+      "attachmentIds" in input &&
+      (!Array.isArray(input.attachmentIds) ||
+        input.attachmentIds.length > 5 ||
+        input.attachmentIds.some((id) => !isUuid(id)))
+    )
+      return context.json({ error: "invalid_input" }, 400);
     if ("complex" in input && typeof input.complex !== "boolean")
       return context.json({ error: "invalid_input" }, 400);
     if (
@@ -64,7 +78,13 @@ export function createApp(
           !/^[0-9a-f-]{36}$/i.test(input.projectId))) ||
       Object.keys(input).some(
         (key) =>
-          !["question", "complex", "conversationId", "projectId"].includes(key),
+          ![
+            "question",
+            "complex",
+            "conversationId",
+            "projectId",
+            "attachmentIds",
+          ].includes(key),
       )
     )
       return context.json({ error: "invalid_input" }, 400);
@@ -72,6 +92,9 @@ export function createApp(
       return context.json(
         await host.start({
           question: input.question,
+          ...("attachmentIds" in input
+            ? { attachmentIds: input.attachmentIds as string[] }
+            : {}),
           ...(options.access ? { credential: credential(context) } : {}),
           ...("projectId" in input
             ? { projectId: input.projectId as string }
@@ -144,6 +167,13 @@ export function createApp(
     });
   });
   app.get("/api/sources/:version", async (context) => {
+    if (options.imports && isUuid(context.req.param("version")))
+      return context.json(
+        await options.imports.version(
+          credential(context),
+          context.req.param("version"),
+        ),
+      );
     const scope = await options.access?.authorize(credential(context), "read");
     const source = sources.version(context.req.param("version"), scope);
     return source

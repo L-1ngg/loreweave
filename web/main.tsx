@@ -1,5 +1,8 @@
+import { SourceImports, type Attachment } from "./imports.tsx";
+import { Markdown, markdownContext } from "./markdown.tsx";
+import type { SourceVersion } from "../src/sources.ts";
 import { AccessShell } from "./access.tsx";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import type { RunEvent, RunSnapshot } from "../src/host.ts";
 import type { Evidence } from "../src/development/sources.ts";
@@ -17,6 +20,7 @@ const labels: Record<RunSnapshot["status"], string> = {
 };
 function App({ projectId }: { projectId: string }) {
   const [question, setQuestion] = useState("");
+  const [attachment, setAttachment] = useState<Attachment>();
   const [run, setRun] = useState<RunSnapshot>();
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -85,6 +89,7 @@ function App({ projectId }: { projectId: string }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           question,
+          ...(attachment ? { attachmentIds: [attachment.id] } : {}),
           ...(projectId ? { projectId } : {}),
           ...(conversationId.current
             ? { conversationId: conversationId.current }
@@ -93,6 +98,7 @@ function App({ projectId }: { projectId: string }) {
       });
       if (!response.ok) throw new Error("暂时无法接受查询，请稍后重试。");
       const accepted = (await response.json()) as RunSnapshot;
+      setAttachment(undefined);
       conversationId.current = accepted.conversationId;
       const url = new URL(window.location.href);
       url.searchParams.set("conversation", accepted.conversationId);
@@ -133,6 +139,11 @@ function App({ projectId }: { projectId: string }) {
           当前使用一份示例运维说明和预设模型响应，演示查询、引用和取消流程。可以试问：“项目日志保留多久？”
         </p>
       </aside>
+      <SourceImports
+        projectId={projectId}
+        attachment={attachment}
+        onAttachment={setAttachment}
+      />
       <form onSubmit={submit}>
         <label htmlFor="question">问题</label>
         <textarea
@@ -212,8 +223,14 @@ function App({ projectId }: { projectId: string }) {
   );
 }
 function SourcePage({ version }: { version: string }) {
-  const [source, setSource] = useState<Evidence>();
+  const [source, setSource] = useState<
+    Evidence & Partial<Pick<SourceVersion, "passages" | "state">>
+  >();
   const [error, setError] = useState(false);
+  const context = useMemo(
+    () => markdownContext(source?.text ?? ""),
+    [source?.text],
+  );
   useEffect(() => {
     const controller = new AbortController();
     void fetch(`/api/sources/${encodeURIComponent(version)}`, {
@@ -235,7 +252,32 @@ function SourcePage({ version }: { version: string }) {
         <>
           <h1>{source.title}</h1>
           <p>原文版本：{source.version}</p>
-          <article>{source.text}</article>
+          {source.passages ? (
+            <>
+              <p>
+                {source.state === "superseded"
+                  ? "历史版本，当前检索使用后续版本"
+                  : "当前生效来源"}
+              </p>
+              <a href={`/api/sources/${source.version}/original`}>
+                下载原始 Markdown
+              </a>
+              <article>
+                {source.passages.map((passage) => (
+                  <section key={passage.id} id={passage.id}>
+                    <a href={`#${passage.id}`}>段落 {passage.ordinal + 1}</a>
+                    <Markdown text={passage.text} context={context} />
+                  </section>
+                ))}
+              </article>
+              <details>
+                <summary>查看完整原文</summary>
+                <pre data-testid="original-markdown">{source.text}</pre>
+              </details>
+            </>
+          ) : (
+            <article>{source.text}</article>
+          )}
         </>
       ) : (
         <p>{error ? "没有找到该原文版本" : "正在读取原文"}</p>

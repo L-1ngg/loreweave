@@ -54,8 +54,34 @@ export function startScriptedProvider(options: ScriptedOptions = {}) {
             (Array.isArray(message.content) &&
               message.content.some((block) => block.type === "text"))),
       );
+      const content = messages[questionIndex]?.content;
+      const latest =
+        typeof content === "string"
+          ? content
+          : Array.isArray(content)
+            ? content
+                .filter((block) => block.type === "text")
+                .map((block) => String(block.text))
+                .join("\n")
+            : "";
+      const attachment = latest
+        .split("Supplied attachment IDs:")[1]
+        ?.match(
+          /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i,
+        )?.[0];
+      const instruction =
+        latest.split("\nSupplied attachment IDs:")[0]?.trim() ?? "";
+      // This provider is a deterministic fixture, not an intent classifier.
+      // Only explicitly supported affirmative commands may trigger a real write.
+      const importing = Boolean(
+        attachment &&
+        /^(?:(?:请)?(?:把|将)?附件导入(?:到)?知识库[。！!]?|(?:please )?import (?:the )?attachment[.!]?)$/i.test(
+          instruction,
+        ),
+      );
       const tool =
         !summary &&
+        (!attachment || importing) &&
         (options.repeatTool ||
           !JSON.stringify(messages.slice(Math.max(0, questionIndex))).includes(
             '"tool_result"',
@@ -81,7 +107,7 @@ export function startScriptedProvider(options: ScriptedOptions = {}) {
             ? {
                 type: "tool_use",
                 id: `call-${count}`,
-                name: "search_evidence",
+                name: importing ? "import_markdown" : "search_evidence",
                 input: {},
               }
             : {
@@ -96,7 +122,10 @@ export function startScriptedProvider(options: ScriptedOptions = {}) {
                 index: 0,
                 delta: {
                   type: "input_json_delta",
-                  partial_json: JSON.stringify(options.toolArguments ?? {}),
+                  partial_json: JSON.stringify(
+                    options.toolArguments ??
+                      (importing ? { attachmentId: attachment } : {}),
+                  ),
                 },
               },
             ]

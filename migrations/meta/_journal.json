@@ -15,6 +15,20 @@
       "when": 1788998400001,
       "tag": "0001_access",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788998400002,
+      "tag": "0002_sources",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788998400003,
+      "tag": "0003_attachments",
+      "breakpoints": true
     }
   ]
 }
