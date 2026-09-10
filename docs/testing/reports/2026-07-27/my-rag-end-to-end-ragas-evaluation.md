@@ -1,3 +1,7 @@
+> Historical Python-system document, applicable to `d24fb0bce6e240930bba9940ead57f371601ded8` only.
+> [Original revision](https://github.com/L-1ngg/loreweave/blob/d24fb0bce6e240930bba9940ead57f371601ded8/docs/testing/reports/2026-07-27/my-rag-end-to-end-ragas-evaluation.md) · [Current construction entry](https://github.com/L-1ngg/loreweave/blob/main/docs/rag-v1-blueprint.md).
+> Commands and results below are archived; they do not describe the active LoreWeave runtime.
+
 # My-RAG 端到端 Ragas 评估改造与真实基线
 
 ## 结论

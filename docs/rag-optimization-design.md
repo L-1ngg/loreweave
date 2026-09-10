@@ -1,13 +1,13 @@
 # RAG Optimization Design Discussion
 
-Status: design recorded, implementation not started. User-confirmed decisions
+Status: design recorded; implementation progress is tracked in GitHub Issues. User-confirmed decisions
 and explicitly delegated defaults are distinguished below. Q36 delegates routine
 design and Q37 permits component selection without compatibility constraints.
 
 This document owns the optimization goals and interview record. Where a decision
 links to an ADR, that ADR owns its architectural rationale and constraints.
-Domain terms live in [CONTEXT.md](../CONTEXT.md). The current implementation
-remains described by [architecture.md](architecture.md) and
+Domain terms live in [CONTEXT.md](../CONTEXT.md). The retired Python implementation
+is historically described by [architecture.md](architecture.md) and
 [contracts.md](contracts.md). The [first-version blueprint](rag-v1-blueprint.md)
 owns assistant-selected design defaults under Q36-Q39. Q39's construction spec
 and module contracts consolidate the callable behavior. Earlier statements that

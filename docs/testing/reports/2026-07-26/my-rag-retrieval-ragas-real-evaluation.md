@@ -1,3 +1,7 @@
+> Historical Python-system document, applicable to `d24fb0bce6e240930bba9940ead57f371601ded8` only.
+> [Original revision](https://github.com/L-1ngg/loreweave/blob/d24fb0bce6e240930bba9940ead57f371601ded8/docs/testing/reports/2026-07-26/my-rag-retrieval-ragas-real-evaluation.md) · [Current construction entry](https://github.com/L-1ngg/loreweave/blob/main/docs/rag-v1-blueprint.md).
+> Commands and results below are archived; they do not describe the active LoreWeave runtime.
+
 # My-RAG 真实检索与 Ragas 评估报告
 
 > 迁移说明（2026-07-27）：本文保留的是 `retrieval-evaluation-v2` 的历史结果。

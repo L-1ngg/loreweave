@@ -5,17 +5,11 @@ on:
   pull_request:
 
 jobs:
-  test:
+  documentation:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: oven-sh/setup-bun@v2
         with:
-          version: 0.11.6
-          enable-cache: true
-      - run: uv python install 3.13
-      - run: uv sync --frozen --extra dev
-      - run: uv run ruff check src tests migrations
-      - run: uv run ruff format --check src tests migrations
-      - run: uv run pytest -m "not integration"
-      - run: docker build --tag my-rag:ci .
+          bun-version: 1.3.10
+      - run: bun scripts/check-docs.mjs

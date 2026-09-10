@@ -25,8 +25,9 @@ and implementation. No product implementation, migration, deployment, or RAG
 evaluation has been performed for this blueprint. The Forge reuse investigation
 records fresh controlled upstream SDK tests, separate from My-RAG integration.
 
-The [current architecture](architecture.md) and [contracts](contracts.md)
-continue to describe the existing system. The accepted shared provenance and
+The [historical architecture](architecture.md) and [contracts](contracts.md)
+describe the retired Python system; [recovery and disposition](history/retirement.md)
+record its preserved baseline. The accepted shared provenance and
 built-in conversation decisions retain their rationale in
 [ADR-0001](adr/0001-shared-wiki-graph-provenance.md) and
 [ADR-0002](adr/0002-built-in-knowledge-conversation.md). Forge SDK reuse and the

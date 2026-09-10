@@ -159,6 +159,6 @@ budgets require user decisions before implementation.
 - S3: [Microsoft GraphRAG Global Search](https://microsoft.github.io/graphrag/query/global_search/).
 - S4: [Microsoft GraphRAG Bring Your Own Graph](https://microsoft.github.io/graphrag/index/byog/).
 - S5: [Microsoft GraphRAG Output Schemas](https://microsoft.github.io/graphrag/index/outputs/).
-- L1: [Current domain models](../../src/rag_system/domain/models.py).
-- L2: [Current database models and lifecycle](../../src/rag_system/infrastructure/database.py).
-- L3: [Current immutable chunk artifacts](../../src/rag_system/processing/artifacts.py).
+- L1: [Current domain models](https://github.com/L-1ngg/loreweave/blob/d24fb0bce6e240930bba9940ead57f371601ded8/src/rag_system/domain/models.py).
+- L2: [Current database models and lifecycle](https://github.com/L-1ngg/loreweave/blob/d24fb0bce6e240930bba9940ead57f371601ded8/src/rag_system/infrastructure/database.py).
+- L3: [Current immutable chunk artifacts](https://github.com/L-1ngg/loreweave/blob/d24fb0bce6e240930bba9940ead57f371601ded8/src/rag_system/processing/artifacts.py).

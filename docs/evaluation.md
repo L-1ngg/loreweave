@@ -1,3 +1,7 @@
+> Historical Python-system document, applicable to `d24fb0bce6e240930bba9940ead57f371601ded8` only.
+> [Original revision](https://github.com/L-1ngg/loreweave/blob/d24fb0bce6e240930bba9940ead57f371601ded8/docs/evaluation.md) · [Current construction entry](https://github.com/L-1ngg/loreweave/blob/main/docs/rag-v1-blueprint.md).
+> Commands and results below are archived; they do not describe the active LoreWeave runtime.
+
 # End-to-End RAG Evaluation
 
 The offline evaluation target is the complete `answer_question` use case: one
