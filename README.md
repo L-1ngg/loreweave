@@ -3,7 +3,7 @@
 An agent-powered knowledge base with a living wiki, graph-assisted retrieval,
 and source-backed answers.
 
-**Current capability: authenticated Markdown knowledge conversations, document updates and evidenced identities (#2–#8).**
+**Current capability: authenticated Markdown knowledge conversations, document updates, evidenced identities and reviewed Wiki topics (#2–#9).**
 Members import versioned originals, ask questions through Forge, and open exact
 passages behind answer citations. PostgreSQL lexical/vector retrieval uses RRF;
 the answer pipeline validates claim spans and citations, performs a separate
@@ -12,8 +12,9 @@ reconnect, source activation and operation receipts persist in PostgreSQL.
 
 The local runtime uses deterministic embedding and extractive generation/review
 fixtures. It verifies the execution and validation contracts; it does not measure
-semantic model quality, independent factual truth or production capacity. Wiki
-and graph workers remain later delivery slices.
+semantic model quality, independent factual truth or production capacity. The Wiki
+worker uses a scripted topic model; graph maintenance and full dependency refresh
+remain subsequent delivery slices.
 
 ## Run locally
 
@@ -47,8 +48,8 @@ model quotes matching originals with attribution; it is not a general answering 
 Choose a Markdown file (up to 1 MiB), then use “直接导入” or ask “请把附件导入知识库”.
 Source preparation survives browser and process restarts; the source becomes searchable
 only after all vectors and lexical records are committed. The current embedding adapter
-is a deterministic integration fixture, not a semantic model. Wiki, identity and graph
-maintenance events are durably queued; their workers arrive in later slices. The question-answer
+is a deterministic integration fixture, not a semantic model. Identity and Wiki
+maintenance run in the background; graph events remain durably queued. The question-answer
 fixture now retrieves those imported originals. The conversation URL restores progress without submitting another turn. This entry point remains a local scripted development service.
 
 Open a current source and use “更新此文档” → “提交新版本” to replace that
@@ -91,6 +92,7 @@ bun run test:sources
 bun run test:evidence
 bun run test:updates
 bun run test:identity
+bun run test:wiki
 bun x playwright install chromium
 bun run test:browser
 bun run build
@@ -104,6 +106,36 @@ database. CI provisions its own disposable database. The persistence suite injec
 storage errors and terminates a conversation database session, so use an isolated
 test database. Real-provider answer quality and capacity acceptance remain later work. `build` emits the browser bundle; `dev` is the current local
 runtime, not a production deployment command.
+
+## Topic Wiki
+
+Choose “浏览知识主题” after importing Markdown. The scripted maintenance adapter
+recognizes log retention, release/deployment and backup fixtures, synthesizes
+attributed originals, and reviews each generated block in a separate request.
+Unknown material is recorded as unresolved; this adapter is not general semantic
+extraction or a quality benchmark. Project topics remain scoped; shared-topic
+links create navigation without copying project-only facts into shared pages.
+
+Topic discovery records all source ranges, bounded overflow, four catalogue routes
+(Top 20 each, RRF 60, Top 40), an 8-to-16 card pass, and detailed original-support
+windows. Final decisions read those windows; publication rechecks their source
+and page versions. At most three planner requests and seven inspection requests
+share durable operation limits. Generation/review use at most three requests each
+per block. UTF-8 byte bounds conservatively limit source packets, routing text,
+planner inputs/outputs and generated blocks without assuming a provider tokenizer.
+All pages in a source edit set publish atomically, with reservations and catalogue
+revision checks; unresolved work leaves effective pages intact. Counters, hashes,
+remaining ranges and failure reasons are available through the maintenance read API.
+
+`GET /api/wiki` and `GET /api/wiki/:id?version=...` expose pages and original
+citations; `GET /api/wiki-operations/:operationId` exposes discovery progress.
+Eligible Wiki search adds original evidence to the answer pipeline, deduplicated
+by original version/passage. Old source/identity dependencies immediately make
+Wiki prose ineligible. Missing vectors permit lexical publication and original
+fallback; novelty waits for a catalogue revision/projection event within its
+existing deadline. `WikiService.retryProjection` provides an idempotent repair
+entry for the later operation interface. Mandatory dependency fan-out, retirement
+and restructuring are delivered in #10/#11; this slice records proposals only.
 
 ## Interrupted execution
 

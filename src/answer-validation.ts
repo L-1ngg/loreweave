@@ -50,14 +50,18 @@ function span(start: unknown, end: unknown, length: number): boolean {
     Number(end) <= length
   );
 }
-export function validateDraft(raw: unknown, pack: EvidencePack): Draft {
+export function validateDraft(
+  raw: unknown,
+  pack: EvidencePack,
+  limits = { maxBytes: 1500, maxClaims: 24 },
+): Draft {
   if (
     !record(raw) ||
     typeof raw.text !== "string" ||
     !raw.text.trim() ||
     !Array.isArray(raw.claims) ||
     !raw.claims.length ||
-    new TextEncoder().encode(JSON.stringify(raw)).length > 1500
+    new TextEncoder().encode(JSON.stringify(raw)).length > limits.maxBytes
   )
     throw new Error("invalid_draft");
   const text = raw.text,
@@ -90,7 +94,7 @@ export function validateDraft(raw: unknown, pack: EvidencePack): Draft {
     claims.push(claim as unknown as Claim);
   }
   if (
-    claims.filter((claim) => claim.role === "fact").length > 24 ||
+    claims.filter((claim) => claim.role === "fact").length > limits.maxClaims ||
     claims.some((claim) =>
       claim.premises.some((id) => !ids.has(id) || id === claim.id),
     )
@@ -121,6 +125,7 @@ export function validateReview(
   raw: unknown,
   draft: Draft,
   pack: EvidencePack,
+  maxBytes = 2000,
 ): Review {
   if (
     !record(raw) ||
@@ -129,7 +134,7 @@ export function validateReview(
     raw.evidenceHash !== pack.hash ||
     !strings(raw.unlistedClaims) ||
     !Array.isArray(raw.claims) ||
-    new TextEncoder().encode(JSON.stringify(raw)).length > 2000
+    new TextEncoder().encode(JSON.stringify(raw)).length > maxBytes
   )
     throw new Error("invalid_review");
   const ids = new Set<string>();

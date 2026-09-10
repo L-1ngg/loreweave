@@ -1,3 +1,5 @@
+import { wikiRoutes } from "./wiki-http.ts";
+import type { WikiService } from "./wiki.ts";
 import { IdentityService } from "./identity.ts";
 import { identityRoutes } from "./identity-http.ts";
 import { SourceService } from "./sources.ts";
@@ -18,6 +20,7 @@ export function createApp(
     access?: AccessService;
     imports?: SourceService;
     identities?: IdentityService;
+    wiki?: WikiService;
   } = {},
 ) {
   const app = new Hono();
@@ -43,6 +46,7 @@ export function createApp(
       await next();
     });
   }
+  if (options.wiki) app.route("/api", wikiRoutes(options.wiki));
   if (options.identities) app.route("/api", identityRoutes(options.identities));
   if (options.imports) app.route("/api", sourceRoutes(options.imports));
   app.post("/api/runs", async (context) => {

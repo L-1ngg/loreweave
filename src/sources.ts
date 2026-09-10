@@ -1,3 +1,4 @@
+import type { Transaction } from "./operations.ts";
 import { createHash } from "node:crypto";
 import { AccessService } from "./access.ts";
 import { Operations } from "./operations.ts";
@@ -32,7 +33,12 @@ export interface SourceOperation {
   versionId: string;
   source: "processing" | "searchable" | "failed" | "superseded";
   reason?: string;
-  maintenance: Array<{ id: string; kind: string; state: string }>;
+  maintenance: Array<{
+    id: string;
+    kind: string;
+    state: string;
+    reason?: string;
+  }>;
 }
 export interface SourceVersion {
   projectId?: string;
@@ -166,7 +172,7 @@ export class SourceService {
   ): Promise<SourceOperation[]> {
     if (!rows.length) return [];
     const jobs = await this.operations
-      .sql`SELECT id,operation_id,kind,state FROM knowledge_jobs WHERE operation_id IN ${this.operations.sql(rows.map((row) => String(row.operation_id)))} AND kind<>'source.prepare' ORDER BY kind`;
+      .sql`SELECT id,operation_id,kind,state,reason FROM knowledge_jobs WHERE operation_id IN ${this.operations.sql(rows.map((row) => String(row.operation_id)))} AND kind<>'source.prepare' ORDER BY kind`;
     return rows.map((row) => ({
       id: String(row.operation_id),
       documentId: String(row.document_id),
@@ -186,6 +192,7 @@ export class SourceService {
           id: String(job.id),
           kind: String(job.kind),
           state: String(job.state),
+          ...(job.reason ? { reason: String(job.reason) } : {}),
         })),
     }));
   }
@@ -274,8 +281,24 @@ export class SourceService {
   }
   async version(token: string, id: string): Promise<SourceVersion> {
     const context = await this.access.authorize(token, "read");
+    return this.versionInOrganization(context.organizationId, id);
+  }
+  /** Internal worker entry: the durable operation fixes organization authority. */
+  async maintenanceVersion(
+    operationId: string,
+    id: string,
+  ): Promise<SourceVersion> {
+    const [operation] = await this.operations
+      .sql`SELECT organization_id FROM knowledge_operations WHERE id=${operationId}`;
+    if (!operation) throw new Error("not_found");
+    return this.versionInOrganization(String(operation.organization_id), id);
+  }
+  private async versionInOrganization(
+    organizationId: string,
+    id: string,
+  ): Promise<SourceVersion> {
     const [row] = await this.operations
-      .sql`SELECT v.*,d.project_id,d.active_version_id FROM source_versions v JOIN source_documents d ON d.id=v.document_id WHERE v.id=${id} AND d.organization_id=${context.organizationId} AND v.state IN ('active','superseded')`;
+      .sql`SELECT v.*,d.project_id,d.active_version_id FROM source_versions v JOIN source_documents d ON d.id=v.document_id WHERE v.id=${id} AND d.organization_id=${organizationId} AND v.state IN ('active','superseded')`;
     if (!row) throw new Error("not_found");
     const passages = await this.operations
       .sql`SELECT * FROM source_passages WHERE version_id=${id} ORDER BY ordinal`;
@@ -298,11 +321,87 @@ export class SourceService {
       })),
     };
   }
+  async assertCurrentForPublication(
+    tx: Transaction,
+    organizationId: string,
+    items: SourceCandidate[],
+  ): Promise<void> {
+    if (!items.length) throw new Error("insufficient_evidence");
+    const refs = tx.json(
+      items.map((item) => ({ version: item.version, passage: item.passageId })),
+    );
+    const rows =
+      await tx`SELECT p.id,p.version_id,p.original_text,d.id AS document_id,v.filename,p.start_offset,p.end_offset,p.heading_path FROM jsonb_to_recordset(${refs}::jsonb) ref(version uuid,passage uuid) JOIN source_passages p ON p.id=ref.passage AND p.version_id=ref.version JOIN source_versions v ON v.id=p.version_id JOIN source_documents d ON d.active_version_id=v.id WHERE d.organization_id=${organizationId} FOR SHARE OF d`;
+    if (
+      items.some(
+        (item) =>
+          !rows.some(
+            (row) =>
+              row.id === item.passageId &&
+              row.version_id === item.version &&
+              row.document_id === item.documentId &&
+              row.filename === item.title &&
+              Number.isSafeInteger(item.start) &&
+              Number.isSafeInteger(item.end) &&
+              item.start >= Number(row.start_offset) &&
+              item.end <= Number(row.end_offset) &&
+              item.end > item.start &&
+              String(row.original_text).slice(
+                item.start - Number(row.start_offset),
+                item.end - Number(row.start_offset),
+              ) === item.text &&
+              JSON.stringify(row.heading_path) ===
+                JSON.stringify(item.headingPath),
+          ),
+      )
+    )
+      throw new Error("source_changed");
+  }
   async original(token: string, id: string): Promise<Uint8Array> {
     await this.version(token, id);
     const [row] = await this.operations
       .sql`SELECT original FROM source_versions WHERE id=${id}`;
     return new Uint8Array(row!.original);
+  }
+  async resolveCurrent(
+    token: string,
+    input: {
+      references: Array<{ version: string; passageId: string }>;
+      signal: AbortSignal;
+      projectId?: string;
+    },
+  ): Promise<SourceCandidate[]> {
+    const context = await this.access.authorize(token, "read", input.projectId);
+    if (input.references.length > 50) throw new Error("invalid_input");
+    if (!input.references.length) return [];
+    const sql = this.operations.sql;
+    const refs = sql.json(
+      input.references.map((ref, index) => ({
+        version: ref.version,
+        passage: ref.passageId,
+        rank: index,
+      })),
+    );
+    const query = sql`SELECT p.id,p.version_id,p.original_text,p.heading_path,p.start_offset,p.end_offset,d.id AS document_id,v.filename FROM jsonb_to_recordset(${refs}::jsonb) ref(version uuid,passage uuid,rank integer) JOIN source_passages p ON p.id=ref.passage AND p.version_id=ref.version JOIN source_documents d ON d.active_version_id=p.version_id JOIN source_versions v ON v.id=p.version_id WHERE d.organization_id=${context.organizationId} AND (${input.projectId ?? null}::uuid IS NULL OR d.project_id IS NULL OR d.project_id=${input.projectId ?? null}) ORDER BY ref.rank`;
+    const cancel = () => query.cancel();
+    input.signal.addEventListener("abort", cancel, { once: true });
+    try {
+      input.signal.throwIfAborted();
+      const rows = await query;
+      input.signal.throwIfAborted();
+      return rows.map((row) => ({
+        documentId: String(row.document_id),
+        version: String(row.version_id),
+        passageId: String(row.id),
+        title: String(row.filename),
+        text: String(row.original_text),
+        headingPath: row.heading_path as string[],
+        start: Number(row.start_offset),
+        end: Number(row.end_offset),
+      }));
+    } finally {
+      input.signal.removeEventListener("abort", cancel);
+    }
   }
   async resolve(token: string, version: string, passageId: string) {
     const source = await this.version(token, version),

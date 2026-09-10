@@ -1,3 +1,4 @@
+import { WikiBrowser } from "./wiki.tsx";
 import { IdentityPanel } from "./identities.tsx";
 import { SourceImports, type Attachment } from "./imports.tsx";
 import { Markdown, markdownContext } from "./markdown.tsx";
@@ -133,6 +134,7 @@ function App({ projectId }: { projectId: string }) {
       <header>
         <span className="eyebrow">LOREWEAVE</span>
         <h1>让答案回到原文</h1>
+        <a href="/wiki">浏览知识主题</a>
         <p>查阅知识、理解关联，并沿着引用核对每一个结论。</p>
       </header>
       <aside>
@@ -350,11 +352,17 @@ function SourcePage({
     </main>
   );
 }
+const wikiMatch = window.location.pathname.match(/^\/wiki(?:\/([^/]+))?$/);
 const version = window.location.pathname.match(/^\/sources\/([^/]+)$/)?.[1];
 createRoot(document.getElementById("root")!).render(
   <AccessShell>
     {({ actor, projectId }) =>
-      version ? (
+      wikiMatch ? (
+        <WikiBrowser
+          projectId={projectId}
+          {...(wikiMatch[1] ? { id: wikiMatch[1] } : {})}
+        />
+      ) : version ? (
         <SourcePage
           version={version}
           canImport={actor.grants.includes("import")}

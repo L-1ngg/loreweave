@@ -41,6 +41,7 @@ jobs:
       - run: bun run test:evidence
       - run: bun run test:updates
       - run: bun run test:identity
+      - run: bun run test:wiki
       - run: bun run test:upstream
       - run: bun x playwright install --with-deps chromium
       - run: bun run test:browser

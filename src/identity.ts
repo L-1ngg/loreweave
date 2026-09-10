@@ -207,6 +207,27 @@ export class IdentityService {
           : new Date().toISOString(),
     };
   }
+  async assertForPublication(
+    tx: Transaction,
+    organizationId: string,
+    dependencies: Array<{
+      mentionId: string;
+      revisionId: string;
+      proofId: string;
+    }>,
+  ): Promise<string[]> {
+    if (!dependencies.length) return [];
+    if (dependencies.length > 100)
+      throw new Error("invalid_identity_dependencies");
+    const proofIds = dependencies.map((ref) => ref.proofId);
+    await tx`SELECT d.id FROM source_documents d WHERE d.id IN (SELECT v.document_id FROM identity_proof_leaves l JOIN source_versions v ON v.id=l.version_id WHERE l.proof_id IN ${tx(proofIds)}) ORDER BY d.id FOR SHARE`;
+    await tx`SELECT m.id FROM identity_mentions m WHERE m.id IN ${tx(dependencies.map((ref) => ref.mentionId))} OR m.id IN (SELECT b.mention_id FROM identity_proof_bindings b WHERE b.proof_id IN ${tx(proofIds)}) ORDER BY m.id FOR SHARE`;
+    const rows =
+      await tx`SELECT ref.*,r.canonical_id FROM jsonb_to_recordset(${tx.json(dependencies.map((ref) => ({ mention: ref.mentionId, revision: ref.revisionId, proof: ref.proofId })))}::jsonb) ref(mention uuid,revision uuid,proof uuid) JOIN identity_mentions m ON m.id=ref.mention AND m.organization_id=${organizationId} AND m.current_revision_id=ref.revision JOIN identity_revisions r ON r.id=ref.revision JOIN identity_proof_eligibility p ON p.id=ref.proof AND p.revision_id=r.id AND p.valid`;
+    if (rows.length !== dependencies.length)
+      throw new Error("identity_changed");
+    return [...new Set(rows.map((row) => String(row.canonical_id)))];
+  }
   async history(token: string, mentionId: string) {
     const context = await this.access.authorize(token, "read");
     const rows = await this.operations

@@ -1,3 +1,4 @@
+import type { WikiService } from "./wiki.ts";
 import { setTimeout as pause } from "node:timers/promises";
 import {
   hash,
@@ -18,6 +19,7 @@ export interface EvidencePack {
   items: EvidenceItem[];
   hash: string;
   diagnostics: {
+    wikiCandidates?: number;
     lexicalCandidates: number;
     vectorCandidates: number;
     retrievalMs: number;
@@ -74,7 +76,10 @@ export class EvidenceService {
       checkedAt: string;
     }>
   >();
-  constructor(private readonly sources: SourceService) {}
+  constructor(
+    private readonly sources: SourceService,
+    private readonly wiki?: Pick<WikiService, "search">,
+  ) {}
   async retrieve(
     token: string,
     input: {
@@ -96,11 +101,29 @@ export class EvidenceService {
         throw error;
       throw new Error("retrieval_unavailable");
     }
+    const gaps: string[] = [];
+    let wikiCandidates = 0,
+      wikiOriginals: SourceCandidate[] = [];
+    if (this.wiki) {
+      try {
+        const result = await this.wiki.search(token, input);
+        wikiCandidates = result.pages;
+        wikiOriginals = result.originals;
+        if (result.truncated) gaps.push("wiki_original_limit");
+      } catch {
+        input.signal.throwIfAborted();
+        gaps.push("wiki_unavailable");
+      }
+    } else gaps.push("wiki_unavailable");
     const ranked = new Map<
       string,
       { candidate: SourceCandidate; score: number }
     >();
-    for (const route of [candidates.lexical, candidates.vector]) {
+    for (const route of [
+      candidates.lexical,
+      candidates.vector,
+      wikiOriginals,
+    ]) {
       const seen = new Set<string>();
       let rank = 0;
       for (const candidate of route) {
@@ -115,8 +138,7 @@ export class EvidenceService {
         });
       }
     }
-    const items: EvidenceItem[] = [],
-      gaps = ["wiki_unavailable"];
+    const items: EvidenceItem[] = [];
     let remaining = (input.complex ? 16000 : 8000) - 2;
     const ordered = [...ranked.values()]
       .sort(
@@ -157,6 +179,7 @@ export class EvidenceService {
       items,
       hash: hash(items),
       diagnostics: {
+        wikiCandidates,
         lexicalCandidates: candidates.lexical.length,
         vectorCandidates: candidates.vector.length,
         retrievalMs: performance.now() - started,

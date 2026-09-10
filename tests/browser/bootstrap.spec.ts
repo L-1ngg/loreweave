@@ -317,3 +317,22 @@ test("source context records a mention and exposes its original-backed identity 
   await page.getByRole("button", { name: "Atlas：查看身份依据" }).click();
   await expect(page.getByLabel("身份解释")).toContainText("独立提及");
 });
+
+test("browsing a reviewed Wiki topic exposes source citations and a return to questions", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "浏览知识主题" }).click();
+  await expect(page.getByRole("heading", { name: "知识主题" })).toBeVisible();
+  await expect(async () => {
+    await page.getByRole("button", { name: "刷新主题" }).click();
+    await expect(
+      page.getByRole("link", { name: "日志保留", exact: true }),
+    ).toBeVisible();
+  }).toPass({ timeout: 20000 });
+  await page.getByRole("link", { name: "日志保留", exact: true }).click();
+  await expect(page.getByRole("article")).toContainText("30 天");
+  await expect(page.getByText("当前有效", { exact: true })).toBeVisible();
+  await page.getByRole("link", { name: /原文 1/ }).click();
+  await expect(page.getByRole("article")).toContainText("30 天");
+});

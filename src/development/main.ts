@@ -1,3 +1,5 @@
+import { WikiService } from "../wiki.ts";
+import { ScriptedWikiModel } from "./wiki-model.ts";
 import { IdentityService } from "../identity.ts";
 import { EvidenceService } from "../evidence.ts";
 import { SourceService } from "../sources.ts";
@@ -26,11 +28,23 @@ const imports = new SourceService(
   new ControlledEmbeddings(),
 );
 const identities = new IdentityService(databaseUrl, access, imports);
+const wiki = new WikiService(
+  databaseUrl,
+  access,
+  imports,
+  identities,
+  new ControlledEmbeddings(),
+  new ScriptedWikiModel(),
+);
 let worker: Promise<void> | undefined;
 async function prepareSources() {
   while (!closing) {
     try {
-      if (!(await imports.workOne()) && !(await identities.workOne()))
+      if (
+        !(await imports.workOne()) &&
+        !(await identities.workOne()) &&
+        !(await wiki.workOne())
+      )
         await Bun.sleep(200);
     } catch (error) {
       console.error(
@@ -48,6 +62,7 @@ async function close() {
   server?.stop(true);
   provider?.stop();
   await worker;
+  await wiki.close();
   await identities.close();
   await imports.close();
   await conversations.close();
@@ -71,12 +86,13 @@ try {
     providerUrl: provider.url,
     sources,
     conversations,
-    evidence: new EvidenceService(imports),
+    evidence: new EvidenceService(imports, wiki),
     imports,
     access,
   });
   const app = createApp(host, sources, {
     identities,
+    wiki,
     imports,
     browserOrigin: "http://127.0.0.1:41735",
     access,

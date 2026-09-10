@@ -182,7 +182,37 @@ export function SourceImports({
                 </>
               )}
               {operation.source === "searchable" && (
-                <span> · Wiki 与图谱待刷新</span>
+                <span>
+                  {" "}
+                  · Wiki：
+                  {operation.maintenance.find(
+                    (job) => job.kind === "wiki.refresh",
+                  )?.state === "succeeded"
+                    ? "已处理"
+                    : operation.maintenance.find(
+                          (job) => job.kind === "wiki.refresh",
+                        )?.state === "failed"
+                      ? "需要处理"
+                      : "等待更新"}{" "}
+                  · 图谱待刷新
+                  {operation.maintenance.find(
+                    (job) => job.kind === "wiki.refresh",
+                  )?.reason && (
+                    <details>
+                      <summary>Wiki 未完成的原因</summary>
+                      <p>
+                        {
+                          operation.maintenance.find(
+                            (job) => job.kind === "wiki.refresh",
+                          )?.reason
+                        }
+                      </p>
+                      <p>
+                        原文仍可检索；请修订来源或在维护重试功能可用后重新处理。
+                      </p>
+                    </details>
+                  )}
+                </span>
               )}
             </li>
           ))}

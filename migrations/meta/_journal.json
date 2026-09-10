@@ -57,6 +57,41 @@
       "when": 1788998400007,
       "tag": "0007_identity_identifiers",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1788998400008,
+      "tag": "0008_wiki",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788998400009,
+      "tag": "0009_wiki_routing",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788998400010,
+      "tag": "0010_wiki_navigation",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1788998400011,
+      "tag": "0011_wiki_search",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1788998400012,
+      "tag": "0012_wiki_decisions",
+      "breakpoints": true
     }
   ]
 }

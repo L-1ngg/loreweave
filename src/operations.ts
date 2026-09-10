@@ -65,12 +65,16 @@ export class Operations {
   ): Promise<void> {
     await tx`INSERT INTO knowledge_jobs(id,operation_id,kind,payload,job_key) VALUES(${crypto.randomUUID()},${operationId},${kind},${tx.json(payload as postgres.JSONValue)},${jobKey})`;
   }
-  async claim(kinds: string[], leaseMs = 60000): Promise<Job | undefined> {
+  async claim(
+    kinds: string[],
+    leaseMs = 60000,
+    organizationId?: string,
+  ): Promise<Job | undefined> {
     const [row] = await this
       .sql`UPDATE knowledge_jobs SET state='running', attempt=attempt+1, fence=fence+1,
       lease_until=clock_timestamp()+${leaseMs}*interval '1 millisecond'
-      WHERE id=(SELECT id FROM knowledge_jobs WHERE kind IN ${this.sql(kinds)} AND
-      (state IN ('queued','retry_wait') OR (state='running' AND lease_until<clock_timestamp()))
+      WHERE id=(SELECT id FROM knowledge_jobs WHERE kind IN ${this.sql(kinds)} AND (${organizationId ?? null}::uuid IS NULL OR operation_id IN (SELECT id FROM knowledge_operations WHERE organization_id=${organizationId ?? null})) AND
+      ((state='queued' OR (state='retry_wait' AND kind NOT LIKE 'wiki.%')) OR (state='running' AND lease_until<clock_timestamp()))
       ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING *`;
     return row
       ? {
@@ -89,16 +93,38 @@ export class Operations {
     state: JobState = "succeeded",
   ): Promise<void> {
     await this.sql.begin(async (tx) => {
-      const [row] =
-        await tx`SELECT id FROM knowledge_jobs WHERE id=${job.id} AND fence=${job.fence} AND state='running' AND lease_until>clock_timestamp() FOR UPDATE`;
-      if (!row) throw new Error("stale_worker");
+      await assertLease(tx, job);
       const outcome = (await effect(tx)) ?? state;
       const [completed] =
         await tx`UPDATE knowledge_jobs SET state=${outcome},lease_until=NULL WHERE id=${job.id} AND fence=${job.fence} AND state='running' AND lease_until>clock_timestamp() RETURNING id`;
       if (!completed) throw new Error("stale_worker");
     });
   }
+  async checkpoint<T>(
+    job: Job,
+    effect: (tx: Transaction) => Promise<T>,
+  ): Promise<T> {
+    return this.sql.begin(async (tx) => {
+      await assertLease(tx, job);
+      const result = await effect(tx);
+      await assertLease(tx, job);
+      return result;
+    }) as Promise<T>;
+  }
   async close() {
     await this.sql.end();
   }
+}
+
+async function assertLease(tx: Transaction, job: Job) {
+  const [row] =
+    await tx`SELECT id FROM knowledge_jobs WHERE id=${job.id} AND fence=${job.fence} AND state='running' AND lease_until>clock_timestamp() FOR UPDATE`;
+  if (!row) throw new Error("stale_worker");
+}
+
+/** Normalize domain records to the JSON values accepted by the PostgreSQL adapter. */
+export function jsonValue(value: unknown): postgres.JSONValue {
+  const encoded = JSON.stringify(value);
+  if (encoded === undefined) throw new Error("invalid_input");
+  return JSON.parse(encoded);
 }
