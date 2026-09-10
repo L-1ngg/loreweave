@@ -1,5 +1,7 @@
 import type { TrustedContext } from "../access.ts";
 export interface Evidence {
+  passageId?: string;
+  handle?: string;
   id: string;
   version: string;
   title: string;

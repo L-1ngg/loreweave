@@ -6,7 +6,9 @@ async function login(
   password = "browser-fixture-password",
 ) {
   await page.goto("/");
-  await page.getByLabel("组织").fill("browser-test");
+  await page
+    .getByLabel("组织")
+    .fill(process.env.LOREWEAVE_BROWSER_ORGANIZATION!);
   await page.getByLabel("用户名", { exact: true }).fill(username);
   await page.getByLabel("密码", { exact: true }).fill(password);
   await page.getByRole("button", { name: "登录", exact: true }).click();
@@ -14,24 +16,47 @@ async function login(
 }
 test.beforeEach(async ({ page }) => {
   await login(page);
+  const upload = await page.request.post("/api/attachments", {
+    multipart: {
+      file: {
+        name: "演示项目运维说明.md",
+        mimeType: "text/markdown",
+        buffer: Buffer.from("演示项目的应用日志保留 30 天。"),
+      },
+    },
+  });
+  const attachment = (await upload.json()) as { id: string };
+  const accepted = await page.request.post("/api/imports", {
+    data: { attachmentId: attachment.id, key: "browser-original-logs-v1" },
+  });
+  expect(accepted.status()).toBe(202);
+  const operation = (await accepted.json()) as { id: string };
+  await expect
+    .poll(async () => {
+      const response = await page.request.get(`/api/imports/${operation.id}`);
+      return ((await response.json()) as { source: string }).source;
+    })
+    .toBe("searchable");
 });
 
 test("browser question shows progress, a cited reviewed answer and the original", async ({
   page,
 }) => {
   await page.goto("/");
-  await expect(page.getByText("本地演示资料")).toBeVisible();
+  await expect(page.getByText("本地开发验证")).toBeVisible();
   await page.getByLabel("问题").fill("项目日志保留多久？");
   await page.getByRole("button", { name: "提问", exact: true }).click();
   await expect(page.getByRole("status")).toContainText("回答完成");
   await expect(page.getByTestId("answer")).toContainText("30 天");
   await expect(page.getByTestId("answer")).not.toContainText("Exploration");
-  await page.getByRole("link", { name: "演示项目运维说明 · v1" }).click();
+  await page.getByRole("link", { name: /演示项目运维说明.md ·/ }).click();
   await expect(
-    page.getByRole("heading", { name: "演示项目运维说明" }),
+    page.getByRole("heading", { name: "演示项目运维说明.md" }),
   ).toBeVisible();
   await expect(
-    page.getByText("演示项目的应用日志保留 30 天。", { exact: true }),
+    page
+      .getByRole("article")
+      .getByText("演示项目的应用日志保留 30 天。", { exact: true }),
   ).toBeVisible();
 });
 
@@ -192,4 +217,17 @@ test("natural-language attachment import survives reload and malformed UTF-8 rep
   await expect(page.getByTestId(`import-${accepted.id}`)).toContainText(
     "invalid_encoding",
   );
+});
+
+test("unrelated questions expose an evidence gap and diagnostics instead of a definitive answer", async ({
+  page,
+}) => {
+  await page.getByLabel("问题").fill("2025 年营收金额是多少？");
+  await page.getByRole("button", { name: "提问", exact: true }).click();
+  await expect(page.getByRole("status")).toContainText("部分回答");
+  await expect(page.getByTestId("answer")).toContainText("未取得足够依据");
+  await page.getByText("开发诊断", { exact: true }).click();
+  await expect(
+    page.getByText('"embeddingRequests": 1', { exact: false }),
+  ).toBeVisible();
 });

@@ -120,7 +120,11 @@ export class PostgresConversations {
       if (current.settledAt) return current;
       const interrupted = current.reason?.endsWith("_interrupted");
       if (interrupted && !options.executionTerminated) return current;
-      if (!["answered", "canceled", "timed_out"].includes(current.status)) {
+      if (
+        !["answered", "partial", "canceled", "timed_out"].includes(
+          current.status,
+        )
+      ) {
         current.reason = interrupted
           ? current.reason!
           : ["finalizing", "refreshing"].includes(current.status)

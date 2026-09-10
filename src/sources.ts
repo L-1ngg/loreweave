@@ -8,6 +8,16 @@ import {
 } from "./markdown.ts";
 import { lexicalText } from "./indexing.ts";
 import { validateEmbeddings, type EmbeddingAdapter } from "./embeddings.ts";
+export interface SourceCandidate {
+  documentId: string;
+  version: string;
+  passageId: string;
+  title: string;
+  text: string;
+  headingPath: string[];
+  start: number;
+  end: number;
+}
 export interface ImportInput {
   key: string;
   filename: string;
@@ -305,7 +315,153 @@ export class SourceService {
     return this.operations
       .sql`SELECT r.id,r.passage_id,r.chunk_text,r.lexical_text,r.embedding::text,v.id AS version_id,d.id AS document_id FROM source_search_records r JOIN source_passages p ON p.id=r.passage_id JOIN source_versions v ON v.id=p.version_id JOIN source_documents d ON d.active_version_id=v.id WHERE d.organization_id=${context.organizationId} AND (${projectId ?? null}::uuid IS NULL OR d.project_id IS NULL OR d.project_id=${projectId ?? null})`;
   }
+  async surroundings(
+    token: string,
+    items: SourceCandidate[],
+    signal: AbortSignal,
+  ): Promise<Map<string, SourceCandidate[]>> {
+    const context = await this.access.authorize(token, "read"),
+      result = new Map<string, SourceCandidate[]>();
+    if (!items.length) return result;
+    const refs = this.operations.sql.json(
+      items.map((item) => ({ version: item.version, passage: item.passageId })),
+    );
+    const query = this.operations
+      .sql`SELECT focus.id AS focus_id,d.id AS document_id,v.id AS version,p.id AS passage_id,v.filename,p.original_text,p.heading_path,p.start_offset,p.end_offset
+      FROM jsonb_to_recordset(${refs}::jsonb) AS ref(version uuid,passage uuid)
+      JOIN source_passages focus ON focus.id=ref.passage AND focus.version_id=ref.version
+      JOIN source_passages p ON p.version_id=focus.version_id AND (p.ordinal<3 OR p.ordinal BETWEEN focus.ordinal-1 AND focus.ordinal+1)
+      JOIN source_versions v ON v.id=p.version_id JOIN source_documents d ON d.active_version_id=v.id
+      WHERE d.organization_id=${context.organizationId} ORDER BY focus.id,p.ordinal`;
+    const cancel = () => query.cancel();
+    signal.addEventListener("abort", cancel, { once: true });
+    try {
+      signal.throwIfAborted();
+      const rows = await query;
+      signal.throwIfAborted();
+      for (const row of rows) {
+        const id = String(row.focus_id);
+        const group = result.get(id) ?? [];
+        group.push(sourceCandidate(row));
+        result.set(id, group);
+      }
+      return result;
+    } finally {
+      signal.removeEventListener("abort", cancel);
+    }
+  }
+  async validateReferences(
+    token: string,
+    items: SourceCandidate[],
+  ): Promise<{ valid: boolean; current: boolean; checkedAt: string }> {
+    const context = await this.access.authorize(token, "read");
+    if (!items.length)
+      return {
+        valid: true,
+        current: true,
+        checkedAt: new Date().toISOString(),
+      };
+    const references = this.operations.sql.json(
+      items.map((item) => ({ version: item.version, passage: item.passageId })),
+    );
+    const rows = await this.operations
+      .sql`SELECT p.id,p.version_id,p.original_text,p.heading_path,p.start_offset,p.end_offset,v.document_id,v.filename,d.active_version_id,statement_timestamp() AS checked_at
+      FROM jsonb_to_recordset(${references}::jsonb) AS ref(version uuid,passage uuid)
+      JOIN source_passages p ON p.id=ref.passage AND p.version_id=ref.version
+      JOIN source_versions v ON v.id=p.version_id JOIN source_documents d ON d.id=v.document_id
+      WHERE d.organization_id=${context.organizationId}`;
+    const valid =
+      rows.length === items.length &&
+      items.every((item) =>
+        rows.some(
+          (row) =>
+            row.id === item.passageId &&
+            row.version_id === item.version &&
+            row.document_id === item.documentId &&
+            row.filename === item.title &&
+            row.original_text === item.text &&
+            Number(row.start_offset) === item.start &&
+            Number(row.end_offset) === item.end &&
+            JSON.stringify(row.heading_path) ===
+              JSON.stringify(item.headingPath),
+        ),
+      );
+    return {
+      valid,
+      current:
+        valid && rows.every((row) => row.active_version_id === row.version_id),
+      checkedAt:
+        rows[0]?.checked_at instanceof Date
+          ? rows[0].checked_at.toISOString()
+          : new Date().toISOString(),
+    };
+  }
+  async candidates(
+    token: string,
+    input: {
+      question: string;
+      projectId?: string;
+      signal: AbortSignal;
+      beforeEmbedding?: () => Promise<void>;
+    },
+  ): Promise<{ lexical: SourceCandidate[]; vector: SourceCandidate[] }> {
+    const context = await this.access.authorize(token, "read", input.projectId);
+    input.signal.throwIfAborted();
+    await input.beforeEmbedding?.();
+    input.signal.throwIfAborted();
+    const vectors = await this.embeddings.embed([input.question], input.signal);
+    validateEmbeddings(vectors, 1, this.embeddings.dimensions);
+    input.signal.throwIfAborted();
+    const query = lexicalText(input.question)
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((term) => `'${term.replaceAll("'", "''")}'`)
+      .join(" | ");
+    const base = this.operations
+      .sql`SELECT d.id AS document_id,v.id AS version,p.id AS passage_id,v.filename,p.original_text,p.heading_path,p.start_offset,p.end_offset,
+      r.lexical @@ to_tsquery('simple',${query}) AS lexical_match,
+      ts_rank_cd(r.lexical,to_tsquery('simple',${query})) AS lexical_score,
+      CASE WHEN v.embedding_profile=${this.embeddings.profile} AND v.dimensions=${this.embeddings.dimensions} THEN r.embedding <=> ${JSON.stringify(vectors[0])}::vector ELSE NULL END AS distance
+      FROM source_search_records r JOIN source_passages p ON p.id=r.passage_id JOIN source_versions v ON v.id=p.version_id JOIN source_documents d ON d.active_version_id=v.id
+      WHERE d.organization_id=${context.organizationId} AND (${input.projectId ?? null}::uuid IS NULL OR d.project_id IS NULL OR d.project_id=${input.projectId ?? null})`;
+    const lexicalQuery = this.operations
+      .sql`WITH candidates AS (${base}), passages AS (SELECT DISTINCT ON(passage_id) * FROM candidates WHERE lexical_match ORDER BY passage_id,lexical_score DESC) SELECT * FROM passages ORDER BY lexical_score DESC,passage_id LIMIT 50`;
+    const vectorQuery = this.operations
+      .sql`WITH candidates AS (${base}), passages AS (SELECT DISTINCT ON(passage_id) * FROM candidates WHERE distance IS NOT NULL ORDER BY passage_id,distance) SELECT * FROM passages ORDER BY distance,passage_id LIMIT 50`;
+    const cancel = () => {
+      lexicalQuery.cancel();
+      vectorQuery.cancel();
+    };
+    input.signal.addEventListener("abort", cancel, { once: true });
+    try {
+      input.signal.throwIfAborted();
+      const results = await Promise.allSettled([lexicalQuery, vectorQuery]);
+      const failure = results.find((result) => result.status === "rejected");
+      if (failure?.status === "rejected") throw failure.reason;
+      const lexical = results[0].status === "fulfilled" ? results[0].value : [],
+        vector = results[1].status === "fulfilled" ? results[1].value : [];
+      input.signal.throwIfAborted();
+
+      return {
+        lexical: lexical.map(sourceCandidate),
+        vector: vector.map(sourceCandidate),
+      };
+    } finally {
+      input.signal.removeEventListener("abort", cancel);
+    }
+  }
   async close() {
     await this.operations.close();
   }
 }
+
+const sourceCandidate = (row: Record<string, unknown>): SourceCandidate => ({
+  documentId: String(row.document_id),
+  version: String(row.version),
+  passageId: String(row.passage_id),
+  title: String(row.filename),
+  text: String(row.original_text),
+  headingPath: row.heading_path as string[],
+  start: Number(row.start_offset),
+  end: Number(row.end_offset),
+});

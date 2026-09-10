@@ -1,3 +1,6 @@
+import { scriptedDraft, scriptedReview } from "./evidence-model.ts";
+import type { EvidencePack } from "../evidence.ts";
+import type { Draft } from "../answer-validation.ts";
 /** Local, credential-free scripted HTTP provider for bootstrap development only. */
 export interface ScriptedOptions {
   toolArguments?: Record<string, unknown>;
@@ -18,8 +21,9 @@ export function startScriptedProvider(options: ScriptedOptions = {}) {
         system?: unknown;
         messages?: Array<{ role: string; content: unknown }>;
         phase?: string;
+        pack?: EvidencePack;
         evidence?: { text: string };
-        draft?: { text: string };
+        draft?: Draft;
       };
       const summary = JSON.stringify(body.system ?? "").includes(
         "You are a context summarization assistant.",
@@ -28,6 +32,10 @@ export function startScriptedProvider(options: ScriptedOptions = {}) {
       options.onRequest?.(body.phase ?? "task");
       const delay = options.delays?.[body.phase ?? "task"] ?? options.delayMs;
       if (delay) await Bun.sleep(delay);
+      if (body.pack && body.phase === "generation")
+        return Response.json(scriptedDraft(body.pack));
+      if (body.pack && body.phase === "review" && body.draft)
+        return Response.json(scriptedReview(body.pack, body.draft));
       if (body.phase === "generation")
         return Response.json({ text: `证据表明：${body.evidence?.text} [1]` });
       if (body.phase === "review")

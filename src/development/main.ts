@@ -1,3 +1,4 @@
+import { EvidenceService } from "../evidence.ts";
 import { SourceService } from "../sources.ts";
 import { ControlledEmbeddings } from "./embeddings.ts";
 import { AccessService } from "../access.ts";
@@ -66,6 +67,7 @@ try {
     providerUrl: provider.url,
     sources,
     conversations,
+    evidence: new EvidenceService(imports),
     imports,
     access,
   });

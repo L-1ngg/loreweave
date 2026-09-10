@@ -21,7 +21,8 @@
     "reconcile:run": "bun --no-env-file scripts/reconcile-run.ts",
     "bootstrap:admin": "bun --no-env-file scripts/bootstrap-admin.ts",
     "test:access": "bun --no-env-file test tests/access.test.ts",
-    "test:sources": "bun --no-env-file test tests/sources.test.ts"
+    "test:sources": "bun --no-env-file test tests/sources.test.ts",
+    "test:evidence": "bun --no-env-file test tests/evidence.test.ts"
   },
   "dependencies": {
     "@earendil-works/pi-ai": "0.85.1",

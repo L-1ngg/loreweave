@@ -1,6 +1,7 @@
 import { defineConfig } from "@playwright/test";
 if (!process.env.TEST_DATABASE_URL)
   throw new Error("TEST_DATABASE_URL must point to an isolated test database");
+process.env.LOREWEAVE_BROWSER_ORGANIZATION ??= `browser-${crypto.randomUUID()}`;
 export default defineConfig({
   testDir: "./tests/browser",
   workers: 1,
@@ -9,7 +10,7 @@ export default defineConfig({
     command: "bun run dev",
     env: {
       DATABASE_URL: process.env.TEST_DATABASE_URL,
-      LOREWEAVE_ORGANIZATION: "browser-test",
+      LOREWEAVE_ORGANIZATION: process.env.LOREWEAVE_BROWSER_ORGANIZATION,
       LOREWEAVE_BOOTSTRAP_USERNAME: "browser-admin",
       LOREWEAVE_BOOTSTRAP_PASSWORD: "browser-fixture-password",
     },

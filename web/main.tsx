@@ -14,6 +14,7 @@ const labels: Record<RunSnapshot["status"], string> = {
   finalizing: "正在生成并审核答案",
   refreshing: "来源已更新，正在重新取证",
   answered: "回答完成",
+  partial: "部分回答，仍有证据缺口",
   failed: "未能完成有依据的回答",
   timed_out: "时间预算已用完",
   canceled: "已取消",
@@ -134,9 +135,10 @@ function App({ projectId }: { projectId: string }) {
         <p>查阅知识、理解关联，并沿着引用核对每一个结论。</p>
       </header>
       <aside>
-        <strong>本地演示资料</strong>
+        <strong>本地开发验证</strong>
         <p>
-          当前使用一份示例运维说明和预设模型响应，演示查询、引用和取消流程。可以试问：“项目日志保留多久？”
+          当前检索已导入的
+          Markdown，并使用受控向量与摘录式模型响应验证流程。导入资料后即可查询；此模式不代表真实模型质量。
         </p>
       </aside>
       <SourceImports
@@ -200,8 +202,12 @@ function App({ projectId }: { projectId: string }) {
               <p data-testid="answer">{run.answer.text}</p>
               <ul>
                 {run.answer.citations.map((source) => (
-                  <li key={`${source.id}:${source.version}`}>
-                    <a href={`/sources/${source.version}`}>
+                  <li
+                    key={`${source.id}:${source.version}:${source.passageId ?? ""}`}
+                  >
+                    <a
+                      href={`/sources/${source.version}${source.passageId ? `#${source.passageId}` : ""}`}
+                    >
                       {source.title} · {source.version}
                     </a>
                   </li>
@@ -209,12 +215,29 @@ function App({ projectId }: { projectId: string }) {
               </ul>
             </>
           )}
+          {run.diagnostics && (
+            <details>
+              <summary>开发诊断</summary>
+              <pre>
+                {JSON.stringify(
+                  { counts: run.counts, ...run.diagnostics },
+                  null,
+                  2,
+                )}
+              </pre>
+            </details>
+          )}
           {run.status === "failed" && (
             <p>
               {run.reason?.endsWith("_interrupted") ||
               run.reason === "history_requires_reconciliation"
                 ? "此前执行已中断或历史结果不完整，需完成对账后继续；系统不会自动重跑。"
-                : "本次没有得到通过审核的答案，请重试或补充资料。"}
+                : run.reason === "provider_unavailable" ||
+                    run.reason === "retrieval_unavailable"
+                  ? "检索或模型服务暂不可用，本次没有发布答案。"
+                  : run.reason === "source_changed"
+                    ? "来源在回答期间发生变化，本次没有发布过时答案。"
+                    : "本次没有得到通过审核的答案，请重试或补充资料。"}
             </p>
           )}
         </section>
