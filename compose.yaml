@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.2-pg17
+    environment:
+      POSTGRES_USER: loreweave
+      POSTGRES_PASSWORD: loreweave_local
+      POSTGRES_DB: loreweave
+    ports:
+      - "127.0.0.1:45432:5432"
+    volumes:
+      - loreweave_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U loreweave -d loreweave"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  loreweave_postgres:

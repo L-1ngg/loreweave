@@ -11,8 +11,8 @@ import { resolveRetryPolicy, validateRequestLimits, type CompactionResult, type 
 import { randomUUID } from "node:crypto";
 
 export interface CreateAgentOptions extends InputQueueOptions {
-	/** Host admission runs synchronously before each task/summary provider request. */
-	beforeModelRequest?: (request: { kind: "task" | "summary"; signal?: AbortSignal }) => void;
+	/** Host admission completes before each task/summary provider request. */
+	beforeModelRequest?: (request: { kind: "task" | "summary"; signal?: AbortSignal }) => void | Promise<void>;
 	toolHooks?: ToolHooks;
 	/** Shared task/summary routing identity; supply it to retain affinity across reopening. */
 	sessionId?: string;

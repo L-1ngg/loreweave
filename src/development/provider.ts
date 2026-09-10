@@ -45,11 +45,20 @@ export function startScriptedProvider(options: ScriptedOptions = {}) {
           },
           { status: 529 },
         );
+      const messages = body.messages ?? [];
+      const questionIndex = messages.findLastIndex(
+        (message) =>
+          message.role === "user" &&
+          (typeof message.content === "string" ||
+            (Array.isArray(message.content) &&
+              message.content.some((block) => block.type === "text"))),
+      );
       const tool =
         !summary &&
-        count < 5 &&
         (options.repeatTool ||
-          !JSON.stringify(body.messages).includes('"tool_result"'));
+          !JSON.stringify(messages.slice(Math.max(0, questionIndex))).includes(
+            '"tool_result"',
+          ));
       const events = [
         {
           type: "message_start",

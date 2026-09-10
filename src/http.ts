@@ -38,10 +38,19 @@ export function createApp(
       return context.json({ error: "invalid_input" }, 400);
     if ("complex" in input && typeof input.complex !== "boolean")
       return context.json({ error: "invalid_input" }, 400);
+    if (
+      "conversationId" in input &&
+      (typeof input.conversationId !== "string" ||
+        !/^[0-9a-f-]{36}$/i.test(input.conversationId))
+    )
+      return context.json({ error: "invalid_input" }, 400);
     try {
       return context.json(
-        host.start({
+        await host.start({
           question: input.question,
+          ...("conversationId" in input
+            ? { conversationId: input.conversationId as string }
+            : {}),
           complex: "complex" in input && input.complex === true,
         }),
         202,
@@ -50,25 +59,32 @@ export function createApp(
       return context.json({ error: "unavailable" }, 503);
     }
   });
-  app.get("/api/runs/:id", (context) => {
+  app.get("/api/conversations/:id", async (context) => {
     try {
-      return context.json(host.get(context.req.param("id")));
+      return context.json(await host.conversation(context.req.param("id")));
     } catch {
       return context.json({ error: "not_found" }, 404);
     }
   });
-  app.post("/api/runs/:id/cancel", (context) => {
+  app.get("/api/runs/:id", async (context) => {
     try {
-      host.cancel(context.req.param("id"));
-      return context.json(host.get(context.req.param("id")));
+      return context.json(await host.get(context.req.param("id")));
     } catch {
       return context.json({ error: "not_found" }, 404);
     }
   });
-  app.get("/api/runs/:id/events", (context) => {
+  app.post("/api/runs/:id/cancel", async (context) => {
+    try {
+      await host.cancel(context.req.param("id"));
+      return context.json(await host.get(context.req.param("id")));
+    } catch {
+      return context.json({ error: "not_found" }, 404);
+    }
+  });
+  app.get("/api/runs/:id/events", async (context) => {
     const id = context.req.param("id");
     try {
-      host.get(id);
+      await host.get(id);
     } catch {
       return context.json({ error: "not_found" }, 404);
     }
@@ -77,7 +93,7 @@ export function createApp(
       return context.json({ error: "invalid_input" }, 400);
     return streamSSE(context, async (stream) => {
       while (!stream.aborted) {
-        for (const event of host.events(id, after)) {
+        for (const event of await host.events(id, after)) {
           await stream.writeSSE({
             id: String(event.sequence),
             event: event.type,
@@ -85,12 +101,15 @@ export function createApp(
           });
           after = event.sequence;
         }
-        if (host.get(id).settledAt) break;
+        if ((await host.get(id)).settledAt) {
+          const remaining = await host.events(id, after);
+          if (!remaining.length) break;
+        }
         await stream.sleep(10);
       }
     });
   });
-  app.get("/api/sources/:version", (context) => {
+  app.get("/api/sources/:version", async (context) => {
     const source = sources.version(context.req.param("version"));
     return source
       ? context.json(source)

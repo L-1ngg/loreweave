@@ -8,9 +8,9 @@ test("a knowledge turn returns a reviewed cited fixture answer, not Forge explor
   const sources = new FixtureSources();
   const host = new KnowledgeHost({ providerUrl: provider.url, sources });
   try {
-    const run = host.start({ question: "项目日志保留多久？" });
+    const run = await host.start({ question: "项目日志保留多久？" });
     await host.settled(run.id);
-    const answer = host.get(run.id);
+    const answer = await host.get(run.id);
     expect(answer.status).toBe("answered");
     expect(answer.answer?.text).toContain("30 天");
     expect(answer.answer?.text).not.toContain("Exploration");
@@ -40,12 +40,12 @@ test("cancel stops the model turn and exposes settlement separately from its out
     sources: new FixtureSources(),
   });
   try {
-    const run = host.start({ question: "取消这次查询" });
-    host.cancel(run.id);
-    expect(host.get(run.id).status).toBe("canceled");
+    const run = await host.start({ question: "取消这次查询" });
+    await host.cancel(run.id);
+    expect((await host.get(run.id)).status).toBe("canceled");
     await host.settled(run.id);
-    expect(host.get(run.id).settledAt).toBeDefined();
-    expect(host.get(run.id).answer).toBeUndefined();
+    expect((await host.get(run.id)).settledAt).toBeDefined();
+    expect((await host.get(run.id)).answer).toBeUndefined();
     expect(provider.calls).toHaveLength(0);
   } finally {
     await host.close();
@@ -61,12 +61,12 @@ test("the original deadline terminates slow final generation without unreviewed 
     timing: { ordinaryMs: 100, ordinaryReserveMs: 30 },
   });
   try {
-    const run = host.start({ question: "慢查询" });
+    const run = await host.start({ question: "慢查询" });
     await host.settled(run.id);
-    expect(host.get(run.id).status).toBe("timed_out");
-    expect(host.get(run.id).answer).toBeUndefined();
+    expect((await host.get(run.id)).status).toBe("timed_out");
+    expect((await host.get(run.id)).answer).toBeUndefined();
     expect(provider.calls.some((call) => call.phase === "review")).toBe(false);
-    expect(host.get(run.id).settledAt).toBeDefined();
+    expect((await host.get(run.id)).settledAt).toBeDefined();
   } finally {
     await host.close();
     provider.stop();
@@ -86,9 +86,9 @@ test("a source change during final generation uses one remaining round and regen
   });
   const host = new KnowledgeHost({ providerUrl: provider.url, sources });
   try {
-    const run = host.start({ question: "项目日志保留多久？" });
+    const run = await host.start({ question: "项目日志保留多久？" });
     await host.settled(run.id);
-    const answer = host.get(run.id);
+    const answer = await host.get(run.id);
     expect(answer.status).toBe("answered");
     expect(answer.answer?.text).toContain("60 天");
     expect(answer.answer?.citations[0]?.version).toBe("v2");
@@ -112,11 +112,11 @@ test("a rejected draft is regenerated and reviewed within the same finalization 
     sources: new FixtureSources(),
   });
   try {
-    const run = host.start({ question: "检查回答" });
+    const run = await host.start({ question: "检查回答" });
     await host.settled(run.id);
-    expect(host.get(run.id).status).toBe("answered");
-    expect(host.get(run.id).counts.generation).toBe(2);
-    expect(host.get(run.id).counts.review).toBe(2);
+    expect((await host.get(run.id)).status).toBe("answered");
+    expect((await host.get(run.id)).counts.generation).toBe(2);
+    expect((await host.get(run.id)).counts.review).toBe(2);
   } finally {
     await host.close();
     provider.stop();
@@ -130,14 +130,16 @@ test("five active runs and ten queued runs bound development admission", async (
     sources: new FixtureSources(),
   });
   try {
-    const runs = Array.from({ length: 15 }, () =>
-      host.start({ question: "排队查询" }),
+    const runs = [];
+    for (let i = 0; i < 15; i++)
+      runs.push(await host.start({ question: "排队查询" }));
+    expect((await host.get(runs[5]!.id)).status).toBe("queued");
+    await expect(host.start({ question: "超出队列" })).rejects.toThrow(
+      "unavailable",
     );
-    expect(host.get(runs[5]!.id).status).toBe("queued");
-    expect(() => host.start({ question: "超出队列" })).toThrow("unavailable");
-    host.cancel(runs[5]!.id);
+    await host.cancel(runs[5]!.id);
     await host.settled(runs[5]!.id);
-    expect(host.get(runs[5]!.id).status).toBe("canceled");
+    expect((await host.get(runs[5]!.id)).status).toBe("canceled");
   } finally {
     await host.close();
     provider.stop();
@@ -154,11 +156,11 @@ test("repair and exploration together never exceed seven actual model requests",
     sources: new FixtureSources(),
   });
   try {
-    const run = host.start({ question: "继续检查" });
+    const run = await host.start({ question: "继续检查" });
     await host.settled(run.id);
-    expect(host.get(run.id).status).toBe("failed");
-    expect(host.get(run.id).answer).toBeUndefined();
-    expect(host.get(run.id).counts).toEqual({
+    expect((await host.get(run.id)).status).toBe("failed");
+    expect((await host.get(run.id)).answer).toBeUndefined();
+    expect((await host.get(run.id)).counts).toEqual({
       exploration: 3,
       generation: 2,
       review: 2,
@@ -180,18 +182,20 @@ test("a second source change cannot obtain another refresh or publish stale text
   });
   const host = new KnowledgeHost({ providerUrl: provider.url, sources });
   try {
-    const run = host.start({ question: "日志规则" });
+    const run = await host.start({ question: "日志规则" });
     await host.settled(run.id);
-    expect(host.get(run.id).status).toBe("failed");
-    expect(host.get(run.id).answer).toBeUndefined();
-    expect(host.get(run.id).counts).toEqual({
+    expect((await host.get(run.id)).status).toBe("failed");
+    expect((await host.get(run.id)).answer).toBeUndefined();
+    expect((await host.get(run.id)).counts).toEqual({
       exploration: 2,
       generation: 2,
       review: 0,
       retrieval: 2,
     });
     expect(
-      host.events(run.id).filter((event) => event.run.status === "refreshing"),
+      (await host.events(run.id)).filter(
+        (event) => event.run.status === "refreshing",
+      ),
     ).toHaveLength(1);
   } finally {
     await host.close();
@@ -212,17 +216,16 @@ test("source change during review consumes the remaining pair without restarting
   });
   const host = new KnowledgeHost({ providerUrl: provider.url, sources });
   try {
-    const run = host.start({ question: "日志规则" });
+    const run = await host.start({ question: "日志规则" });
     await host.settled(run.id);
-    expect(host.get(run.id).answer?.citations[0]?.version).toBe("v2");
-    expect(host.get(run.id).counts).toEqual({
+    expect((await host.get(run.id)).answer?.citations[0]?.version).toBe("v2");
+    expect((await host.get(run.id)).counts).toEqual({
       exploration: 2,
       generation: 2,
       review: 2,
       retrieval: 2,
     });
-    const phases = host
-      .events(run.id)
+    const phases = (await host.events(run.id))
       .filter((event) => event.type === "state")
       .map((event) => event.run.status);
     expect(phases).toEqual([
@@ -254,11 +257,11 @@ test("canceling in-flight final generation never starts support review", async (
     sources: new FixtureSources(),
   });
   try {
-    const run = host.start({ question: "日志规则" });
+    const run = await host.start({ question: "日志规则" });
     await generation;
-    host.cancel(run.id);
+    await host.cancel(run.id);
     await host.settled(run.id);
-    expect(host.get(run.id).status).toBe("canceled");
+    expect((await host.get(run.id)).status).toBe("canceled");
     expect(provider.calls.some((call) => call.phase === "review")).toBe(false);
   } finally {
     await host.close();

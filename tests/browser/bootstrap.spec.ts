@@ -27,3 +27,29 @@ test("browser can cancel an active question", async ({ page }) => {
   await expect(page.getByRole("status")).toContainText("已取消");
   await expect(page.getByTestId("answer")).toHaveCount(0);
 });
+
+test("reloading reconnects to the same PostgreSQL run without submitting again", async ({
+  page,
+}) => {
+  let submissions = 0;
+  page.on("request", (request) => {
+    if (
+      request.method() === "POST" &&
+      new URL(request.url()).pathname === "/api/runs"
+    )
+      submissions++;
+  });
+  await page.goto("/");
+  await page.getByLabel("问题").fill("断线后继续查看日志规则");
+  await page.getByRole("button", { name: "提问", exact: true }).click();
+  await expect(page).toHaveURL(/conversation=/);
+  const conversationUrl = page.url();
+  await page.reload();
+  await expect(page.getByRole("status")).toContainText("回答完成");
+  await expect(page.getByTestId("answer")).toContainText("30 天");
+  expect(page.url()).toBe(conversationUrl);
+  expect(submissions).toBe(1);
+  await page.reload();
+  await expect(page.getByTestId("answer")).toContainText("30 天");
+  expect(submissions).toBe(1);
+});

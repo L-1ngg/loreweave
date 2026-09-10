@@ -5,5 +5,12 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
     "noEmit": true
   },
-  "include": ["src", "web", "tests", "vite.config.ts", "playwright.config.ts"]
+  "include": [
+    "src",
+    "web",
+    "tests",
+    "vite.config.ts",
+    "playwright.config.ts",
+    "scripts"
+  ]
 }

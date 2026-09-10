@@ -27,7 +27,7 @@
     },
     "packages/core/src/agent.ts": {
       "upstreamSha256": "057e8d8f3590d91003276151e4bf364c6e3ac3067b6fd025de446dfa2b3c3b5e",
-      "patchedSha256": "33ec119fbc14cb5d2fccc527b0482584c50f8dfc3f9d7de01ad8eaf083760176"
+      "patchedSha256": "982449327a6f35a68da41727dcdf5f42828896105cebf19e3c13d033cfb8f2fe"
     },
     "packages/core/src/config.ts": {
       "upstreamSha256": "2eb928b3c38416b79a0f3f94ceaf1457338c7a65cde057509bee403b0d105453"
@@ -79,7 +79,7 @@
     },
     "packages/core/src/pi-port.ts": {
       "upstreamSha256": "9f087ed3087491c85aabb532ace167b7cb34b713b49dc99b02d73a09349d29c8",
-      "patchedSha256": "d5a2581f4c0d1e732326c08e5f58b6cf097e8bb34fce0abbd3cd98d3709a8c39"
+      "patchedSha256": "a698fbf59d07aa9d56a8f2e43b619c0e998b63181e0f64079f5ad5b1325f8bda"
     },
     "packages/core/src/request-bus.ts": {
       "upstreamSha256": "550b45faa02542b762d88f1a9f9fcda43452021a9a11830ac9ea48a7ac56dd72"

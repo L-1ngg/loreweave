@@ -10,9 +10,10 @@ The root workspace lockfile pins dependency resolution; use `bun install --froze
 ## Local patch 0001
 
 [Request admission](local-patches/0001-request-admission.patch) adds an optional
-synchronous `beforeModelRequest({ kind, signal })` host hook to the public SDK.
+asynchronous-compatible `beforeModelRequest({ kind, signal })` host hook to the public SDK.
 It wraps the shared model stream before dispatch for tasks, retries and summaries.
-Returning admits the request; throwing denies it. Low-level scripted test ports
+Resolving admits the request; throwing or rejecting denies it. Cancellation is
+rechecked after admission settles, before any provider dispatch. Low-level scripted test ports
 remain upstream behavior. No knowledge policy is embedded in vendor code.
 
 The host uses one cumulative budget; it does not infer admission from events or
@@ -20,7 +21,7 @@ reset counts when finalization begins. SDK internal provider retries remain zero
 the Forge retry driver re-enters this hook for each attempt.
 
 `tests/sdk-admission.test.ts` exercises actual loopback HTTP dispatch, retry and
-summary admission. `bun scripts/check-vendor.mjs` detects unrecorded source edits.
+summary admission, including cancellation while durable admission is pending. `bun scripts/check-vendor.mjs` detects unrecorded source edits.
 Keep the patch while the pinned SDK lacks an equivalent pre-dispatch seam; remove
 it only after pinning a reviewed upstream version and replaying these tests.
 Upstream package documentation describes the original Forge repository layout and

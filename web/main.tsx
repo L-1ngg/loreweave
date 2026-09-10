@@ -20,8 +20,58 @@ function App() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const stream = useRef<EventSource | null>(null);
-  useEffect(() => () => stream.current?.close(), []);
-  const active = submitting || (run && !run.settledAt);
+  const conversationId = useRef(
+    new URLSearchParams(window.location.search).get("conversation"),
+  );
+  const [history, setHistory] = useState<RunSnapshot[]>([]);
+  const [loading, setLoading] = useState(Boolean(conversationId.current));
+  function attach(accepted: RunSnapshot) {
+    stream.current?.close();
+    setRun(accepted);
+    if (accepted.settledAt) return;
+    const events = new EventSource(`/api/runs/${accepted.id}/events`);
+    stream.current = events;
+    for (const type of ["state", "progress", "result", "settled"])
+      events.addEventListener(type, (message) => {
+        const event = JSON.parse(
+          (message as MessageEvent<string>).data,
+        ) as RunEvent;
+        setRun(event.run);
+        if (event.type === "settled") events.close();
+      });
+    events.onerror = () =>
+      setError("连接暂时中断，正在尝试恢复；查询仍由服务器处理。");
+    events.onopen = () => setError("");
+  }
+  useEffect(() => {
+    const controller = new AbortController();
+    if (conversationId.current) {
+      void fetch(
+        `/api/conversations/${encodeURIComponent(conversationId.current)}`,
+        { signal: controller.signal },
+      )
+        .then(async (response) => {
+          if (!response.ok)
+            throw new Error("无法恢复会话，请检查链接或稍后重试。");
+          const data = (await response.json()) as { runs: RunSnapshot[] };
+          if (controller.signal.aborted) return;
+          setHistory(data.runs);
+          const latest = data.runs.at(-1);
+          if (latest) attach(latest);
+        })
+        .catch((error) => {
+          if (!controller.signal.aborted) setError(String(error.message));
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) setLoading(false);
+        });
+    }
+    return () => {
+      controller.abort();
+      stream.current?.close();
+    };
+  }, []);
+  const active = loading || submitting || (run && !run.settledAt);
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setError("");
@@ -32,25 +82,26 @@ function App() {
       const response = await fetch("/api/runs", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({
+          question,
+          ...(conversationId.current
+            ? { conversationId: conversationId.current }
+            : {}),
+        }),
       });
       if (!response.ok) throw new Error("暂时无法接受查询，请稍后重试。");
       const accepted = (await response.json()) as RunSnapshot;
-      setRun(accepted);
-      const events = new EventSource(`/api/runs/${accepted.id}/events`);
-      stream.current = events;
-      for (const type of ["state", "progress", "result", "settled"])
-        events.addEventListener(type, (message) => {
-          const event = JSON.parse(
-            (message as MessageEvent<string>).data,
-          ) as RunEvent;
-          setRun(event.run);
-          if (event.type === "settled") events.close();
-        });
-      events.onerror = () => {
-        setError("连接暂时中断，正在尝试恢复；查询仍由服务器处理。");
-      };
-      events.onopen = () => setError("");
+      conversationId.current = accepted.conversationId;
+      window.history.replaceState(
+        null,
+        "",
+        `/?conversation=${accepted.conversationId}`,
+      );
+      setHistory((previous) => [
+        ...previous.filter((item) => item.id !== accepted.id),
+        accepted,
+      ]);
+      attach(accepted);
     } catch (error) {
       setError(error instanceof Error ? error.message : "查询失败");
     } finally {
@@ -101,6 +152,29 @@ function App() {
           )}
         </div>
       </form>
+      {loading && <p>正在恢复会话</p>}
+      {history.length > 1 && (
+        <nav aria-label="会话历史">
+          {history
+            .filter((item) => item.id !== run?.id)
+            .map((item, index) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => {
+                  void fetch(`/api/runs/${item.id}`)
+                    .then(async (response) => {
+                      if (!response.ok) throw new Error("无法读取历史记录");
+                      attach((await response.json()) as RunSnapshot);
+                    })
+                    .catch((error) => setError(String(error.message)));
+                }}
+              >
+                查看第 {index + 1} 轮
+              </button>
+            ))}
+        </nav>
+      )}
       {error && <p role="alert">{error}</p>}
       {run && (
         <section className="result">
@@ -125,7 +199,12 @@ function App() {
             </>
           )}
           {run.status === "failed" && (
-            <p>本次没有得到通过审核的答案，请重试或补充资料。</p>
+            <p>
+              {run.reason?.endsWith("_interrupted") ||
+              run.reason === "history_requires_reconciliation"
+                ? "此前执行已中断或历史结果不完整，需完成对账后继续；系统不会自动重跑。"
+                : "本次没有得到通过审核的答案，请重试或补充资料。"}
+            </p>
           )}
         </section>
       )}

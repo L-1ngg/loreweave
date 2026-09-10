@@ -135,3 +135,47 @@ test("SDK summaries acquire the same admission hook before reaching the provider
     provider.stop();
   }
 });
+
+test("SDK waits for durable asynchronous admission and rechecks cancellation before dispatch", async () => {
+  const provider = startScriptedProvider();
+  let release!: () => void;
+  let entered!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const started = new Promise<void>((resolve) => {
+    entered = resolve;
+  });
+  const agent = await createAgent({
+    provider: "anthropic",
+    model: "claude-sonnet-4-5",
+    apiKey: "fixture-only",
+    baseUrl: provider.url,
+    cwd: process.cwd(),
+    systemPrompt: "Durable admission",
+    retry: { enabled: false, maxRetries: 0 },
+    context: { enabled: false },
+    beforeModelRequest: async () => {
+      entered();
+      await gate;
+    },
+  });
+  try {
+    const consume = (async () => {
+      for await (const _event of agent.runTurn("Question")) {
+        /* consume */
+      }
+    })();
+    await started;
+    await Bun.sleep(20);
+    expect(provider.calls).toHaveLength(0);
+    agent.abort();
+    release();
+    await consume;
+    expect(provider.calls).toHaveLength(0);
+  } finally {
+    release();
+    await agent.dispose();
+    provider.stop();
+  }
+});

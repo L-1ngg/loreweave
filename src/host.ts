@@ -1,5 +1,14 @@
-import { createAgent, type Agent } from "@forge-agent/core/sdk";
+import {
+  createAgent,
+  type Agent,
+  type SessionState,
+} from "@forge-agent/core/sdk";
 import { FixtureSources, type Evidence } from "./development/sources.ts";
+
+import {
+  PostgresConversations,
+  type ConversationWriter,
+} from "./conversations.ts";
 
 type Phase = "exploration" | "generation" | "review";
 export type RunStatus =
@@ -13,12 +22,16 @@ export type RunStatus =
   | "timed_out";
 export interface RunSnapshot {
   id: string;
+  conversationId: string;
   status: RunStatus;
   counts: Record<Phase | "retrieval", number>;
   answer?: { text: string; citations: Evidence[]; validatedAt: string };
   reason?: string;
   settledAt?: string;
   refreshUsed?: boolean;
+  deadline: number;
+  draftId?: string;
+  supersededDraftIds?: string[];
 }
 export interface RunEvent {
   sequence: number;
@@ -29,6 +42,10 @@ export interface RunEvent {
 interface Run {
   snapshot: RunSnapshot;
   events: RunEvent[];
+  writer?: ConversationWriter;
+  persistence: Promise<void>;
+  claim?: Promise<void>;
+  storageFailed: boolean;
   done: Promise<void>;
   agent?: Agent;
   finish: () => void;
@@ -41,7 +58,13 @@ interface Run {
   retrievalCap: number;
   timer?: ReturnType<typeof setTimeout>;
 }
+export interface StartTurn {
+  question: string;
+  complex?: boolean;
+  conversationId?: string;
+}
 export interface HostOptions {
+  conversations?: PostgresConversations;
   providerUrl: string;
   sources: FixtureSources;
   timing?: {
@@ -57,49 +80,142 @@ export class KnowledgeHost {
   private runs = new Map<string, Run>();
   private queue: Run[] = [];
   private active = 0;
-  constructor(private readonly options: HostOptions) {}
-  start(input: { question: string; complex?: boolean }): RunSnapshot {
-    if (this.active >= 5 && this.queue.length >= 10)
-      throw new Error("unavailable");
-    const snapshot: RunSnapshot = {
-      id: crypto.randomUUID(),
-      status: "queued",
-      counts: { exploration: 0, generation: 0, review: 0, retrieval: 0 },
-    };
-    const milliseconds = input.complex
-      ? (this.options.timing?.complexMs ?? 60000)
-      : (this.options.timing?.ordinaryMs ?? 30000);
-    const reserve = input.complex
-      ? (this.options.timing?.complexReserveMs ?? 15000)
-      : (this.options.timing?.ordinaryReserveMs ?? 8000);
-    const deadline = Date.now() + milliseconds;
-    let finish!: () => void;
-    const done = new Promise<void>((resolve) => {
-      finish = resolve;
-    });
-    const run: Run = {
-      snapshot,
-      events: [],
-      done,
-      finish,
-      question: input.question,
-      active: false,
-      controller: new AbortController(),
-      deadline,
-      explorationDeadline: deadline - reserve,
-      retrievalCap: input.complex ? 3 : 2,
-    };
-    run.timer = setTimeout(() => this.stop(run, "timed_out"), milliseconds);
-    this.runs.set(snapshot.id, run);
-    this.publish(run, "state");
-    this.queue.push(run);
-    this.pump();
-    return structuredClone(snapshot);
+  private admitting = 0;
+  private starts = new Set<Promise<RunSnapshot>>();
+  private polling = false;
+  private pumping = false;
+  private closed = false;
+  private readonly poller: ReturnType<typeof setInterval>;
+  constructor(private readonly options: HostOptions) {
+    this.poller = setInterval(() => {
+      void this.poll().catch(() => {
+        for (const run of this.runs.values()) {
+          if (!run.snapshot.settledAt) this.fault(run);
+        }
+      });
+    }, 50);
+    this.poller.unref();
   }
-  get(id: string): RunSnapshot {
+  private async poll(): Promise<void> {
+    if (this.closed || this.polling) return;
+    this.polling = true;
+    try {
+      for (const run of this.runs.values()) {
+        if (
+          !run.active &&
+          !run.snapshot.settledAt &&
+          this.options.conversations
+        ) {
+          const current = await this.options.conversations.run(run.snapshot.id);
+          if (current.settledAt) {
+            run.snapshot = current;
+            run.controller.abort();
+            clearTimeout(run.timer);
+            this.queue = this.queue.filter((queued) => queued !== run);
+            run.finish();
+            continue;
+          }
+        }
+        if (
+          !run.snapshot.settledAt &&
+          this.options.conversations &&
+          (await this.options.conversations.cancellationRequested(
+            run.snapshot.id,
+          ))
+        )
+          this.stop(run, "canceled");
+      }
+      await this.pump();
+    } finally {
+      this.polling = false;
+    }
+  }
+  start(input: StartTurn): Promise<RunSnapshot> {
+    const task = this.startRun(input);
+    this.starts.add(task);
+    void task.finally(() => this.starts.delete(task)).catch(() => {});
+    return task;
+  }
+  private async startRun(input: StartTurn): Promise<RunSnapshot> {
+    if (this.closed) throw new Error("unavailable");
+    if (
+      [...this.runs.values()].filter((run) => !run.snapshot.settledAt).length +
+        this.admitting >=
+      15
+    )
+      throw new Error("unavailable");
+    this.admitting++;
+    try {
+      const startedAt = Date.now();
+      const snapshot: RunSnapshot = {
+        id: crypto.randomUUID(),
+        deadline: 0,
+        conversationId:
+          input.conversationId ??
+          (await this.options.conversations?.create())?.id ??
+          crypto.randomUUID(),
+        status: "queued",
+        counts: { exploration: 0, generation: 0, review: 0, retrieval: 0 },
+      };
+      const milliseconds = input.complex
+        ? (this.options.timing?.complexMs ?? 60000)
+        : (this.options.timing?.ordinaryMs ?? 30000);
+      const reserve = input.complex
+        ? (this.options.timing?.complexReserveMs ?? 15000)
+        : (this.options.timing?.ordinaryReserveMs ?? 8000);
+      const deadline = startedAt + milliseconds;
+      snapshot.deadline = deadline;
+      let finish!: () => void;
+      const done = new Promise<void>((resolve) => {
+        finish = resolve;
+      });
+      const run: Run = {
+        snapshot,
+        events: [],
+        persistence: Promise.resolve(),
+        storageFailed: false,
+        done,
+        finish,
+        question: input.question,
+        active: false,
+        controller: new AbortController(),
+        deadline,
+        explorationDeadline: deadline - reserve,
+        retrievalCap: input.complex ? 3 : 2,
+      };
+      await this.options.conversations?.register(
+        snapshot,
+        input.question,
+        deadline,
+      );
+      run.timer = setTimeout(
+        () => this.stop(run, "timed_out"),
+        Math.max(0, deadline - Date.now()),
+      );
+      this.runs.set(snapshot.id, run);
+      this.publish(run, "state");
+      await run.persistence;
+      this.queue.push(run);
+      void this.pump().catch(() => this.fault(run));
+      return structuredClone(snapshot);
+    } finally {
+      this.admitting--;
+    }
+  }
+  async get(id: string): Promise<RunSnapshot> {
+    if (this.options.conversations) return this.options.conversations.run(id);
     return structuredClone(this.run(id).snapshot);
   }
-  events(id: string, after = 0): RunEvent[] {
+  async conversation(id: string) {
+    if (!this.options.conversations) throw new Error("unavailable");
+    return {
+      ...(await this.options.conversations.read(id)),
+      runs: await this.options.conversations.runs(id),
+    };
+  }
+  async events(id: string, after = 0): Promise<RunEvent[]> {
+    if (this.options.conversations)
+      return this.options.conversations.events(id, after);
     return structuredClone(
       this.run(id).events.filter((event) => event.sequence > after),
     );
@@ -107,9 +223,13 @@ export class KnowledgeHost {
   settled(id: string): Promise<void> {
     return this.run(id).done;
   }
-  cancel(id: string): void {
-    const run = this.run(id);
-    this.stop(run, "canceled");
+  async cancel(id: string): Promise<void> {
+    await this.options.conversations?.requestCancel(id);
+    const run = this.runs.get(id);
+    if (run) {
+      this.stop(run, "canceled");
+      await run.persistence;
+    } else if (!this.options.conversations) throw new Error("not_found");
   }
   private stop(run: Run, status: "canceled" | "timed_out"): void {
     if (
@@ -129,42 +249,105 @@ export class KnowledgeHost {
       clearTimeout(run.timer);
       run.snapshot.settledAt = new Date().toISOString();
       this.publish(run, "settled");
-      run.finish();
+      void run.persistence.finally(() => run.finish()).catch(() => {});
     }
   }
   async close(): Promise<void> {
-    for (const id of this.runs.keys()) this.cancel(id);
+    this.closed = true;
+    clearInterval(this.poller);
+    await Promise.allSettled([...this.starts]);
+    for (const run of this.runs.values()) this.stop(run, "canceled");
     await Promise.all([...this.runs.values()].map((run) => run.done));
   }
-  private pump(): void {
-    while (this.active < 5 && this.queue.length) {
-      const run = this.queue.shift()!;
-      run.active = true;
-      this.active++;
-      run.snapshot.status = "executing";
-      this.publish(run, "state");
-      void this.execute(run, run.question).finally(() => {
-        run.active = false;
-        this.active--;
-        run.finish();
-        this.pump();
-      });
+  private async pump(): Promise<void> {
+    if (this.pumping || this.closed) return;
+    this.pumping = true;
+    try {
+      for (const run of [...this.queue]) {
+        if (this.active >= 5) break;
+        if (run.controller.signal.aborted) continue;
+        if (
+          [...this.runs.values()].some(
+            (other) =>
+              other.active &&
+              other.snapshot.conversationId === run.snapshot.conversationId,
+          )
+        )
+          continue;
+        let claimComplete!: () => void;
+        run.claim = new Promise<void>((resolve) => {
+          claimComplete = resolve;
+        });
+        run.active = true;
+        this.active++;
+        let writer: ConversationWriter | null | undefined;
+        try {
+          writer = await this.options.conversations?.acquire(
+            run.snapshot.conversationId,
+            run.snapshot.id,
+          );
+          if (writer) run.writer = writer;
+        } catch {
+          this.fault(run);
+        } finally {
+          claimComplete();
+        }
+        if (writer === null && !run.controller.signal.aborted) {
+          run.active = false;
+          this.active--;
+          continue;
+        }
+        this.queue = this.queue.filter((queued) => queued !== run);
+        if (!run.controller.signal.aborted) {
+          run.snapshot.status = "executing";
+          this.publish(run, "state");
+        }
+        void this.execute(run, run.question)
+          .catch(() => this.fault(run))
+          .finally(() => {
+            run.active = false;
+            this.active--;
+            run.finish();
+            void this.pump().catch(() => this.fault(run));
+          });
+      }
+    } finally {
+      this.pumping = false;
+    }
+  }
+  private fault(run: Run): void {
+    if (run.storageFailed) return;
+    run.storageFailed = true;
+    run.controller.abort(new Error("storage_uncertain"));
+    run.agent?.abort();
+    if (!run.active) {
+      this.queue = this.queue.filter((queued) => queued !== run);
+      clearTimeout(run.timer);
+      void run.persistence.catch(() => {}).then(() => run.finish());
     }
   }
   private publish(run: Run, type: RunEvent["type"], message?: string): void {
-    run.events.push({
+    const event: RunEvent = {
       sequence: run.events.length + 1,
       type,
       run: structuredClone(run.snapshot),
       ...(message ? { message } : {}),
+    };
+    run.events.push(event);
+    const claim = run.claim;
+    run.persistence = run.persistence.then(async () => {
+      await claim;
+      if (run.writer) await run.writer.save(event);
+      else await this.options.conversations?.saveQueued(event);
     });
+    void run.persistence.catch(() => this.fault(run));
   }
   private run(id: string): Run {
     const run = this.runs.get(id);
     if (!run) throw new Error("Run not found");
     return run;
   }
-  private admit(run: Run, phase: Phase): void {
+  private async admit(run: Run, phase: Phase): Promise<void> {
     if (Date.now() >= run.deadline) this.stop(run, "timed_out");
     run.controller.signal.throwIfAborted();
     if (phase === "exploration" && Date.now() >= run.explorationDeadline)
@@ -172,6 +355,9 @@ export class KnowledgeHost {
     const cap = phase === "exploration" ? 3 : 2;
     if (run.snapshot.counts[phase] >= cap) throw new Error("budget_exhausted");
     run.snapshot.counts[phase]++;
+    this.publish(run, "progress");
+    await run.persistence;
+    run.controller.signal.throwIfAborted();
   }
   private async execute(run: Run, question: string): Promise<void> {
     let evidence: Evidence | undefined;
@@ -183,7 +369,25 @@ export class KnowledgeHost {
       Math.max(0, run.explorationDeadline - Date.now()),
     );
     try {
+      await run.persistence;
+      run.controller.signal.throwIfAborted();
+      if (run.writer) assertReconciled(await run.writer.storage.load());
       run.agent = await createAgent({
+        ...(run.writer
+          ? {
+              storage: {
+                load: () => run.writer!.storage.load(),
+                append: async (entry) => {
+                  try {
+                    await run.writer!.storage.append(entry);
+                  } catch (error) {
+                    this.fault(run);
+                    throw error;
+                  }
+                },
+              },
+            }
+          : {}),
         provider: "anthropic",
         model: "claude-sonnet-4-5",
         apiKey: "fixture-only",
@@ -219,6 +423,9 @@ export class KnowledgeHost {
               )
                 throw new Error("budget_exhausted");
               run.snapshot.counts.retrieval++;
+              this.publish(run, "progress");
+              await run.persistence;
+              run.controller.signal.throwIfAborted();
               evidence = this.options.sources.read();
               return {
                 content: [{ type: "text", text: evidence.text }],
@@ -244,21 +451,36 @@ export class KnowledgeHost {
       run.snapshot.status = "answered";
       this.publish(run, "result");
     } catch (error) {
-      if (!run.controller.signal.aborted) {
-        run.snapshot.status = "failed";
-        run.snapshot.reason =
-          error instanceof Error && error.message === "budget_exhausted"
+      if (run.storageFailed || !run.controller.signal.aborted) {
+        if (!["canceled", "timed_out"].includes(run.snapshot.status))
+          run.snapshot.status = "failed";
+        run.snapshot.reason = run.storageFailed
+          ? "storage_uncertain"
+          : error instanceof Error && error.message === "budget_exhausted"
             ? "budget_exhausted"
-            : "insufficient_evidence";
+            : error instanceof Error &&
+                error.message === "history_requires_reconciliation"
+              ? "history_requires_reconciliation"
+              : "insufficient_evidence";
         this.publish(run, "result");
       }
     } finally {
       unsubscribe();
       clearTimeout(explorationTimer);
       clearTimeout(run.timer);
-      await run.agent?.dispose();
+      try {
+        await run.agent?.dispose();
+      } catch {
+        this.fault(run);
+      }
       run.snapshot.settledAt = new Date().toISOString();
       this.publish(run, "settled");
+      try {
+        await run.persistence;
+      } catch {
+        /* Leave durable run unsettled for reconciliation. */
+      }
+      await run.writer?.release();
     }
   }
   private async finalize(
@@ -274,6 +496,7 @@ export class KnowledgeHost {
       )
         throw new Error("budget_exhausted");
       try {
+        run.snapshot.draftId = crypto.randomUUID();
         const draft = await this.request(run, "generation", {
           question,
           evidence,
@@ -315,9 +538,15 @@ export class KnowledgeHost {
         )
           throw new Error("source_changed");
         run.snapshot.status = "refreshing";
-        this.publish(run, "state");
         run.snapshot.refreshUsed = true;
+        if (run.snapshot.draftId) {
+          (run.snapshot.supersededDraftIds ??= []).push(run.snapshot.draftId);
+          delete run.snapshot.draftId;
+        }
         run.snapshot.counts.retrieval++;
+        this.publish(run, "state");
+        await run.persistence;
+        run.controller.signal.throwIfAborted();
         evidence = this.options.sources.read();
         run.snapshot.status = "finalizing";
         this.publish(run, "state");
@@ -329,7 +558,7 @@ export class KnowledgeHost {
     phase: "generation" | "review",
     input: object,
   ): Promise<unknown> {
-    this.admit(run, phase);
+    await this.admit(run, phase);
     run.finalController = new AbortController();
     const response = await fetch(
       new URL("finalize", this.options.providerUrl),
@@ -353,4 +582,31 @@ export class KnowledgeHost {
 }
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** Raw entries stay unchanged; unknown historic effects require M08 reconciliation. */
+function assertReconciled(state: SessionState): void {
+  const entries = new Map(state.entries.map((entry) => [entry.id, entry]));
+  const branch = [];
+  const visited = new Set<string>();
+  let id = state.leafId;
+  while (id !== null) {
+    const entry = entries.get(id);
+    if (!entry || visited.has(id))
+      throw new Error("history_requires_reconciliation");
+    visited.add(id);
+    branch.push(entry);
+    id = entry.parentId;
+  }
+  const pending = new Set<string>();
+  for (const entry of branch.reverse()) {
+    if (entry.type !== "message") continue;
+    if (entry.message.role === "assistant") {
+      for (const block of entry.message.content)
+        if (block.type === "tool_call") pending.add(block.id);
+    }
+    if (entry.message.role === "toolResult")
+      pending.delete(entry.message.toolCallId!);
+  }
+  if (pending.size) throw new Error("history_requires_reconciliation");
 }

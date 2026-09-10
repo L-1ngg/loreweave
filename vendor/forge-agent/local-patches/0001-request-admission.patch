@@ -4,8 +4,8 @@
  import { randomUUID } from "node:crypto";
  
  export interface CreateAgentOptions extends InputQueueOptions {
-+	/** Host admission runs synchronously before each task/summary provider request. */
-+	beforeModelRequest?: (request: { kind: "task" | "summary"; signal?: AbortSignal }) => void;
++	/** Host admission completes before each task/summary provider request. */
++	beforeModelRequest?: (request: { kind: "task" | "summary"; signal?: AbortSignal }) => void | Promise<void>;
  	toolHooks?: ToolHooks;
  	/** Shared task/summary routing identity; supply it to retain affinity across reopening. */
  	sessionId?: string;
@@ -23,21 +23,40 @@
  export type ToolHooks = Pick<RuntimeOptions, "beforeToolCall" | "afterToolCall" | "toolExecution">;
  
  export interface PiPortOptions extends InputQueueOptions {
-+	/** Host admission runs synchronously before each task/summary provider request. */
-+	beforeModelRequest?: (request: { kind: "task" | "summary"; signal?: AbortSignal }) => void;
++	/** Host admission completes before each task/summary provider request. */
++	beforeModelRequest?: (request: { kind: "task" | "summary"; signal?: AbortSignal }) => void | Promise<void>;
  	toolHooks?: ToolHooks;
  	sessionId?: string;
  	context?: Partial<ContextSettings>;
-@@ -151,7 +153,11 @@
+@@ -126,7 +128,7 @@
+ 	maxTokens?: number;
+ 	contextWindow?: number;
+ 	model: Model<string>;
+-	stream: (model: Model<string>, context: Context, options?: SimpleStreamOptions) => AssistantMessageEventStream;
++	stream: (model: Model<string>, context: Context, options?: SimpleStreamOptions) => AssistantMessageEventStream | Promise<AssistantMessageEventStream>;
+ 	sessionId?: string;
+ 	systemPrompt: string;
+ 	thinkingLevel: PiPortOptions["thinkingLevel"];
+@@ -151,7 +153,12 @@
  		throw new Error(`Provider is not configured: ${options.provider}. Set apiKey in .forge-agent/config.json, FORGE_AGENT_API_KEY, or the provider's API key environment variable.`);
  	}
  	const model = options.baseUrl ? { ...catalogModel, baseUrl: options.baseUrl } : catalogModel;
 -	return { ...options, sessionId: options.sessionId ?? randomUUID(), model, stream: models.streamSimple.bind(models) };
-+	return { ...options, sessionId: options.sessionId ?? randomUUID(), model, stream: (model, context, settings) => {
++	return { ...options, sessionId: options.sessionId ?? randomUUID(), model, stream: async (model, context, settings) => {
 +		settings?.signal?.throwIfAborted();
-+		options.beforeModelRequest?.({ kind: context.systemPrompt === SUMMARY_SYSTEM ? "summary" : "task", ...(settings?.signal ? { signal: settings.signal } : {}) });
++		await options.beforeModelRequest?.({ kind: context.systemPrompt === SUMMARY_SYSTEM ? "summary" : "task", ...(settings?.signal ? { signal: settings.signal } : {}) });
++		settings?.signal?.throwIfAborted();
 +		return models.streamSimple(model, context, settings);
 +	} };
  }
  
  /** Assemble the single source-owned session runtime. */
+@@ -279,7 +286,7 @@
+ 		isRetryable: message => isRetryableAssistantError(fromSessionMessage(message, options.model) as AssistantMessage),
+ 		async summarize(request, signal) {
+ 			const thinking = summaryThinking(request.reasoning);
+-			const stream = options.stream(options.model, { systemPrompt: SUMMARY_SYSTEM, messages: [{ role: "user", content: request.prompt, timestamp: Date.now() }] }, { signal, ...(options.sessionId ? { sessionId: options.sessionId } : {}), maxTokens: request.maxTokens, maxRetries: 0, cacheRetention: "none", ...(thinking.level !== "off" ? { reasoning: thinking.level } : {}) });
++			const stream = await options.stream(options.model, { systemPrompt: SUMMARY_SYSTEM, messages: [{ role: "user", content: request.prompt, timestamp: Date.now() }] }, { signal, ...(options.sessionId ? { sessionId: options.sessionId } : {}), maxTokens: request.maxTokens, maxRetries: 0, cacheRetention: "none", ...(thinking.level !== "off" ? { reasoning: thinking.level } : {}) });
+ 			for await (const _event of stream) { }
+ 			const result = toSessionMessage(await stream.result());
+ 			if (!result) throw new Error("Provider did not return a summary");
