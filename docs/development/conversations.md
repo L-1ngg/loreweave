@@ -1,8 +1,8 @@
 # Durable conversation bootstrap
 
 Issue [#3](https://github.com/L-1ngg/loreweave/issues/3) adds PostgreSQL persistence
-to the scripted #2 host. It does not implement organization authorization or real
-knowledge operations; keep the development server bound to loopback.
+to the scripted #2 host. Organization authorization was added in #4; real
+knowledge operations remain later work. Keep this development service bound to loopback.
 
 ## Storage and execution
 

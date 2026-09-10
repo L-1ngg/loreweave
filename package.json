@@ -18,7 +18,9 @@
     "format": "prettier --write src tests web scripts vite.config.ts playwright.config.ts tsconfig.json package.json .github/workflows/ci.yml compose.yaml migrations/meta/_journal.json",
     "test:upstream": "bun test vendor/forge-agent/packages/core/test/sdk.test.ts vendor/forge-agent/packages/core/test/sdk-integration.test.ts vendor/forge-agent/packages/core/test/runtime-tools.test.ts vendor/forge-agent/packages/core/test/incremental-session.test.ts vendor/forge-agent/packages/core/test/input-ownership.test.ts vendor/forge-agent/packages/core/test/runtime-retry.test.ts",
     "test:persistence": "bun --no-env-file test tests/persistence.test.ts",
-    "reconcile:run": "bun --no-env-file scripts/reconcile-run.ts"
+    "reconcile:run": "bun --no-env-file scripts/reconcile-run.ts",
+    "bootstrap:admin": "bun --no-env-file scripts/bootstrap-admin.ts",
+    "test:access": "bun --no-env-file test tests/access.test.ts"
   },
   "dependencies": {
     "@earendil-works/pi-ai": "0.85.1",

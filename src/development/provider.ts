@@ -1,5 +1,6 @@
 /** Local, credential-free scripted HTTP provider for bootstrap development only. */
 export interface ScriptedOptions {
+  toolArguments?: Record<string, unknown>;
   repeatTool?: boolean;
   delayMs?: number;
   delays?: Record<string, number>;
@@ -93,7 +94,10 @@ export function startScriptedProvider(options: ScriptedOptions = {}) {
               {
                 type: "content_block_delta",
                 index: 0,
-                delta: { type: "input_json_delta", partial_json: "{}" },
+                delta: {
+                  type: "input_json_delta",
+                  partial_json: JSON.stringify(options.toolArguments ?? {}),
+                },
               },
             ]
           : []),

@@ -1,3 +1,4 @@
+import { AccessService, type TrustedContext } from "./access.ts";
 import {
   createAgent,
   type Agent,
@@ -30,6 +31,7 @@ export interface RunSnapshot {
   settledAt?: string;
   refreshUsed?: boolean;
   deadline: number;
+  scope?: TrustedContext["scope"];
   draftId?: string;
   supersededDraftIds?: string[];
 }
@@ -50,6 +52,8 @@ interface Run {
   agent?: Agent;
   finish: () => void;
   question: string;
+  credential?: string;
+  context?: TrustedContext;
   active: boolean;
   controller: AbortController;
   finalController?: AbortController;
@@ -59,11 +63,14 @@ interface Run {
   timer?: ReturnType<typeof setTimeout>;
 }
 export interface StartTurn {
+  credential?: string;
+  projectId?: string;
   question: string;
   complex?: boolean;
   conversationId?: string;
 }
 export interface HostOptions {
+  access?: AccessService;
   conversations?: PostgresConversations;
   providerUrl: string;
   sources: FixtureSources;
@@ -138,6 +145,20 @@ export class KnowledgeHost {
   }
   private async startRun(input: StartTurn): Promise<RunSnapshot> {
     if (this.closed) throw new Error("unavailable");
+    const startedAt = Date.now();
+    const context = await this.options.access?.authorize(
+      input.credential ?? "",
+      "read",
+      input.projectId,
+    );
+    if (context && !this.options.conversations) throw new Error("unavailable");
+    if (
+      context &&
+      input.conversationId &&
+      (await this.options.conversations!.read(input.conversationId))
+        .organizationId !== context.organizationId
+    )
+      throw new Error("unauthorized");
     if (
       [...this.runs.values()].filter((run) => !run.snapshot.settledAt).length +
         this.admitting >=
@@ -146,13 +167,14 @@ export class KnowledgeHost {
       throw new Error("unavailable");
     this.admitting++;
     try {
-      const startedAt = Date.now();
       const snapshot: RunSnapshot = {
         id: crypto.randomUUID(),
         deadline: 0,
+        ...(context ? { scope: context.scope } : {}),
         conversationId:
           input.conversationId ??
-          (await this.options.conversations?.create())?.id ??
+          (await this.options.conversations?.create(context?.organizationId))
+            ?.id ??
           crypto.randomUUID(),
         status: "queued",
         counts: { exploration: 0, generation: 0, review: 0, retrieval: 0 },
@@ -177,6 +199,8 @@ export class KnowledgeHost {
         done,
         finish,
         question: input.question,
+        ...(input.credential ? { credential: input.credential } : {}),
+        ...(context ? { context } : {}),
         active: false,
         controller: new AbortController(),
         deadline,
@@ -202,18 +226,36 @@ export class KnowledgeHost {
       this.admitting--;
     }
   }
-  async get(id: string): Promise<RunSnapshot> {
+  private async authorizeRun(id: string, token?: string): Promise<void> {
+    if (!this.options.access) return;
+    const context = await this.options.access.authorize(token ?? "", "read");
+    if (
+      (await this.options.conversations?.organizationOfRun(id)) !==
+      context.organizationId
+    )
+      throw new Error("unauthorized");
+  }
+  async get(id: string, token?: string): Promise<RunSnapshot> {
+    await this.authorizeRun(id, token);
     if (this.options.conversations) return this.options.conversations.run(id);
     return structuredClone(this.run(id).snapshot);
   }
-  async conversation(id: string) {
+  async conversation(id: string, token?: string) {
     if (!this.options.conversations) throw new Error("unavailable");
+    const conversation = await this.options.conversations.read(id);
+    if (
+      this.options.access &&
+      (await this.options.access.authorize(token ?? "", "read"))
+        .organizationId !== conversation.organizationId
+    )
+      throw new Error("unauthorized");
     return {
-      ...(await this.options.conversations.read(id)),
+      ...conversation,
       runs: await this.options.conversations.runs(id),
     };
   }
-  async events(id: string, after = 0): Promise<RunEvent[]> {
+  async events(id: string, after = 0, token?: string): Promise<RunEvent[]> {
+    await this.authorizeRun(id, token);
     if (this.options.conversations)
       return this.options.conversations.events(id, after);
     return structuredClone(
@@ -223,7 +265,8 @@ export class KnowledgeHost {
   settled(id: string): Promise<void> {
     return this.run(id).done;
   }
-  async cancel(id: string): Promise<void> {
+  async cancel(id: string, token?: string): Promise<void> {
+    await this.authorizeRun(id, token);
     await this.options.conversations?.requestCancel(id);
     const run = this.runs.get(id);
     if (run) {
@@ -344,10 +387,25 @@ export class KnowledgeHost {
   }
   private run(id: string): Run {
     const run = this.runs.get(id);
-    if (!run) throw new Error("Run not found");
+    if (!run) throw new Error("not_found");
     return run;
   }
+  private async authorizeTool(run: Run): Promise<TrustedContext | undefined> {
+    if (!this.options.access) return undefined;
+    const context = await this.options.access.authorize(
+      run.credential ?? "",
+      "read",
+      run.context?.scope.projectId,
+    );
+    if (
+      context.actorId !== run.context?.actorId ||
+      context.organizationId !== run.context.organizationId
+    )
+      throw new Error("unauthorized");
+    return context;
+  }
   private async admit(run: Run, phase: Phase): Promise<void> {
+    await this.authorizeTool(run);
     if (Date.now() >= run.deadline) this.stop(run, "timed_out");
     run.controller.signal.throwIfAborted();
     if (phase === "exploration" && Date.now() >= run.explorationDeadline)
@@ -426,7 +484,9 @@ export class KnowledgeHost {
               this.publish(run, "progress");
               await run.persistence;
               run.controller.signal.throwIfAborted();
-              evidence = this.options.sources.read();
+              evidence = this.options.sources.read(
+                await this.authorizeTool(run),
+              );
               return {
                 content: [{ type: "text", text: evidence.text }],
                 details: evidence,
@@ -459,8 +519,10 @@ export class KnowledgeHost {
           : error instanceof Error && error.message === "budget_exhausted"
             ? "budget_exhausted"
             : error instanceof Error &&
-                error.message === "history_requires_reconciliation"
-              ? "history_requires_reconciliation"
+                ["history_requires_reconciliation", "unauthorized"].includes(
+                  error.message,
+                )
+              ? error.message
               : "insufficient_evidence";
         this.publish(run, "result");
       }
@@ -547,7 +609,7 @@ export class KnowledgeHost {
         this.publish(run, "state");
         await run.persistence;
         run.controller.signal.throwIfAborted();
-        evidence = this.options.sources.read();
+        evidence = this.options.sources.read(await this.authorizeTool(run));
         run.snapshot.status = "finalizing";
         this.publish(run, "state");
       }

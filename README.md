@@ -3,13 +3,14 @@
 An agent-powered knowledge base with a living wiki, graph-assisted retrieval,
 and source-backed answers.
 
-**Current capability: durable local development conversations (#2–#3).** A browser question runs
+**Current capability: authenticated local development conversations (#2–#4).** A browser question runs
 through the pinned Forge SDK, a scripted original-evidence tool, and separate
 fixture generation/review requests. Cancel, observe progress and follow an original
 citation. The example corpus and model responses are scripted; this is not yet
 production RAG or a measured semantic-review implementation. PostgreSQL preserves
-conversations and reconnectable runs; organization access arrives in #4 and real
-source answering in #6.
+conversations and reconnectable runs. Administrator-created accounts, revocable
+login sessions and organization-bound operations are available; real source
+answering arrives in #6.
 
 ## Run locally
 
@@ -19,6 +20,13 @@ Use Bun 1.3.12 and Node.js 24 (Vite runs through its Node CLI):
 bun install --frozen-lockfile
 docker compose up -d --wait postgres
 export DATABASE_URL=postgres://loreweave:loreweave_local@127.0.0.1:45432/loreweave
+export LOREWEAVE_ORGANIZATION=local
+export LOREWEAVE_BOOTSTRAP_USERNAME=admin
+# Enter a password of at least 12 characters, then press Enter (Bash/zsh).
+read -r -s LOREWEAVE_BOOTSTRAP_PASSWORD
+export LOREWEAVE_BOOTSTRAP_PASSWORD
+bun run bootstrap:admin
+unset LOREWEAVE_BOOTSTRAP_PASSWORD
 bun run dev
 ```
 
@@ -28,10 +36,13 @@ startup applies the reviewed Drizzle SQL migrations. If either fixed port is occ
 new process and resolve the conflict explicitly; it never replaces another service.
 The dev command disables automatic `.env` loading for its backend.
 
-Try “项目日志保留多久？” and follow the citation. The fixed example answers only
+Log in with organization `local`, username `admin` and the password you chose.
+Use “成员与项目管理” to create members, revoke their existing logins and create
+project classifications. A selected project also searches applicable shared material;
+projects do not create member visibility ACLs. Try “项目日志保留多久？” and follow the citation. The fixed example answers only
 demonstrate the execution pipeline. Unrelated questions do not measure retrieval
 or model understanding. Runs and Forge history persist across process restarts. Source fixtures are still
-scripted. The conversation URL restores progress without submitting another turn. This entry point is restricted to local development until access control exists.
+scripted. The conversation URL restores progress without submitting another turn. This entry point remains a local scripted development service.
 
 ## Checks
 
@@ -49,6 +60,7 @@ docker run --rm -d --name loreweave-test -p 127.0.0.1:45433:5432 \
 # Wait until: docker exec loreweave-test pg_isready -U loreweave
 export TEST_DATABASE_URL=postgres://loreweave:loreweave_test@127.0.0.1:45433/loreweave_test
 bun run test:persistence
+bun run test:access
 bun x playwright install chromium
 bun run test:browser
 bun run build
@@ -90,6 +102,7 @@ record the current boundary and deployment limits.
 - [Task dependency map](.scratch/rag-v1/README.md)
 - [Confirmed decisions](docs/rag-optimization-design.md) and [domain terms](CONTEXT.md)
 - [Evaluation plan](docs/rag-evaluation-plan.md)
+- [Access and credential behavior](docs/development/access.md)
 - [Pinned Forge source and local patch](vendor/forge-agent/README.md)
 - [Retired Python baseline and behavior inventory](docs/history/retirement.md)
 - [LLM Wiki](docs/research/llm-wiki.zh-CN.md) and [GraphRAG](docs/research/graphrag.zh-CN.md) learning material

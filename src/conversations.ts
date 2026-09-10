@@ -13,6 +13,7 @@ import type { RunEvent, RunSnapshot } from "./host.ts";
 
 export interface Conversation extends SessionState {
   id: string;
+  organizationId?: string;
 }
 export interface ConversationWriter {
   storage: SessionStorage;
@@ -186,13 +187,28 @@ export class PostgresConversations {
       throw new Error("stale_writer");
     }
   }
-  async create(): Promise<Conversation> {
+  async organizationOfRun(id: string): Promise<string | null> {
+    const rows = await this.db.execute(
+      sql`SELECT c.organization_id FROM conversation_runs r JOIN conversations c ON c.id = r.conversation_id WHERE r.id = ${id}`,
+    );
+    if (!rows[0]) throw new Error("not_found");
+    return rows[0].organization_id as string | null;
+  }
+  async create(organizationId?: string): Promise<Conversation> {
     const id = crypto.randomUUID();
-    await this.db.execute(sql`INSERT INTO conversations(id) VALUES (${id})`);
-    return { id, entries: [], leafId: null };
+    await this.db.execute(
+      sql`INSERT INTO conversations(id, organization_id) VALUES (${id}, ${organizationId ?? null})`,
+    );
+    return {
+      id,
+      entries: [],
+      leafId: null,
+      ...(organizationId ? { organizationId } : {}),
+    };
   }
   async read(id: string): Promise<Conversation> {
-    const rows = await this.db.execute(sql`SELECT c.id, c.leaf_id,
+    const rows = await this.db
+      .execute(sql`SELECT c.id, c.leaf_id, c.organization_id,
       COALESCE((SELECT jsonb_agg(e.entry ORDER BY e.ordinal) FROM session_entries e
         WHERE e.conversation_id = c.id), '[]'::jsonb) AS entries
       FROM conversations c WHERE c.id = ${id}`);
@@ -200,6 +216,9 @@ export class PostgresConversations {
     if (!row) throw new Error("not_found");
     return {
       id: String(row.id),
+      ...(row.organization_id
+        ? { organizationId: String(row.organization_id) }
+        : {}),
       leafId: row.leaf_id as string | null,
       entries: row.entries as SessionEntry[],
     };

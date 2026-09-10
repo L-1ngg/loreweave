@@ -1,3 +1,5 @@
+import { AccessService } from "./access.ts";
+import { accessRoutes, credential, accessError } from "./access-http.ts";
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import { KnowledgeHost } from "./host.ts";
@@ -7,9 +9,10 @@ import { FixtureSources } from "./development/sources.ts";
 export function createApp(
   host: KnowledgeHost,
   sources: FixtureSources,
-  options: { browserOrigin?: string } = {},
+  options: { browserOrigin?: string; access?: AccessService } = {},
 ) {
   const app = new Hono();
+  app.onError((error, context) => accessError(context, error));
   app.use("/api/*", async (context, next) => {
     const url = new URL(context.req.url);
     const origin = context.req.header("origin");
@@ -20,6 +23,17 @@ export function createApp(
       return context.json({ error: "forbidden" }, 403);
     await next();
   });
+  if (options.access) {
+    app.route("/api", accessRoutes(options.access));
+    app.use("/api/*", async (context, next) => {
+      try {
+        await options.access!.identity(credential(context));
+      } catch (error) {
+        return accessError(context, error);
+      }
+      await next();
+    });
+  }
   app.post("/api/runs", async (context) => {
     let input: unknown;
     try {
@@ -44,10 +58,24 @@ export function createApp(
         !/^[0-9a-f-]{36}$/i.test(input.conversationId))
     )
       return context.json({ error: "invalid_input" }, 400);
+    if (
+      ("projectId" in input &&
+        (typeof input.projectId !== "string" ||
+          !/^[0-9a-f-]{36}$/i.test(input.projectId))) ||
+      Object.keys(input).some(
+        (key) =>
+          !["question", "complex", "conversationId", "projectId"].includes(key),
+      )
+    )
+      return context.json({ error: "invalid_input" }, 400);
     try {
       return context.json(
         await host.start({
           question: input.question,
+          ...(options.access ? { credential: credential(context) } : {}),
+          ...("projectId" in input
+            ? { projectId: input.projectId as string }
+            : {}),
           ...("conversationId" in input
             ? { conversationId: input.conversationId as string }
             : {}),
@@ -55,45 +83,51 @@ export function createApp(
         }),
         202,
       );
-    } catch {
-      return context.json({ error: "unavailable" }, 503);
+    } catch (error) {
+      return accessError(context, error);
     }
   });
   app.get("/api/conversations/:id", async (context) => {
     try {
-      return context.json(await host.conversation(context.req.param("id")));
-    } catch {
-      return context.json({ error: "not_found" }, 404);
+      return context.json(
+        await host.conversation(context.req.param("id"), credential(context)),
+      );
+    } catch (error) {
+      return accessError(context, error);
     }
   });
   app.get("/api/runs/:id", async (context) => {
     try {
-      return context.json(await host.get(context.req.param("id")));
-    } catch {
-      return context.json({ error: "not_found" }, 404);
+      return context.json(
+        await host.get(context.req.param("id"), credential(context)),
+      );
+    } catch (error) {
+      return accessError(context, error);
     }
   });
   app.post("/api/runs/:id/cancel", async (context) => {
     try {
-      await host.cancel(context.req.param("id"));
-      return context.json(await host.get(context.req.param("id")));
-    } catch {
-      return context.json({ error: "not_found" }, 404);
+      await host.cancel(context.req.param("id"), credential(context));
+      return context.json(
+        await host.get(context.req.param("id"), credential(context)),
+      );
+    } catch (error) {
+      return accessError(context, error);
     }
   });
   app.get("/api/runs/:id/events", async (context) => {
     const id = context.req.param("id");
     try {
-      await host.get(id);
-    } catch {
-      return context.json({ error: "not_found" }, 404);
+      await host.get(id, credential(context));
+    } catch (error) {
+      return accessError(context, error);
     }
     let after = Number(context.req.header("last-event-id") ?? "0");
     if (!Number.isSafeInteger(after) || after < 0)
       return context.json({ error: "invalid_input" }, 400);
     return streamSSE(context, async (stream) => {
       while (!stream.aborted) {
-        for (const event of await host.events(id, after)) {
+        for (const event of await host.events(id, after, credential(context))) {
           await stream.writeSSE({
             id: String(event.sequence),
             event: event.type,
@@ -101,16 +135,17 @@ export function createApp(
           });
           after = event.sequence;
         }
-        if ((await host.get(id)).settledAt) {
-          const remaining = await host.events(id, after);
+        if ((await host.get(id, credential(context))).settledAt) {
+          const remaining = await host.events(id, after, credential(context));
           if (!remaining.length) break;
         }
-        await stream.sleep(10);
+        await stream.sleep(100);
       }
     });
   });
   app.get("/api/sources/:version", async (context) => {
-    const source = sources.version(context.req.param("version"));
+    const scope = await options.access?.authorize(credential(context), "read");
+    const source = sources.version(context.req.param("version"), scope);
     return source
       ? context.json(source)
       : context.json({ error: "not_found" }, 404);

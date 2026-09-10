@@ -1,3 +1,4 @@
+import { AccessShell } from "./access.tsx";
 import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import type { RunEvent, RunSnapshot } from "../src/host.ts";
@@ -14,7 +15,7 @@ const labels: Record<RunSnapshot["status"], string> = {
   timed_out: "时间预算已用完",
   canceled: "已取消",
 };
-function App() {
+function App({ projectId }: { projectId: string }) {
   const [question, setQuestion] = useState("");
   const [run, setRun] = useState<RunSnapshot>();
   const [error, setError] = useState("");
@@ -84,6 +85,7 @@ function App() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           question,
+          ...(projectId ? { projectId } : {}),
           ...(conversationId.current
             ? { conversationId: conversationId.current }
             : {}),
@@ -92,11 +94,9 @@ function App() {
       if (!response.ok) throw new Error("暂时无法接受查询，请稍后重试。");
       const accepted = (await response.json()) as RunSnapshot;
       conversationId.current = accepted.conversationId;
-      window.history.replaceState(
-        null,
-        "",
-        `/?conversation=${accepted.conversationId}`,
-      );
+      const url = new URL(window.location.href);
+      url.searchParams.set("conversation", accepted.conversationId);
+      window.history.replaceState(null, "", url);
       setHistory((previous) => [
         ...previous.filter((item) => item.id !== accepted.id),
         accepted,
@@ -245,5 +245,9 @@ function SourcePage({ version }: { version: string }) {
 }
 const version = window.location.pathname.match(/^\/sources\/([^/]+)$/)?.[1];
 createRoot(document.getElementById("root")!).render(
-  version ? <SourcePage version={version} /> : <App />,
+  <AccessShell>
+    {({ projectId }) =>
+      version ? <SourcePage version={version} /> : <App projectId={projectId} />
+    }
+  </AccessShell>,
 );

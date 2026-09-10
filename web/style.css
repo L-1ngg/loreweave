@@ -106,3 +106,43 @@ article {
     margin-top: 30px;
   }
 }
+
+.account-bar {
+  max-width: 820px;
+  margin: 24px auto 0;
+  padding: 0 24px;
+}
+.account-bar .actions {
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.account-form {
+  display: grid;
+  gap: 14px;
+  margin: 20px 0;
+}
+input,
+select {
+  display: block;
+  width: 100%;
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid #a9bcb2;
+  border-radius: 8px;
+  background: white;
+  color: inherit;
+}
+.administration {
+  padding: 16px;
+  border: 1px solid #d6dfd6;
+  border-radius: 12px;
+  background: #fff;
+}
+.administration summary {
+  cursor: pointer;
+  font-weight: 650;
+}
+.administration li {
+  margin: 10px 0;
+}

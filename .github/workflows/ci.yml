@@ -36,6 +36,7 @@ jobs:
       - run: bun run check:vendor
       - run: bun run test
       - run: bun run test:persistence
+      - run: bun run test:access
       - run: bun run test:upstream
       - run: bun x playwright install --with-deps chromium
       - run: bun run test:browser
