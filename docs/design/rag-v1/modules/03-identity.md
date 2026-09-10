@@ -9,7 +9,7 @@ Wiki and graph, so producing a Wiki does not depend on completed graph extractio
   unresolved candidates, with the evidence and scope of each decision.
 - Read an identity, aliases, source mentions and its resolution revision.
 - Apply an evidenced identity correction and inspect the resulting changes.
-- Validate identity-revision dependencies for derived content.
+- Validate identity-revision and transitive proof-source dependencies for derived content.
 
 ## Ownership and dependencies
 
@@ -28,6 +28,12 @@ Merges preserve original mentions and provenance so a later correction can
 reassign mentions without inventing evidence. Advance identity revisions and
 invalidate affected Wiki/graph dependencies before relying on corrected identities.
 Resolve ambiguous natural-language correction targets before effects.
+
+The [identity provenance policy](../policies/identity-provenance.md) owns proof
+manifests, alternative support, reverse dependency traversal, bounded reconciliation
+and publication fencing. Consumers retain mention bindings and proof revisions;
+canonical IDs alone cannot certify equivalence. Updating the sole identity-proof
+source invalidates joined facts even when the relationship sources are unchanged.
 
 ## Acceptance boundary
 

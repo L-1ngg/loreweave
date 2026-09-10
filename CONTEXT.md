@@ -83,3 +83,21 @@ The organization's unified logical collection of source material and organized
 knowledge, classified by organization-wide or project-specific affiliation.
 Project classification supports scoped retrieval and cross-project connections;
 it does not by itself grant access.
+
+**Retired Wiki page**:
+A stable topic entry whose current content has no eligible support after completed
+review. Its historical versions remain readable; later supported content can
+reactivate the same entry. Retirement differs from a failed refresh or a merge redirect.
+
+**Identity proof**:
+Original-source evidence that identified mentions refer to the same entity,
+including the source dependencies of any intermediate equivalence decisions.
+
+**Graph extraction generation**:
+A versioned set of extracted relationship supports with a manifest of the source
+packets processed and their coverage outcomes, published as one replacement set.
+
+**Support review**:
+A check that each material generated assertion faithfully represents its cited
+original evidence, including scope and qualifications; it is not independent
+verification of the original author's truthfulness.

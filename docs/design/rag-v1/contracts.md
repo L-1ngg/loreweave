@@ -34,6 +34,11 @@ dependencies may be bypassed as a whole until revalidated; unaffected pages
 remain available. Claims with separately valid support can remain eligible via
 that support. No unimplemented sentence-level dependency algorithm is assumed.
 
+Entity validity includes the transitive source leaves of the identity proof,
+not just an unchanged identity revision. M03 exposes proof-closure validation;
+M02 activation atomically registers revalidation work. Consumers reject obsolete
+bindings before that work runs. See [I01–I03](policies/identity-provenance.md).
+
 ## C03: Model and domain execution
 
 Forge owns its execution loop. M07 owns the host run and shared budget. M02/M05
@@ -54,7 +59,7 @@ did not occur. Correlate tool calls with operation IDs for recovery.
 | --- | --- | --- |
 | Source revision | preparing, ready, active, superseded, failed | `active` means prepared original evidence is eligible for current retrieval |
 | Maintenance operation | queued, running, retry_wait, succeeded, failed, outcome_unknown, superseded | Domain outcome is durable; Wiki/graph readiness remains individually visible |
-| User run | queued, executing, finalizing, answered, partial, needs_clarification, failed, timed_out, canceled | Product outcome returned; execution settlement is tracked separately |
+| User run | queued, executing, finalizing, refreshing, answered, partial, needs_clarification, failed, timed_out, canceled | Product outcome returned; execution settlement is tracked separately |
 
 Record `settled_at` only when SDK consumption, started persistence and tool
 cleanup have finished. A timed-out or canceled run may still be settling. It
@@ -64,28 +69,32 @@ An accepted maintenance job can continue after the conversational run ends.
 
 ## C05: Budgets and finalization
 
-One absolute run deadline includes queueing, model calls, tools, retries,
-summaries, evidence refresh, final generation and delivery. Default hard limits
-remain 30 seconds ordinary and 60 seconds complex; ordinary p95 remains 15
-seconds. Reserve 8/15 seconds for finalization, with at most 2/3 retrieval rounds,
-3 pre-finalization model requests in total, and one final answer call plus one
-validation retry if remaining time permits. These are ceilings, not required
-steps. Fast ordinary answers should avoid unnecessary planning calls.
+One absolute deadline includes queueing, model calls, tools, retries, summaries,
+evidence refresh, final generation, semantic review and delivery. Hard limits are
+30 seconds ordinary and 60 seconds complex; ordinary p95 target remains 15 seconds.
+Reserve 8/15 seconds for finalization; retrieval has at most 2/3 rounds.
 
-Finalization uses one tools-disabled grounded generation call owned by M06,
-charged to the same budget as M07's Forge run. Forge provides exploration and
-operation execution; raw exploration text is not the final product answer.
-Finalization can be skipped for deterministic operation receipts/clarifications.
-Automatic summaries and retries must acquire admission before sending a request.
-Use an internal budget interface/patch when the SDK lacks that seam; post-hoc
-event counting is insufficient. Budget acquisition is atomic across parallel work.
+Allow at most three exploration model requests, two final-generation requests and
+two semantic-review requests: seven total, with four reserved finalization slots.
+Normal grounded finalization uses one generation and one separate tools-disabled
+review. Retries consume their phase's slots. Remaining generation/review capacity
+can repair a draft OR handle a source refresh; it is not an additional allowance.
+Deterministic receipts/clarifications need no model finalization. M06 owns this
+pipeline; Forge exploration text is not a final product answer.
 
-If supporting versions change, one evidence refresh may use an unused retrieval
-round within the original budget. It gets no extra rounds or new deadline. If
-insufficient budget remains, report the specific gap. Freeze `validated_at` and
-evidence version IDs after the final eligibility check; later source changes do
-not rewrite already completed answers. This check is a point-in-time guarantee,
-not a claim that sources cannot change during network delivery.
+Every request acquires atomic admission before dispatch, including SDK retries
+and summaries. Use an internal budget seam/patch if needed. Follow
+[V01–V04](policies/evidence-validation.md) for claim manifests, original-support
+review, certificates, partial answers and exact phase transitions.
+
+The sole finalization retrieval exception is one host-controlled `refreshing`
+phase using an unused original retrieval round. It cannot restart Forge exploration
+or perform writes. Supersede the old draft; regeneration and review consume the
+same remaining slots and deadline. A second source change or insufficient budget
+returns a still-valid reviewed subset or an explicit gap. Freeze evidence IDs and
+`validated_at` after final eligibility checks; this is point-in-time validation,
+not a guarantee against changes during network delivery. Added review latency is
+an implementation measurement obligation, not proof the timing target is met.
 
 ## C06: Errors and partial outcomes
 
@@ -95,8 +104,10 @@ operation_pending and outcome_unknown, with safe structured details. Distinguish
 missing original evidence from unavailable/stale graph or Wiki coverage.
 Failure to find a graph edge does not establish a negative fact.
 
-Do not publish a generated answer with dangling citations or claims whose known
-support became invalid. A supported partial answer may be returned but fails
+Do not publish a generated answer with dangling citations, failed semantic support
+review, or claims whose support became invalid. Real citations alone do not prove
+that the cited text supports the assertion; review failure cannot bypass V01.
+A supported partial answer may be returned but fails
 complete-answer evaluation when the corpus contained the missing information.
 Retrieval diagnostics and SDK success status cannot substitute for this rule.
 
@@ -113,6 +124,11 @@ Topic creation/merge/split also validates the relevant M05 catalogue revisions
 and reservation ownership in the publication transaction. Concurrent catalogue
 changes require fresh selection, not blind retry of a stale create instruction;
 the [topic maintenance policy](policies/wiki-topic-maintenance.md) owns the rules.
+
+A Wiki page with no remaining support can retire successfully while preserving
+history under [P08](policies/wiki-topic-maintenance.md#p08-retirement-when-current-support-disappears).
+Graph extraction stages complete generations and atomically replaces support
+membership under [G03](policies/graph-maintenance.md); partial staging is not ready.
 
 ## C08: Test seams
 

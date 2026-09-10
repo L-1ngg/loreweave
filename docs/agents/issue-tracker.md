@@ -2,7 +2,7 @@
 
 The user requested migration to `L-1ngg/loreweave` GitHub Issues on 2026-09-10.
 Start at the [construction specification](https://github.com/L-1ngg/loreweave/issues/1)
-and its 18 sub-issues. The [local navigation map](../../.scratch/rag-v1/README.md)
+and its 19 sub-issues. The [local navigation map](../../.scratch/rag-v1/README.md)
 links the original work-item numbers to their GitHub issues.
 
 Repository retirement [#19](https://github.com/L-1ngg/loreweave/issues/19) is work

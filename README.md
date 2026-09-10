@@ -12,7 +12,7 @@ PostgreSQL with pgvector, a React interface, and Forge Agent SDK integration.
 Start with the [construction blueprint](docs/rag-v1-blueprint.md),
 [specification](https://github.com/L-1ngg/loreweave/issues/1),
 [nine-module map](docs/design/rag-v1/README.md), and
-[18 work items](.scratch/rag-v1/README.md), beginning with repository retirement.
+[19 work items](.scratch/rag-v1/README.md), beginning with repository retirement.
 The [design record](docs/rag-optimization-design.md) captures confirmed decisions.
 
 ## Existing Python implementation (My-RAG)

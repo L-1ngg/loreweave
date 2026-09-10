@@ -31,11 +31,14 @@ necessary context into the 8,000/16,000-token initial evidence caps, reduced for
 the model context. Wiki summaries cannot replace missing original support.
 Lexical/vector rank fusion defaults to RRF; reranking is an evaluated option.
 
-Final generation is a single tools-disabled call with at most one validation
-retry under C05. Check cited handles, actual support and source validity before
-final delivery. Reuse an unused round for one source-change refresh; otherwise
-return the affected gap. Record evidence versions and validated_at. Partial
-answers cannot be counted as complete merely because their citations are valid.
+Follow [V01–V04](../policies/evidence-validation.md): generate an immutable draft
+with a claim manifest, validate references deterministically, and separately
+review the full draft against original passages for support, qualifiers, conflicts
+and omitted claims. Bind the certificate to exact text and dependency hashes.
+C05 permits two generation and two review requests, including repair or the one
+host-controlled refresh; it grants no extra deadline or retrieval round. Record
+evidence versions and validated_at. Fail closed on review failure and only emit
+reviewed still-supported subsets or a gap. Partial answers do not count as complete.
 
 ## Acceptance boundary
 

@@ -129,8 +129,10 @@ loop. A model-request admission failure must preserve saved history and allow
 the host to return existing evidence or an explicit budget result.
 
 The subsequent construction alignment selects a distinct finalization phase:
-M06 performs one tools-disabled grounded generation call over collected evidence,
-charged to M07's shared budget, with citation and freshness checks before delivery.
+M06 performs tools-disabled grounded generation followed by separate semantic
+support review over original evidence, charged to M07's shared budget. At most two
+generation and two review requests cover repair or one host-controlled source
+refresh; citation and freshness checks still run before delivery.
 The [shared contract C05](../design/rag-v1/contracts.md#c05-budgets-and-finalization)
 owns this behavior. It is My-RAG integration design, not an existing Forge feature
 or a separately implemented Agent loop. The actual wiring still needs validation.

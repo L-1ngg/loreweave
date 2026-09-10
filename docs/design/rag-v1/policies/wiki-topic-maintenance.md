@@ -58,8 +58,9 @@ tokens per card, retaining IDs/scope outside the free-text allowance; record
 omitted sections. Long boundaries can be inspected in detail rather than silently
 changing their meaning. The full descriptor remains stored and versioned.
 
-The catalogue is a routing index. It includes pages pending source refresh, so
-staleness cannot masquerade as topic absence. Old prose is never admitted as
+The catalogue is a routing index. It includes pages pending source refresh and
+retired topic descriptors, so staleness or retirement cannot masquerade as topic
+absence. Old prose is never admitted as
 current answer evidence because its card was retrieved. Resolve merged aliases
 to current canonical pages; split entries lead to their successor descriptors.
 
@@ -98,14 +99,13 @@ boundary is ambiguous, or creation is proposed, inspect the next eight from the
 same ranked pool: at most 16 distinct cards per topic decision, or all available
 cards if fewer exist. Stop early for a supported unambiguous reuse decision.
 
-Across both passes, inspect at most three candidate pages in detail. Read their
-full topic boundaries and selected relevant sections together with current
-supporting original passages. The combined detailed material is capped at 6,000
-tokens; source packet plus card/detail context fits a 16,000-token planner input
-budget, including prompts, with at most 2,000 output tokens. Trim lowest-ranked
-optional candidates before required context. If necessary meaning does not fit,
-return incomplete inspection rather than conclude the page is unrelated. A large
-page may require a separately scheduled bounded inspection before it can change.
+Across both passes, inspect at most three distinct candidate pages in detail.
+The initial inspection contains at most 6,000 tokens of page text and current
+original support. Source packet plus card/detail context fits a 16,000-token
+planner input budget, including prompts, with at most 2,000 output tokens.
+Trim optional candidates before required meaning. If required content exceeds
+one inspection, P07 permits bounded continuation over the same selected pages;
+it does not authorize selecting a fourth page or extending the 16-card set.
 
 For each inspected candidate, emit a structured decision with page/version,
 source references, subject compatibility, aspect compatibility, applicability,
@@ -141,7 +141,7 @@ A new page requires all of the following:
 - No compatible reuse/link target among the inspected candidates after the
   expansion pass (or exhaustion of a smaller candidate set).
 - A final exact normalized-title/alias and subject-plus-aspect-key lookup in the
-  eligible catalogue, including pending pages and pending creation reservations.
+  eligible catalogue, including pending/retired pages and creation reservations.
   Inspect colliding descriptors within the same 16-card/three-detail-page budget;
   if new collisions exceed it, defer. A collision blocks blind creation but does
   not by itself prove equivalence. Normalized keys catch literal equivalents;
@@ -201,15 +201,17 @@ conditions and bounded attempts; no immediate unbounded self-rescheduling.
 | Extraction calls | One extraction plus at most one repair/provider retry per packet |
 | Topic planning calls | At most three actual model requests total, including expansion, format repair, provider retry and conflict replanning |
 | Planning/extraction execution | Each subtask has a 120-second execution deadline from claim, a maximum 45-second model-request timeout, and persisted admission counters |
-| Page generation | Existing one generation plus at most two repair/provider retry attempts per candidate operation; worker restarts do not reset it |
+| Page generation/review | Per bounded draft block, at most three generation and three review requests under V02; 120 seconds from first claim and 45 seconds per request; counts/deadline survive worker restarts |
 
-Waiting for a worker is reported separately; these execution limits are not an
+Initial waiting for a worker is reported separately; after first claim, retries
+and continuation queue waits count toward the applicable deadline. These are not an
 end-to-end Wiki-refresh SLA or the interactive C05 budget. Share M08's background
 model slot, preserving interactive admission priority. Resume the same execution
 budget after interruption, or terminate it with a visible reason. A new source
 revision or explicit repair is a new attributable trigger, not an automatic budget
 reset. Persisted discovery continuations must reduce remaining passage/topic
-coverage; page/card overflow within a decision cannot bypass its fixed limits.
+coverage; card/distinct-page limits never reset. P07 defines the separate,
+finite continuation allowance for detail windows and source-proposal overflow.
 
 Defer is a planner result, not an extra global operation state. Map transient
 index/reservation waits to M08 retry_wait, and exhausted/unsupported decisions to
@@ -239,6 +241,81 @@ source references and allowable equivalent page targets. Report candidate
 recall@8/@16, false creation, missed reuse, deferred-decision reasons, mandatory
 coverage, calls/tokens and maintenance duration. Scripted tests prove control
 behavior, not model routing quality. Evaluate model decisions against human-
-reviewed source/topic examples during #17 (evaluation tooling) and #18 (acceptance).
+reviewed source/topic examples through #17 (harness contracts), #20 (live
+maintenance integration) and #18 (acceptance).
 Numeric caps are configurable defaults; tune on development data, not frozen
 acceptance questions. No measured quality improvement is claimed here.
+
+## P07: Bounded continuations and explicit termination
+
+A logical topic decision keeps one ID, immutable input/source/page versions,
+selected card/page IDs and a persisted inspection ledger. An inspection window
+records original/page locators, text hashes, reviewed claims, qualifiers,
+remaining required ranges and outcome. Notes are routing evidence only; final
+publication still needs the original-support review from V01. The planner may
+reuse a window only if all its text and dependency versions still match.
+
+| Allowance | Bound across the entire logical decision |
+| --- | --- |
+| Candidate selection | At most 16 distinct cards and three distinct detailed pages |
+| Detailed inspection | At most six distinct windows, including the initial one; each at most 6,000 detail tokens |
+| Inspection model requests | At most seven total, including one shared repair/provider-retry allowance |
+| Topic planner requests | The existing three total, including expansion and replanning |
+| Decision wall deadline | 600 seconds from its first claim, including continuation queue waits; child requests also obey P05's 120/45-second limits |
+
+Select a window from required uninspected source/page ranges. Completion removes
+those ranges from the ledger or records a terminal reason; replaying the same
+window without new outcome is not progress. The final planner decision reads the
+ledger and relevant original spans within its input cap. If unresolved context
+cannot fit, or windows/cards/pages/calls/deadline are exhausted, mark the logical
+decision failed with a needs_attention reason and the exact unresolved ranges.
+Do not keep scheduling the identical failed task. The product offers an explicit
+repair with revised scope/guidance or a versioned policy, linked to the old outcome.
+New source/page revisions supersede stale work; they are identifiable new inputs.
+A same-input transport retry returns the same outcome, not a fresh allowance.
+
+Source-proposal overflow has a separate finite root-packet ledger: at most four
+child packets and eight extraction requests total including the initial packet
+and retries, with a 600-second deadline from first claim. Subdivide source spans
+or consume already identified remaining topic IDs; record which obligations each
+child covers. If subdivision cannot reduce remaining obligations, terminate with
+needs_attention rather than repeatedly extracting the same four topics. Separate
+root packets cover the finite source manifest; none can silently drop a passage.
+
+Durable wait reasons identify the required index/reservation event. Requeue only
+while the applicable persisted budget remains, otherwise record failed status.
+Cached successful windows can support a later explicit repair only at unchanged
+hashes; the new repair has its own attributable budget. This protocol bounds one
+decision and makes unresolved work actionable; it does not promise every large or
+ambiguous page can be maintained automatically.
+
+## P08: Retirement when current support disappears
+
+Separate page lifecycle (active, retired, redirect, split_entry) from maintenance
+freshness/status. Active pages may be fresh or pending/failed revalidation. A
+retired page has retirement metadata and historical content, not fresh answer
+content. Retirement is a successful domain outcome, not an extraction failure.
+
+Retire as no_current_support only after the mandatory dependency walk and support
+review for the page finish, every previously retained factual claim lacks current
+eligible support, and no unresolved check could change that result. Revalidate
+tracked source revisions and relevant replacement passages; this establishes lack
+of current support for this page, not proof its subject does not exist anywhere.
+An unavailable index, failed model review or unresolved identity leaves the page
+pending/failed instead of proving retirement. With some supported claims, publish
+an audited reduced page and keep conflict/removed-content history.
+
+Publish retirement metadata, removal from active navigation/search membership,
+updated catalogue revision and the operation outcome atomically. Preserve the
+stable page ID, old versions, inbound links and a deterministic historical-page
+notice with reason/time. Keep its descriptor in topic matching so new supported
+material can reactivate the same page through a newly reviewed version. Retired
+prose remains excluded from current answers. Redirect/split entries retain their
+own semantics; retirement does not delete or redirect original source citations.
+
+After retirement, maintenance can report succeeded with page disposition retired;
+report this explicitly instead of presenting it as a newly ready content page.
+Later explicit restoration of unsupported history remains a historical/pending
+view and cannot reactivate current answer eligibility without new valid support.
+#10 owns retirement/revival, #11 preserves it across restructure/restore, #16
+verifies atomic recovery, and #20 reports retirement separately from failures.

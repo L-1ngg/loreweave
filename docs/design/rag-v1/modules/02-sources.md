@@ -1,7 +1,7 @@
 # M02: Sources
 
 M02 makes supplied Markdown a versioned, addressable source of evidence. It owns
-activation; Wiki and graph jobs consume the resulting revision event.
+activation; identity, Wiki and graph jobs consume the resulting revision event.
 
 ## Interface
 
@@ -25,7 +25,9 @@ IDs are independent of filenames. Preserve source bytes; derived offsets name
 their decoded representation. Support prose, lists, text tables and fenced code;
 images supply links/alt text only. Build searchable candidates before activation.
 A transaction validates the expected prior version, activates the prepared
-version and queues maintenance. A late import cannot overwrite a newer version
+version and queues identity-proof revalidation plus Wiki/graph maintenance.
+The [identity proof policy](../policies/identity-provenance.md) defines immediate
+transitive invalidation without waiting for a reconciliation worker. A late import cannot overwrite a newer version
 without an explicit new update decision.
 
 An identical operation retry returns its existing result. A changed payload

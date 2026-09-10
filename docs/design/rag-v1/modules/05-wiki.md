@@ -32,7 +32,10 @@ independent page identity and historical citations. A split's old entry lists
 successors; a merge's old entry points to its resulting page.
 
 Check references, support, qualifiers and known conflicts before auto-publication.
-Allow one generation plus two repair attempts, counted across job retries.
+Use separate semantic support review under
+[V01/V02](../policies/evidence-validation.md): at most three generation and three
+review requests per draft block, counted across retries. Review the entire final
+published text in bounded blocks; unchecked connective prose cannot be appended.
 A correctly displayed conflict may publish. Commit each related edit set
 atomically with expected page/source/identity revisions. A failed candidate does
 not replace a valid published page; stale published content remains marked and
@@ -41,6 +44,12 @@ excluded from answer evidence until revalidated.
 Restoration creates new versions, preserves later unrelated edits and keeps the
 restoration reason. Stale restored content may be browsed as pending update and
 is revised against current sources; source versions do not roll back with it.
+
+[P07/P08](../policies/wiki-topic-maintenance.md) specify finite inspection ledgers
+for large pages and a separate page lifecycle: active, retired, redirect or
+split_entry. Retire only after complete review proves all tracked current support
+is absent; failures or unresolved checks remain pending/failed. Preserve historical
+navigation and reuse the same page ID when later support justifies reactivation.
 
 ## Acceptance boundary
 

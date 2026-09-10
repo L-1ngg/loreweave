@@ -31,6 +31,11 @@ refresh states; a successfully uploaded file is not automatically ready Wiki.
 Distinguish operation success from answer timeout. Allow historical source/page
 navigation without representing those versions as current evidence.
 
+Show retired pages as historical entries with their reason and retained versions;
+exclude them from current topic navigation and answer evidence. Show incomplete
+inspection/graph coverage and actionable repair reasons without claiming absence
+of facts. Reconnect observes the same finalizing/refreshing run and operation.
+
 ## Acceptance boundary
 
 Drive the user flow in a browser and repeat the same evidence request over MCP.

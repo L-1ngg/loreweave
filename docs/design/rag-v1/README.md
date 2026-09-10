@@ -17,7 +17,7 @@ separately deployed service or necessarily a workspace package.
 | M03 | [Entity identity](modules/03-identity.md) | Resolve mentions, inspect identity, correct resolution | Mentions, canonical identity, evidence and identity revision |
 | M04 | [Graph](modules/04-graph.md) | Refresh claims, retrieve neighborhood | Qualified source claims and bounded traversal |
 | M05 | [Wiki](modules/05-wiki.md) | Maintain topics, read page, restore edit | Pages, edit sets, checks, publication and navigation |
-| M06 | [Evidence and answers](modules/06-evidence.md) | Retrieve evidence, finalize answer | Route fusion, evidence registry, citation/freshness checks |
+| M06 | [Evidence and answers](modules/06-evidence.md) | Retrieve evidence, finalize answer | Route fusion, evidence registry, semantic support/citation/freshness checks |
 | M07 | [Agent Host](modules/07-agent-host.md) | Start turn, cancel run, observe run | Forge integration, conversation persistence and run policy |
 | M08 | [Durable operations](modules/08-operations.md) | Submit operation, inspect outcome, execute leased work | Jobs, attempts, deduplication, outcome and worker fencing |
 | M09 | [Product interfaces](modules/09-interfaces.md) | Browser, HTTP and MCP interaction | Transport validation, UI and event delivery |
@@ -78,3 +78,10 @@ The spec consolidates the earlier discussion; it does not erase confirmed goals.
 [Alignment notes](alignment.md) record what this pass clarified and which claims
 still require executable evidence. Start refinement with a concrete boundary
 scenario from that file rather than restarting the full interview.
+
+## Detailed policies
+
+- [Evidence validation](policies/evidence-validation.md): claim support review, request admission and finalization refresh.
+- [Identity provenance](policies/identity-provenance.md): proof closure and source-triggered reconciliation.
+- [Graph maintenance](policies/graph-maintenance.md): extraction coverage, normalization and generation replacement.
+- [Wiki topic maintenance](policies/wiki-topic-maintenance.md): candidate routing, bounded continuation and retirement.

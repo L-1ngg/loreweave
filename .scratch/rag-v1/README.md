@@ -3,7 +3,7 @@
 The [specification issue](https://github.com/L-1ngg/loreweave/issues/1) owns product acceptance outcomes. The
 [module map](../../docs/design/rag-v1/README.md) owns responsibilities and
 interfaces. The plan contains one repository retirement prerequisite (00) and
-17 product delivery slices (01–17). The user approved adding prerequisite 00
+18 product delivery slices (01–18). The user approved adding prerequisite 00
 on 2026-09-10; existing work-item numbers remain stable.
 
 At migration on 2026-09-10, all tickets were scoped as `ready-for-agent` and none
@@ -35,7 +35,8 @@ Check live dependencies before starting later work.
 | [14 Expose organization-scoped evidence and answers through MCP](https://github.com/L-1ngg/loreweave/issues/15) | [#6](https://github.com/L-1ngg/loreweave/issues/6) | M01, M06, M07, M09 |
 | [15 Recover interrupted maintenance without duplicate or stale effects](https://github.com/L-1ngg/loreweave/issues/16) | [#10](https://github.com/L-1ngg/loreweave/issues/10), [#11](https://github.com/L-1ngg/loreweave/issues/11), [#12](https://github.com/L-1ngg/loreweave/issues/12), [#14](https://github.com/L-1ngg/loreweave/issues/14) | M02, M03, M04, M05, M07, M08, M09 |
 | [16 Build reproducible evaluation over public answer interfaces](https://github.com/L-1ngg/loreweave/issues/17) | [#6](https://github.com/L-1ngg/loreweave/issues/6) | M06, M09 |
-| [17 Run acceptance and capacity comparisons on a frozen corpus](https://github.com/L-1ngg/loreweave/issues/18) | [#11](https://github.com/L-1ngg/loreweave/issues/11), [#13](https://github.com/L-1ngg/loreweave/issues/13), [#14](https://github.com/L-1ngg/loreweave/issues/14), [#15](https://github.com/L-1ngg/loreweave/issues/15), [#16](https://github.com/L-1ngg/loreweave/issues/16), [#17](https://github.com/L-1ngg/loreweave/issues/17) | M01, M02, M03, M04, M05, M06, M07, M08, M09 |
+| [18 Integrate maintenance diagnostics with the evaluation harness](https://github.com/L-1ngg/loreweave/issues/20) | [#10](https://github.com/L-1ngg/loreweave/issues/10), [#12](https://github.com/L-1ngg/loreweave/issues/12), [#17](https://github.com/L-1ngg/loreweave/issues/17) | M03, M04, M05, M06, M08, M09 |
+| [17 Run acceptance and capacity comparisons on a frozen corpus](https://github.com/L-1ngg/loreweave/issues/18) | [#11](https://github.com/L-1ngg/loreweave/issues/11), [#13](https://github.com/L-1ngg/loreweave/issues/13), [#14](https://github.com/L-1ngg/loreweave/issues/14), [#15](https://github.com/L-1ngg/loreweave/issues/15), [#16](https://github.com/L-1ngg/loreweave/issues/16), [#17](https://github.com/L-1ngg/loreweave/issues/17), [#20](https://github.com/L-1ngg/loreweave/issues/20) | M01, M02, M03, M04, M05, M06, M07, M08, M09 |
 
 ```mermaid
 flowchart TD
@@ -68,6 +69,10 @@ flowchart TD
     T14 --> T17
     T15 --> T17
     T16 --> T17
+    T09 --> T18
+    T11 --> T18
+    T16 --> T18
+    T18 --> T17
 ```
 
 The DAG expresses actual prerequisites, not a required single serial order.

@@ -31,6 +31,13 @@ Two hops, 50 entities and 100 claims per call are initial configurable caps.
 Return truncation and pending-coverage information. Missing edges do not prove
 absence, and a path does not automatically imply transitivity or causation.
 
+The [graph maintenance policy](../policies/graph-maintenance.md) owns complete
+source packet manifests, bounded extraction/review, predicate normalization,
+identity-proof dependencies and extraction coverage. Stage generation membership
+until all required packets finish; atomically replace that source's active support
+generation. Partial/overflow work exposes a gap. Empty successful extraction
+removes old support from this source while preserving other independent support.
+
 ## Acceptance boundary
 
 Ask about a person's projects and their databases, then inspect every supporting

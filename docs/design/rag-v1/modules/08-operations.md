@@ -38,6 +38,14 @@ admission under provider quotas. Monitor source-searchable, Wiki-ready and
 graph-ready independently. Never mark the aggregate job complete while required
 effects are outcome_unknown.
 
+Persist identity proof-revalidation cursors, graph packet/generation membership,
+Wiki inspection ledgers and all generation/review admissions before dispatch.
+See [identity provenance](../policies/identity-provenance.md),
+[graph maintenance](../policies/graph-maintenance.md) and
+[evidence validation](../policies/evidence-validation.md). Recovery does not reset
+root budgets or deadlines. Successful Wiki retirement is a durable disposition;
+`needs_attention` is a failure reason with unresolved ranges, not a new job state.
+
 ## Acceptance boundary
 
 Submit a document operation, kill/replace a worker before and after a durable

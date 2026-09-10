@@ -8,7 +8,7 @@ and source-backed answers. Naming is confirmed in
 Construction entry point, aligned on 2026-09-10. Start with the
 [construction specification](https://github.com/L-1ngg/loreweave/issues/1), then the
 [nine-module map](design/rag-v1/README.md) and
-[18 work items](../.scratch/rag-v1/README.md).
+[19 work items](../.scratch/rag-v1/README.md).
 [Shared contracts](design/rag-v1/contracts.md) and module documents own callable
 behavior; [alignment notes](design/rag-v1/alignment.md) record refinements made
 while converting the discussion into a buildable plan. The D-series overview
@@ -182,6 +182,9 @@ changes do not retroactively alter the saved answer. Record the validation time;
 this is not a guarantee that sources cannot change during network delivery.
 The exact admission contract is owned by [C02/C05](design/rag-v1/contracts.md).
 
+Identity proof leaves participate in the same immediate checks, including
+transitive equivalence evidence, under [I01–I03](design/rag-v1/policies/identity-provenance.md).
+
 ## D04: Background maintenance and publication
 
 Source search, Wiki maintenance, and graph maintenance expose separate readiness
@@ -200,8 +203,11 @@ corpus regeneration in the first version.
 Apply Q35 checks to candidate Wiki versions: deterministic reference/link checks,
 source-version checks, and model-assisted support/qualifier/conflict review of
 changed claims. Graph outputs undergo corresponding schema, source-support and
-qualifier checks. Allow one initial generation and up to two repair attempts per
-candidate operation. Persist failure details if repair is exhausted. Never mark
+qualifier checks. The [evidence policy](design/rag-v1/policies/evidence-validation.md)
+requires separate semantic review: Wiki draft blocks have at most three generation
+and three review requests; graph packets have at most two extraction and two review
+requests under the [graph policy](design/rag-v1/policies/graph-maintenance.md).
+Persist failure details if repair is exhausted. Never mark
 a failed refresh as ready or reactivate stale evidence as a fallback.
 
 Store immutable candidate artifacts before committing publication metadata.
@@ -218,6 +224,10 @@ Q34 restoration may publish as visibly pending update if it references obsolete
 material; its stale portions remain excluded from current answers. Automatic
 checks are fallible and do not replace provenance or correction history.
 
+Graph readiness means a complete reviewed extraction generation, not merely some
+inserted edges. The [graph policy](design/rag-v1/policies/graph-maintenance.md) owns
+packet coverage, exclusions, normalization and atomic support replacement.
+
 ## D05: Wiki identity, editing and restoration
 
 Give each page a stable ID independent of title and navigation path. Store a
@@ -232,7 +242,7 @@ passages. Bounded hybrid catalogue retrieval and source-supported topic matching
 precede creation. Catalogue revisions and reservations protect concurrent
 publication; this routing index never makes stale page prose factual evidence.
 
-After a merge, retain the retired page ID as an entry pointing to the resulting
+After a merge, retain the old page ID as a redirect entry pointing to the resulting
 page. After a split, retain a navigation entry listing the resulting topics.
 Version-specific references continue to resolve to their historical content;
 do not redirect an old citation to unrelated current text. Give section anchors
@@ -245,6 +255,11 @@ restoration and preserve unrelated changes. If the requested recovery has
 ambiguous content consequences, describe them for a focused user clarification.
 All restored content follows Q34's current-source revalidation and preserves
 the user's restoration rationale for future maintenance.
+
+Large-page inspection uses a finite persistent ledger under P07. After complete
+review, a page with no current support retires successfully under P08, preserving
+history and its routing descriptor for later reactivation. An unavailable check
+cannot justify retirement. These page lifecycle states are separate from freshness.
 
 ## D06: Entity and relationship records
 
@@ -333,13 +348,16 @@ known operation outcomes instead of replaying a write with a missing tool result
 
 A round may contain independent source, Wiki, and graph calls; provider retries
 must still obey elapsed-time and call limits. Permit at most three pre-finalization
-model requests in total, including task retries and any summaries, and one final
-answer call with at most one validation retry within the same deadline. Override
+model requests in total, including task retries and any summaries. Finalization
+has at most two generation and two semantic-review requests (seven total including
+exploration); normally one generation and one review are needed. Override
 Forge's default retry settings; enforce cumulative admission immediately before
 model requests, with a minimal local SDK patch if needed. Event-consumer counters
 alone are not a strict request gate. Stop retrieval before the reserved answer
-phase and finalize through M06's tools-disabled grounded generation call, with
-citations validated before delivery. [C05](design/rag-v1/contracts.md#c05-budgets-and-finalization)
+phase and finalize through M06's tools-disabled generation and semantic support
+review. One host-controlled source-change refresh may consume an unused original
+round and remaining finalization slots; it cannot restart Agent exploration.
+[C05](design/rag-v1/contracts.md#c05-budgets-and-finalization)
 owns this finalization contract; SDK exploration text is not the final answer.
 Stop early on sufficient evidence and cancel outstanding work at the deadline.
 If a complete supported answer cannot be delivered, return an explicit partial

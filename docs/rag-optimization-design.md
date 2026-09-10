@@ -832,6 +832,29 @@ without adding a module or starting implementation. Historical local spec/ticket
 snapshots stay unchanged. The policy records measurable examples and configurable
 defaults; it does not claim evaluated performance or a Wiki-refresh SLA.
 
+### Q43: Close construction-design gaps before implementation
+
+The user requested completion of the whole-design audit findings. Under the
+existing routine-design delegation, adopt seven refinements: separate semantic
+support review, transitive identity-proof invalidation, one host-controlled
+finalization refresh, Wiki retirement/reactivation, finite large-page and source-
+proposal continuation, complete graph extraction generations, and a maintenance
+measurement integration slice. The shared contracts and four detailed policies
+own the exact algorithms and budgets.
+
+Grounded answer finalization normally uses one generation plus one review. Caps
+are three exploration, two generation and two review requests; repair and source
+refresh share the remaining slots, rounds and original deadline. Ordinary p95
+15 seconds, hard 30 seconds and complex 60 seconds remain unmeasured targets.
+Wiki blocks allow three generation plus three review calls; graph packets allow
+two extraction plus two review calls. No retry or continuation resets its budget.
+
+Keep work item 16 (#17) available after source answering; new work item 18 (#20)
+integrates maintenance diagnostics after #10/#12/#17 and blocks final acceptance
+#18. Existing numbers remain stable: 19 work items including repository retirement.
+This is a design/ticket refinement and does not start implementation or claim
+that automated support review eliminates hallucinations.
+
 ## Remaining preparation and execution boundaries
 
 - Routine design defaults are owned by the blueprint and do not require another

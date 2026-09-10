@@ -11,7 +11,7 @@ product behavior. They are not executable verification results.
 | Knowledge maintenance combined identity, graph, Wiki and job policy in one broad module | Separate identity, graph, Wiki and durable operations; register handlers through the composition root | M03/M04/M05/M08 |
 | Shared identities could accidentally make Wiki depend on complete graph extraction | Wiki and graph independently consume entity identity and original source evidence | M03 |
 | Agent, retrieval and generation could each implement their own freshness check | Source/identity owners expose validity; M06 owns final evidence admission and records validated_at | C02/C05, M06 |
-| SDK loop termination could leave no budget or well-defined route for the final cited answer | Use a distinct tools-disabled grounded generation call owned by M06 and charged to M07's shared budget | C05 |
+| SDK loop termination could leave no budget or well-defined route for the final cited answer | Use tools-disabled grounded generation and separate support review owned by M06 under M07's shared budget | C05 |
 | A source-change refresh might accidentally add a retrieval round after the cap | At most one refresh consumes an unused round and the original deadline; otherwise return a gap | C05 |
 | Sentence-level stale-content bypass was implied without a dependency representation | Use source-version dependency manifests and conservative page bypass until revalidated; keep unrelated pages usable | C02 |
 | HTTP timeout could release a slot while model/tool/persistence work still runs | Track response outcome and execution settlement separately, holding the slot/lease until settled | C04 |
@@ -64,3 +64,21 @@ First review C02-C05 and M02/M06/M07 together, then M03 identity and M05/M04
 publication, then the user-facing paths. Defer tuning numeric defaults until
 development evidence exists. The evaluation plan remains delegated and can be
 revised later without reopening settled product scope.
+
+## Completeness audit closure
+
+The seven design gaps below are resolved as contracts, not measured capabilities.
+
+| Gap | Contract | Delivery issues |
+| --- | --- | --- |
+| Real citation can support a false assertion | V01 separate full-draft semantic review and exact-text certificate | #2, #6, #9, #12 |
+| Identity proof expires while its resolution revision is unchanged | I01–I03 transitive proof validity and durable reconciliation | #5, #7, #8, #9, #12, #16 |
+| Finalization prohibits its promised source refresh | V02/V03 host-only refreshing transition within existing rounds and slots | #2, #3, #6, #7, #13 |
+| Wiki loses all support without a successful terminal outcome | P08 retired disposition, historical navigation and reactivation | #9, #10, #11, #16 |
+| Large-page continuation could reset limits or loop forever | P07 persistent inspection/root proposal ledgers and finite deadlines | #9, #10, #16 |
+| Graph construction and partial replacement unspecified | G01–G04 packet coverage, normalization, review and generation membership | #12, #13, #16 |
+| Early evaluation harness requires unfinished maintenance | #17 defines early schemas; #20 integrates actual maintenance after #10/#12/#17; #18 depends on #20 | #17, #20, #18 |
+
+Ordinary grounded finalization now normally costs two model calls rather than one.
+The 15-second p95 target and 30/60-second cutoffs remain targets; #18 must measure
+the review latency, failure rate and costs without relaxing support admission.

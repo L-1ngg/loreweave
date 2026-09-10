@@ -146,3 +146,39 @@ Persist the corpus/version manifest, development and acceptance dataset versions
 configuration and model identifiers, raw retrieved evidence, answers/citations,
 grading decisions, timing/error records, cost records, and a comparison report.
 Separate measured results from design targets and report limitations explicitly.
+
+## Design closure cases and integration ownership
+
+Online support review is part of the product under
+[V01–V04](design/rag-v1/policies/evidence-validation.md); it does not replace the
+independent human-reviewed acceptance labels. Capture generation/review request
+counts, retries, rejection reasons, unsupported-claim misses and falsely rejected
+supported claims separately. Normal finalization uses two model requests; caps
+are three exploration plus two generation plus two review. Measure its added
+latency under unchanged 15-second ordinary p95 and 30/60-second hard limits.
+
+In addition to the existing lifecycle cases, require:
+
+- Real but irrelevant citations, reversed/qualified claims, unlisted assertions,
+  incorrect graph-path inference and support-review failure with no unsafe publish.
+- Source change during final generation/review, one bounded refresh, exhausted
+  slots, second change and abort settlement without budget reset.
+- Identity proof source A changes while relationship sources B/C stay current;
+  immediate invalidation of joined facts and later evidenced reconciliation.
+- Wiki loses all current support and retires; unresolved checks cannot retire it;
+  later support reactivates the same ID and historical restore remains non-evidence.
+- Large pages and source proposals finish finite continuations or expose remaining
+  ranges; worker restart and duplicate requests cannot reset root budgets.
+- Graph packet overflow, unresolved identities, table/section context, zero-edge
+  replacement, failed partial generation and independent alternate support.
+
+[#17](https://github.com/L-1ngg/loreweave/issues/17) provides early source-answer
+fixtures, versioned diagnostic schemas and adapters; unavailable maintenance
+routes remain explicitly unavailable. [#20](https://github.com/L-1ngg/loreweave/issues/20)
+integrates actual Wiki and graph diagnostics after #10, #12 and #17. Capture
+routing recall/false creation/missed reuse, inspection coverage/termination,
+retirement/reactivation, proof invalidation, graph generation coverage, review
+outcomes and provider work with numerator/denominator and policy/model versions.
+[#18](https://github.com/L-1ngg/loreweave/issues/18) performs the complete human and
+real-provider acceptance comparison after that integration. Development fixtures
+must not contaminate frozen acceptance inputs or be reported as measured quality.

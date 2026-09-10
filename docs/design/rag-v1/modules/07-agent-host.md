@@ -34,7 +34,9 @@ persistence settlement; agent_end alone is not a commit acknowledgment.
 
 Every actual model call, summary and retry acquires the shared budget before
 dispatch. Tool budgets are checked before effects. Route finalization through
-M06's tools-disabled call within the reserved time. Deterministic receipts and
+M06's separate tools-disabled generation and support-review calls within the
+reserved time, with phase-specific admission under C05/V02. Persist the one
+host-controlled refreshing transition; it cannot resume Forge exploration. Deterministic receipts and
 clarifications need no extra answer-model call. Default permission handling
 must not introduce routine user prompts for already authorized operations.
 
