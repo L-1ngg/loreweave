@@ -35,6 +35,8 @@ export interface SourceOperation {
   maintenance: Array<{ id: string; kind: string; state: string }>;
 }
 export interface SourceVersion {
+  projectId?: string;
+  currentVersionId: string;
   id: string;
   version: string;
   title: string;
@@ -88,10 +90,12 @@ export class SourceService {
     id: string,
     key: string,
     projectId?: string,
+    target?: { documentId: string; expectedPrior: string },
   ) {
     const attachment = await this.attachment(token, id, projectId);
     return this.submit(token, {
       ...attachment,
+      ...target,
       key,
       ...(projectId ? { projectId } : {}),
     });
@@ -271,12 +275,14 @@ export class SourceService {
   async version(token: string, id: string): Promise<SourceVersion> {
     const context = await this.access.authorize(token, "read");
     const [row] = await this.operations
-      .sql`SELECT v.* FROM source_versions v JOIN source_documents d ON d.id=v.document_id WHERE v.id=${id} AND d.organization_id=${context.organizationId} AND v.state IN ('active','superseded')`;
+      .sql`SELECT v.*,d.project_id,d.active_version_id FROM source_versions v JOIN source_documents d ON d.id=v.document_id WHERE v.id=${id} AND d.organization_id=${context.organizationId} AND v.state IN ('active','superseded')`;
     if (!row) throw new Error("not_found");
     const passages = await this.operations
       .sql`SELECT * FROM source_passages WHERE version_id=${id} ORDER BY ordinal`;
     return {
       id: String(row.document_id),
+      currentVersionId: String(row.active_version_id),
+      ...(row.project_id ? { projectId: String(row.project_id) } : {}),
       version: id,
       title: String(row.filename),
       text: String(row.decoded),
@@ -353,23 +359,40 @@ export class SourceService {
   async validateReferences(
     token: string,
     items: SourceCandidate[],
-  ): Promise<{ valid: boolean; current: boolean; checkedAt: string }> {
+    signal?: AbortSignal,
+  ): Promise<{
+    valid: boolean;
+    current: boolean;
+    currentPassages: string[];
+    checkedAt: string;
+  }> {
     const context = await this.access.authorize(token, "read");
     if (!items.length)
       return {
         valid: true,
         current: true,
+        currentPassages: [],
         checkedAt: new Date().toISOString(),
       };
     const references = this.operations.sql.json(
       items.map((item) => ({ version: item.version, passage: item.passageId })),
     );
-    const rows = await this.operations
+    const query = this.operations
       .sql`SELECT p.id,p.version_id,p.original_text,p.heading_path,p.start_offset,p.end_offset,v.document_id,v.filename,d.active_version_id,statement_timestamp() AS checked_at
       FROM jsonb_to_recordset(${references}::jsonb) AS ref(version uuid,passage uuid)
       JOIN source_passages p ON p.id=ref.passage AND p.version_id=ref.version
       JOIN source_versions v ON v.id=p.version_id JOIN source_documents d ON d.id=v.document_id
       WHERE d.organization_id=${context.organizationId}`;
+    const cancel = () => query.cancel();
+    signal?.addEventListener("abort", cancel, { once: true });
+    let rows;
+    try {
+      signal?.throwIfAborted();
+      rows = await query;
+      signal?.throwIfAborted();
+    } finally {
+      signal?.removeEventListener("abort", cancel);
+    }
     const valid =
       rows.length === items.length &&
       items.every((item) =>
@@ -388,6 +411,11 @@ export class SourceService {
       );
     return {
       valid,
+      currentPassages: valid
+        ? rows
+            .filter((row) => row.active_version_id === row.version_id)
+            .map((row) => String(row.id))
+        : [],
       current:
         valid && rows.every((row) => row.active_version_id === row.version_id),
       checkedAt:

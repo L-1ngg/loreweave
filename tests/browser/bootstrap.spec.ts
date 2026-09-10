@@ -231,3 +231,47 @@ test("unrelated questions expose an evidence gap and diagnostics instead of a de
     page.getByText('"embeddingRequests": 1', { exact: false }),
   ).toBeVisible();
 });
+
+test("selected source updates keep old citations readable and link the new current version", async ({
+  page,
+}) => {
+  const uploaded = await page.request.post("/api/attachments", {
+    multipart: {
+      file: {
+        name: "发布说明.md",
+        mimeType: "text/markdown",
+        buffer: Buffer.from("发布窗口是星期一。"),
+      },
+    },
+  });
+  const accepted = await page.request.post("/api/imports", {
+    data: {
+      attachmentId: (await uploaded.json()).id,
+      key: crypto.randomUUID(),
+    },
+  });
+  const operation = (await accepted.json()) as {
+    id: string;
+    versionId: string;
+  };
+  await expect
+    .poll(
+      async () =>
+        (await (await page.request.get(`/api/imports/${operation.id}`)).json())
+          .source,
+    )
+    .toBe("searchable");
+  await page.goto(`/sources/${operation.versionId}`);
+  await expect(page.getByRole("heading", { name: "更新此文档" })).toBeVisible();
+  await page.getByLabel("Markdown 文件").setInputFiles({
+    name: "发布说明.md",
+    mimeType: "text/markdown",
+    buffer: Buffer.from("发布窗口是星期三。"),
+  });
+  await page.getByRole("button", { name: "提交新版本" }).click();
+  await expect(page.getByText("历史版本，当前检索使用后续版本")).toBeVisible();
+  await expect(page.getByRole("article")).toContainText("星期一");
+  await page.getByRole("link", { name: "查看当前版本" }).click();
+  await expect(page.getByRole("article")).toContainText("星期三");
+  await expect(page.getByText("当前生效来源", { exact: true })).toBeVisible();
+});

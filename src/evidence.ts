@@ -1,9 +1,11 @@
+import { setTimeout as pause } from "node:timers/promises";
 import {
   hash,
   validateDraft,
   validateReview,
   reviewPrompt,
   type Draft,
+  type Claim,
   type Review,
 } from "./answer-validation.ts";
 import { SourceService, type SourceCandidate } from "./sources.ts";
@@ -29,6 +31,7 @@ export interface FinalizationRuntime {
   request: (
     phase: "generation" | "review",
     input: Record<string, unknown>,
+    signal?: AbortSignal,
   ) => Promise<unknown>;
   model: string;
 }
@@ -61,6 +64,16 @@ export interface GroundedAnswer {
 }
 export class EvidenceService {
   private readonly packs = new Map<string, EvidencePack>();
+  private readonly reviewed = new Map<
+    string,
+    Array<{
+      draft: Draft;
+      review: Review;
+      pack: EvidencePack;
+      model: string;
+      checkedAt: string;
+    }>
+  >();
   constructor(private readonly sources: SourceService) {}
   async retrieve(
     token: string,
@@ -162,6 +175,34 @@ export class EvidenceService {
     const pack = this.packs.get(supplied.runId);
     if (!pack || hash(pack) !== hash(supplied))
       throw new Error("invalid_evidence_pack");
+    const stop = new AbortController();
+    const changed = new AbortController();
+    const signal = AbortSignal.any([runtime.signal, changed.signal]);
+    const watcher = (async () => {
+      try {
+        while (!stop.signal.aborted) {
+          await pause(100, undefined, { signal: stop.signal });
+          await this.validateSources(
+            token,
+            pack,
+            AbortSignal.any([stop.signal, runtime.signal]),
+          );
+        }
+      } catch (error) {
+        if (!stop.signal.aborted) changed.abort(error);
+      }
+    })();
+    const parent = runtime;
+    runtime = {
+      ...parent,
+      signal,
+      request: async (phase, input) => {
+        signal.throwIfAborted();
+        const result = await parent.request(phase, input, signal);
+        signal.throwIfAborted();
+        return result;
+      },
+    };
     try {
       runtime.signal.throwIfAborted();
       if (!pack.items.length) throw new Error("insufficient_evidence");
@@ -175,7 +216,11 @@ export class EvidenceService {
           runtime.remaining("review") < 1
         )
           break;
-        await this.validateSources(token, pack);
+        let sourceCheckedAt = await this.validateSources(
+          token,
+          pack,
+          runtime.signal,
+        );
         let draft: Draft;
         try {
           draft = validateDraft(
@@ -189,11 +234,16 @@ export class EvidenceService {
             pack,
           );
         } catch (error) {
+          runtime.signal.throwIfAborted();
           lastError = error;
           feedback = { error: "invalid_or_unavailable_draft" };
           continue;
         }
-        await this.validateSources(token, pack);
+        sourceCheckedAt = await this.validateSources(
+          token,
+          pack,
+          runtime.signal,
+        );
         let review: Review | undefined;
         for (
           let attempt = 0;
@@ -214,19 +264,37 @@ export class EvidenceService {
             );
             break;
           } catch (error) {
+            runtime.signal.throwIfAborted();
             lastError = error;
           }
         }
         if (!review) break;
         reviewed = { draft, review };
+        const checkpoints = this.reviewed.get(pack.runId) ?? [];
+        checkpoints.push(
+          structuredClone({
+            draft,
+            review,
+            pack,
+            model: runtime.model,
+            checkedAt: sourceCheckedAt,
+          }),
+        );
+        this.reviewed.set(pack.runId, checkpoints.slice(-2));
         if (review.claims.some((claim) => claim.verdict !== "supported")) {
           feedback = { draft, review };
           lastError = new Error("insufficient_evidence");
           continue;
         }
-        const validatedAt = await this.validateSources(token, pack);
+        const validatedAt = await this.validateSources(
+          token,
+          pack,
+          runtime.signal,
+        );
         runtime.signal.throwIfAborted();
-        const used = new Set(draft.claims.flatMap((claim) => claim.handles));
+        const used = new Set(
+          draft.claims.flatMap((claim) => claimDependencies(claim, review)),
+        );
         return {
           status:
             draft.claims.some((claim) => claim.role === "fact") &&
@@ -254,71 +322,118 @@ export class EvidenceService {
       }
       runtime.signal.throwIfAborted();
       if (reviewed) {
-        const validatedAt = await this.validateSources(token, pack);
-        const { draft, review } = reviewed;
-        let retained = draft.claims.filter(
-          (claim) =>
-            claim.role === "fact" &&
-            review.claims.some(
-              (result) =>
-                result.id === claim.id &&
-                result.verdict === "supported" &&
-                result.standalone === true,
-            ),
+        await this.validateSources(token, pack, runtime.signal);
+        const subset = await this.supportedSubset(
+          token,
+          pack.runId,
+          runtime.signal,
         );
-        for (let count = 0; count < draft.claims.length; count++)
-          retained = retained.filter((claim) =>
-            claim.premises.every((id) =>
-              retained.some((other) => other.id === id),
-            ),
-          );
-        if (retained.length) {
-          retained.sort((a, b) => a.start - b.start);
-          const text =
-            retained
-              .map((claim) => draft.text.slice(claim.start, claim.end))
-              .join("\n") + "\n部分问题尚缺少通过审核的依据。";
-          const used = new Set(retained.flatMap((claim) => claim.handles));
-          runtime.signal.throwIfAborted();
-          return {
-            status: "partial",
-            text,
-            citations: pack.items
-              .filter((item) => used.has(item.handle))
-              .map((item) => ({ ...item, id: item.documentId })),
-            validatedAt,
-            reason: "incomplete_support",
-            subset: {
-              originalDraftHash: draft.hash,
-              evidenceHash: pack.hash,
-              retainedClaimIds: retained.map((claim) => claim.id),
-              subsetHash: hash(text),
-              certificate: certificate(
-                draft,
-                review,
-                pack,
-                runtime.model,
-                validatedAt,
-              ),
-              checkedAt: validatedAt,
-            },
-          };
-        }
+        if (subset) return subset;
       }
       throw lastError;
     } finally {
-      this.release(pack.runId);
+      stop.abort();
+      await watcher;
     }
   }
-  private async validateSources(token: string, pack: EvidencePack) {
-    const result = await this.sources.validateReferences(token, pack.items);
+  async supportedSubset(
+    token: string,
+    runId: string,
+    signal: AbortSignal,
+  ): Promise<GroundedAnswer | undefined> {
+    signal.throwIfAborted();
+    for (const { draft, review, pack, model, checkedAt } of [
+      ...(this.reviewed.get(runId) ?? []),
+    ].reverse()) {
+      const validity = await this.sources.validateReferences(
+        token,
+        pack.items,
+        signal,
+      );
+      if (!validity.valid) throw new Error("invalid_citation");
+      const validatedAt = validity.checkedAt;
+      const current = new Set(validity.currentPassages);
+      let retained = draft.claims.filter(
+        (claim) =>
+          claim.role === "fact" &&
+          claimDependencies(claim, review).every((handle) =>
+            pack.items.some(
+              (item) => item.handle === handle && current.has(item.passageId),
+            ),
+          ) &&
+          review.claims.some(
+            (result) =>
+              result.id === claim.id &&
+              result.verdict === "supported" &&
+              result.standalone === true,
+          ),
+      );
+      for (let count = 0; count < draft.claims.length; count++)
+        retained = retained.filter((claim) =>
+          claim.premises.every((id) =>
+            retained.some((other) => other.id === id),
+          ),
+        );
+      if (retained.length) {
+        retained.sort((a, b) => a.start - b.start);
+        const text =
+          retained
+            .map((claim) => draft.text.slice(claim.start, claim.end))
+            .join("\n") + "\n部分问题尚缺少通过审核的依据。";
+        const used = new Set(
+          retained.flatMap((claim) => claimDependencies(claim, review)),
+        );
+        signal.throwIfAborted();
+        return {
+          status: "partial",
+          text,
+          citations: pack.items
+            .filter((item) => used.has(item.handle))
+            .map((item) => ({ ...item, id: item.documentId })),
+          validatedAt,
+          reason: "incomplete_support",
+          subset: {
+            originalDraftHash: draft.hash,
+            evidenceHash: pack.hash,
+            retainedClaimIds: retained.map((claim) => claim.id),
+            subsetHash: hash(text),
+            certificate: certificate(draft, review, pack, model, checkedAt),
+            checkedAt: validatedAt,
+          },
+        };
+      }
+    }
+    return undefined;
+  }
+  private async validateSources(
+    token: string,
+    pack: EvidencePack,
+    signal?: AbortSignal,
+  ) {
+    const result = await this.sources.validateReferences(
+      token,
+      pack.items,
+      signal,
+    );
     if (!result.valid) throw new Error("invalid_citation");
     if (!result.current) throw new Error("source_changed");
     return result.checkedAt;
   }
   release(runId: string) {
     this.packs.delete(runId);
+    this.reviewed.delete(runId);
   }
+}
+
+function claimDependencies(claim: Claim, review: Review): string[] {
+  return [
+    ...new Set([
+      ...claim.handles,
+      ...(review.claims
+        .find((result) => result.id === claim.id)
+        ?.spans.map((span) => span.handle) ?? []),
+    ]),
+  ];
 }
 
 function certificate(

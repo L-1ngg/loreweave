@@ -3,7 +3,7 @@
 An agent-powered knowledge base with a living wiki, graph-assisted retrieval,
 and source-backed answers.
 
-**Current capability: authenticated Markdown knowledge conversations (#2–#6).**
+**Current capability: authenticated Markdown knowledge conversations and document updates (#2–#7).**
 Members import versioned originals, ask questions through Forge, and open exact
 passages behind answer citations. PostgreSQL lexical/vector retrieval uses RRF;
 the answer pipeline validates claim spans and citations, performs a separate
@@ -51,6 +51,16 @@ is a deterministic integration fixture, not a semantic model. Wiki, identity and
 maintenance events are durably queued; their workers arrive in later slices. The question-answer
 fixture now retrieves those imported originals. The conversation URL restores progress without submitting another turn. This entry point remains a local scripted development service.
 
+Open a current source and use “更新此文档” → “提交新版本” to replace that
+selected document. Preparation keeps the prior source effective; historical links
+remain readable after activation. During generation/review, a serial 100 ms source
+check cancels obsolete provider I/O and waits for it to settle. The host may refresh
+once using an unused original retrieval round and the remaining generation/review
+slots; it never restarts Forge or resets the deadline. If changes continue or slots
+are exhausted, only independently reviewed, still-current claims with complete
+premises can survive as a partial answer; otherwise the run reports a source-change gap.
+Source freshness is checked at final admission, not promised indefinitely after delivery.
+
 ## Checks
 
 ```sh
@@ -70,6 +80,7 @@ bun run test:persistence
 bun run test:access
 bun run test:sources
 bun run test:evidence
+bun run test:updates
 bun x playwright install chromium
 bun run test:browser
 bun run build

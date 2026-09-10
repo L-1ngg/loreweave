@@ -245,9 +245,23 @@ function App({ projectId }: { projectId: string }) {
     </main>
   );
 }
-function SourcePage({ version }: { version: string }) {
+function SourcePage({
+  version,
+  canImport,
+}: {
+  version: string;
+  canImport: boolean;
+}) {
+  const [attachment, setAttachment] = useState<Attachment>();
+  const [revision, setRevision] = useState(0);
   const [source, setSource] = useState<
-    Evidence & Partial<Pick<SourceVersion, "passages" | "state">>
+    Evidence &
+      Partial<
+        Pick<
+          SourceVersion,
+          "passages" | "state" | "projectId" | "currentVersionId"
+        >
+      >
   >();
   const [error, setError] = useState(false);
   const context = useMemo(
@@ -267,7 +281,7 @@ function SourcePage({ version }: { version: string }) {
         if (!controller.signal.aborted) setError(true);
       });
     return () => controller.abort();
-  }, [version]);
+  }, [version, revision]);
   return (
     <main>
       <a href="/">← 返回提问</a>
@@ -282,6 +296,25 @@ function SourcePage({ version }: { version: string }) {
                   ? "历史版本，当前检索使用后续版本"
                   : "当前生效来源"}
               </p>
+              {source.state === "superseded" && source.currentVersionId && (
+                <p>
+                  <a href={`/sources/${source.currentVersionId}`}>
+                    查看当前版本
+                  </a>
+                </p>
+              )}
+              {canImport && source.state === "active" && (
+                <SourceImports
+                  projectId={source.projectId ?? ""}
+                  attachment={attachment}
+                  onAttachment={setAttachment}
+                  target={{
+                    documentId: source.id,
+                    expectedPrior: source.version,
+                  }}
+                  onActivated={() => setRevision((value) => value + 1)}
+                />
+              )}
               <a href={`/api/sources/${source.version}/original`}>
                 下载原始 Markdown
               </a>
@@ -311,8 +344,15 @@ function SourcePage({ version }: { version: string }) {
 const version = window.location.pathname.match(/^\/sources\/([^/]+)$/)?.[1];
 createRoot(document.getElementById("root")!).render(
   <AccessShell>
-    {({ projectId }) =>
-      version ? <SourcePage version={version} /> : <App projectId={projectId} />
+    {({ actor, projectId }) =>
+      version ? (
+        <SourcePage
+          version={version}
+          canImport={actor.grants.includes("import")}
+        />
+      ) : (
+        <App projectId={projectId} />
+      )
     }
   </AccessShell>,
 );

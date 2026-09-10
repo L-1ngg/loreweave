@@ -46,8 +46,20 @@ export function sourceRoutes(sources: SourceService) {
       !("key" in input) ||
       typeof input.key !== "string" ||
       ("projectId" in input && !isUuid(input.projectId)) ||
+      (("documentId" in input || "expectedPrior" in input) &&
+        (!("documentId" in input) ||
+          !isUuid(input.documentId) ||
+          !("expectedPrior" in input) ||
+          !isUuid(input.expectedPrior))) ||
       Object.keys(input).some(
-        (key) => !["attachmentId", "key", "projectId"].includes(key),
+        (key) =>
+          ![
+            "attachmentId",
+            "key",
+            "projectId",
+            "documentId",
+            "expectedPrior",
+          ].includes(key),
       )
     )
       throw new Error("invalid_input");
@@ -57,6 +69,12 @@ export function sourceRoutes(sources: SourceService) {
         input.attachmentId,
         input.key,
         "projectId" in input ? (input.projectId as string) : undefined,
+        "documentId" in input && "expectedPrior" in input
+          ? {
+              documentId: input.documentId as string,
+              expectedPrior: input.expectedPrior as string,
+            }
+          : undefined,
       ),
       202,
     );

@@ -681,20 +681,7 @@ export class KnowledgeHost {
       if (!pack && retrievalError && !run.snapshot.operations?.length)
         throw retrievalError;
       if (pack && !run.snapshot.operations?.length) {
-        const answer = await this.options.evidence!.finalize(
-          run.credential ?? "",
-          pack,
-          {
-            signal: run.controller.signal,
-            model: "scripted-extractive-v1",
-            remaining: (phase) => 2 - run.snapshot.counts[phase],
-            request: async (phase, input) => {
-              if (phase === "generation")
-                run.snapshot.draftId = crypto.randomUUID();
-              return this.request(run, phase, input);
-            },
-          },
-        );
+        const answer = await this.finalizeEvidence(run, question, pack);
         run.snapshot.answer = answer;
         run.snapshot.status = answer.status;
         if (answer.reason) run.snapshot.reason = answer.reason;
@@ -762,6 +749,83 @@ export class KnowledgeHost {
         /* Leave durable run unsettled for reconciliation. */
       }
       await run.writer?.release();
+    }
+  }
+  private async finalizeEvidence(
+    run: Run,
+    question: string,
+    initial: EvidencePack,
+  ): Promise<GroundedAnswer> {
+    const service = this.options.evidence!;
+    let pack = initial;
+    for (;;) {
+      try {
+        return await service.finalize(run.credential ?? "", pack, {
+          signal: run.controller.signal,
+          model: "scripted-extractive-v1",
+          remaining: (phase) => 2 - run.snapshot.counts[phase],
+          request: async (phase, input, signal) => {
+            if (phase === "generation")
+              run.snapshot.draftId = crypto.randomUUID();
+            return this.request(run, phase, input, signal);
+          },
+        });
+      } catch (error) {
+        run.controller.signal.throwIfAborted();
+        if (!(error instanceof Error) || error.message !== "source_changed")
+          throw error;
+        if (run.snapshot.draftId) {
+          (run.snapshot.supersededDraftIds ??= []).push(run.snapshot.draftId);
+          delete run.snapshot.draftId;
+        }
+        if (
+          run.snapshot.refreshUsed ||
+          run.snapshot.counts.retrieval >= run.retrievalCap ||
+          run.snapshot.counts.generation >= 2 ||
+          run.snapshot.counts.review >= 2 ||
+          Date.now() >= run.deadline
+        ) {
+          const subset = await service.supportedSubset(
+            run.credential ?? "",
+            run.snapshot.id,
+            run.controller.signal,
+          );
+          if (subset) return { ...subset, reason: "source_changed" };
+          throw error;
+        }
+        run.snapshot.refreshUsed = true;
+        run.snapshot.status = "refreshing";
+        run.snapshot.counts.retrieval++;
+        this.publish(run, "state");
+        await run.persistence;
+        await this.authorizeTool(run);
+        pack = await service.retrieve(run.credential ?? "", {
+          runId: run.snapshot.id,
+          question,
+          complex: run.complex,
+          ...(run.context?.scope.projectId
+            ? { projectId: run.context.scope.projectId }
+            : {}),
+          signal: run.controller.signal,
+          beforeEmbedding: async () => {
+            run.controller.signal.throwIfAborted();
+            await this.authorizeTool(run);
+            run.snapshot.diagnostics!.embeddingRequests++;
+            this.publish(run, "progress");
+            await run.persistence;
+          },
+        });
+        const previous = run.snapshot.diagnostics!;
+        run.snapshot.diagnostics = {
+          ...previous,
+          ...pack.diagnostics,
+          embeddingRequests: previous.embeddingRequests,
+          retrievalMs: previous.retrievalMs + pack.diagnostics.retrievalMs,
+        };
+        run.snapshot.status = "finalizing";
+        this.publish(run, "state");
+        await run.persistence;
+      }
     }
   }
   private async finalize(
@@ -838,6 +902,7 @@ export class KnowledgeHost {
     run: Run,
     phase: "generation" | "review",
     input: object,
+    signal?: AbortSignal,
   ): Promise<unknown> {
     await this.admit(run, phase);
     const requestStarted = performance.now();
@@ -849,6 +914,7 @@ export class KnowledgeHost {
           signal: AbortSignal.any([
             run.controller.signal,
             run.finalController.signal,
+            ...(signal ? [signal] : []),
           ]),
           method: "POST",
           headers: { "content-type": "application/json" },
