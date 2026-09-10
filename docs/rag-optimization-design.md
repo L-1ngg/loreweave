@@ -809,6 +809,29 @@ Existing databases, object-store contents, running services, untracked local fil
 and credentials are outside this repository task. This approval adds the work
 item and its dependency; no cleanup or product implementation has been executed.
 
+### Q42: Specify Wiki candidate retrieval and topic creation
+
+Requested by the user on 2026-09-10; numeric defaults are assistant-selected
+under the existing routine-design delegation.
+
+The [M05 topic maintenance policy](design/rag-v1/policies/wiki-topic-maintenance.md)
+specifies two streams: exhaustive dependency revalidation in 20-page cursor
+batches and source-packet topic discovery. Four catalogue routes retrieve up to
+20 cards each, RRF retains 40, and topic inspection expands from 8 to at most 16
+cards with detailed checks of at most 3 pages. These caps bound one decision,
+not the total pages affected by a source update.
+
+Prefer source-supported reuse/linking. New pages require an independently useful
+question, sufficient original support, completed bounded candidate inspection,
+ready search coverage and a duplicate check. Uncertain decisions are deferred
+with reasons. Catalogue revisions/reservations protect concurrent publication;
+bounded search and model judgment do not guarantee zero duplicate topics.
+
+Extend GitHub spec #1 and the existing Wiki, recovery and evaluation work items
+without adding a module or starting implementation. Historical local spec/ticket
+snapshots stay unchanged. The policy records measurable examples and configurable
+defaults; it does not claim evaluated performance or a Wiki-refresh SLA.
+
 ## Remaining preparation and execution boundaries
 
 - Routine design defaults are owned by the blueprint and do not require another

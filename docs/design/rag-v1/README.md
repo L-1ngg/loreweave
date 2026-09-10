@@ -61,6 +61,9 @@ source baseline and adapter verification limits.
 
 ## Document ownership
 
+For Wiki topic selection and maintenance scheduling, read
+[M05's detailed policy](policies/wiki-topic-maintenance.md).
+
 | Document | Authority |
 | --- | --- |
 | GitHub specification issue | Product requirements and numbered acceptance outcomes |

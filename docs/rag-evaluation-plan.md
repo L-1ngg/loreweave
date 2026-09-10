@@ -134,6 +134,14 @@ and executable tooling are later evaluation preparation work under this plan.
 
 ## Artifacts
 
+Topic maintenance additionally records candidate recall@8/@16, false creation,
+missed reuse, deferred-decision reasons, dependency/discovery coverage and model
+work under [M05's policy](design/rag-v1/policies/wiki-topic-maintenance.md).
+Use versioned human-reviewed development topic/source examples before tuning
+its numeric defaults. Acceptance covers unseen routing examples and keeps
+scripted control-flow verification separate from actual model routing quality.
+These diagnostics add no unmeasured pass-rate claim or refresh-time SLA.
+
 Persist the corpus/version manifest, development and acceptance dataset versions,
 configuration and model identifiers, raw retrieved evidence, answers/citations,
 grading decisions, timing/error records, cost records, and a comparison report.

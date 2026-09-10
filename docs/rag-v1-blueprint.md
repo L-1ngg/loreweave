@@ -225,6 +225,13 @@ versioned Markdown body with topic/scope, source dependencies, entity links,
 publication status, and edit-operation provenance. Prefer linking shared pages
 over copying organizational guidance into every project page.
 
+Use the [M05 topic maintenance policy](design/rag-v1/policies/wiki-topic-maintenance.md)
+for candidate selection and update/create decisions. Enumerate every affected
+dependency in durable batches; independently discover topics from new source
+passages. Bounded hybrid catalogue retrieval and source-supported topic matching
+precede creation. Catalogue revisions and reservations protect concurrent
+publication; this routing index never makes stale page prose factual evidence.
+
 After a merge, retain the retired page ID as an entry pointing to the resulting
 page. After a split, retain a navigation entry listing the resulting topics.
 Version-specific references continue to resolve to their historical content;

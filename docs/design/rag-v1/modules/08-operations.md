@@ -16,6 +16,11 @@ safe failure details. The composition root registers typed domain handlers;
 M08 does not import every domain module. Domain modules own their content and
 participate in a shared transaction through an internal adapter.
 
+Persist M05's dependency-enumeration and discovery cursors, coverage leftovers,
+planning admission counters and wake-up conditions under the
+[topic maintenance policy](../policies/wiki-topic-maintenance.md). Domain-specific
+meaning remains in M05; restarting a job never resets its logical budget.
+
 ## Invariants and failure behavior
 
 Persist an accepted operation and required job together. A repeated matching

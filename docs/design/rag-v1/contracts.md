@@ -109,6 +109,11 @@ with an expired fence cannot overwrite newer publication. Merge/split restoratio
 creates a new edit set preserving later unrelated edits, historical references
 and the user's retained correction intent.
 
+Topic creation/merge/split also validates the relevant M05 catalogue revisions
+and reservation ownership in the publication transaction. Concurrent catalogue
+changes require fresh selection, not blind retry of a stale create instruction;
+the [topic maintenance policy](policies/wiki-topic-maintenance.md) owns the rules.
+
 ## C08: Test seams
 
 Use the highest applicable public interface: authenticated browser/HTTP/MCP flows

@@ -18,6 +18,7 @@ product behavior. They are not executable verification results.
 | SDK history could be mistaken for transactional business-effect state | Domain effects and operation outcomes are transactional; missing SDK results trigger operation-key reconciliation | C03 |
 | Delayed/out-of-order jobs could overwrite current derived content | Check source/page/identity revisions and worker fencing inside publication transactions | C07 |
 | Technical modules were being treated as sequential delivery phases | Deliver vertical tickets; source-answering unlocks independent Wiki/graph/MCP/evaluation paths | Work-item DAG |
+| Topic discovery could miss new sections, truncate affected pages or duplicate existing topics | Separate complete dependency enumeration from bounded topic discovery; use catalogue inspection, creation gates and concurrent publication checks | M05 topic maintenance policy |
 
 The module contracts own these rules. The overview and Forge reuse document link
 to them so future changes have one callable-behavior authority.
@@ -48,6 +49,7 @@ to them so future changes have one callable-behavior authority.
 | Does PostgreSQL persistence preserve Forge entry/leaf and one-writer semantics? | Reopen, concurrent writer and uncertain-write cases | 02 |
 | Does the selected Bun tokenizer/vector configuration handle the actual language mix? | Source-query fixtures and development retrieval comparison | 05, 16 |
 | Are source activation and stale-candidate filtering correct under races? | Concurrent updates and source changes during answering | 06, 15 |
+| Does topic routing reuse suitable pages without dropping updates or inventing duplicate topics? | Expansion/defer cases, 45-page dependency coverage, missing indexes and concurrent creation | 08, 09, 10, 15, 16, 17 |
 | Are graph limits and qualifiers adequate for useful multi-hop evidence? | Qualified/path coverage examples plus capped neighborhoods | 11, 12 |
 | Do quality and timing targets hold for the agreed corpus/load? | Frozen reviewed data, real providers, failure-inclusive latency and cost reports | 17 |
 

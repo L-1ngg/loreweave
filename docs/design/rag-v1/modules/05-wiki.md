@@ -3,6 +3,10 @@
 M05 maintains readable cross-document topic pages, their publication state and
 recoverable edits. It preserves the user's organization/correction intent.
 
+The [topic maintenance policy](../policies/wiki-topic-maintenance.md) owns
+candidate retrieval, mandatory dependency coverage, inspection limits, creation
+gates and concurrent topic publication behind this module's maintenance interface.
+
 ## Interface
 
 - Plan and execute a bounded maintenance operation for supplied source changes
@@ -15,6 +19,8 @@ recoverable edits. It preserves the user's organization/correction intent.
 
 Own page IDs, topic/project scope, immutable page versions, dependency manifests,
 edit sets, aliases/navigation entries, publication checks and retained guidance.
+Also own the versioned topic catalogue, reverse page dependencies, routing
+decisions and topic reservations; M08 persists their work cursors and attempts.
 Read M02 evidence and M03 identities; use M08 for work. Graph availability is not
 a prerequisite to page maintenance.
 
