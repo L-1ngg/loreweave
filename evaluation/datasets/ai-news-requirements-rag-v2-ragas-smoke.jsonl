@@ -1,0 +1,2 @@
+{"case_id":"report-status-flow","user_input":"日报从草稿到撤回的状态流转顺序是什么？","knowledge_base_id":"default","top_k":8,"reference":"日报状态依次为：草稿、待审核、审核中、已发布、已撤回。","reference_context_ids":["chunk_292d18202b3cc3b4e7a9"],"expected_response_status":"answered","tags":["zh","direct","state-flow","ragas-smoke"]}
+{"case_id":"unsupported-mars-budget","user_input":"需求文档规定的 2028 年火星移民预算是多少？","knowledge_base_id":"default","top_k":8,"reference":"","reference_context_ids":[],"expected_response_status":"insufficient_evidence","tags":["zh","unanswerable","negative","ragas-smoke"]}
