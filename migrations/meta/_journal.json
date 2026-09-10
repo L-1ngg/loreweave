@@ -120,6 +120,13 @@
       "when": 1788998400016,
       "tag": "0016_wiki_edit_sets",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1788998400017,
+      "tag": "0017_wiki_history",
+      "breakpoints": true
     }
   ]
 }

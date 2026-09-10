@@ -45,6 +45,11 @@ Restoration creates new versions, preserves later unrelated edits and keeps the
 restoration reason. Stale restored content may be browsed as pending update and
 is revised against current sources; source versions do not roll back with it.
 
+The [history implementation notes](../../../development/wiki-history.md) document
+the bounded structure planning, claim-preservation review, recoverable edit sets
+and authenticated product commands. An intervening edit to a related page requires
+clarification; restoring one set never overwrites unrelated pages.
+
 [P07/P08](../policies/wiki-topic-maintenance.md) specify finite inspection ledgers
 for large pages and a separate page lifecycle: active, retired, redirect or
 split_entry. Retire only after complete review proves all tracked current support

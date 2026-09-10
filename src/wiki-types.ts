@@ -1,6 +1,8 @@
 import type { EvidencePack, EvidenceItem } from "./evidence.ts";
 import type { Draft, Review } from "./answer-validation.ts";
 export type WikiPhase =
+  | "structure"
+  | "structure_review"
   | "extraction"
   | "planning"
   | "inspection"
@@ -58,6 +60,8 @@ export interface WikiPage {
   sources: EvidenceItem[];
   certificates: WikiCertificate[];
   descriptor: TopicDescriptor;
+  successors?: Array<{ pageId: string; title: string }>;
+  editSetId?: string;
   retirement?: { reason: string; at: string; operationId: string };
 }
 export interface WikiCandidate {

@@ -1,3 +1,4 @@
+import { WikiHistoryPanel, WikiChangeForm } from "./wiki-history.tsx";
 import React, { useEffect, useState } from "react";
 import type { WikiPage } from "../src/wiki-types.ts";
 import { Markdown } from "./markdown.tsx";
@@ -22,9 +23,11 @@ export function WikiBrowser({
     [page, setPage] = useState<WikiPage>(),
     [error, setError] = useState(""),
     [revision, setRevision] = useState(0),
-    [after, setAfter] = useState("");
+    [after, setAfter] = useState(""),
+    [selected, setSelected] = useState<string[]>([]);
   useEffect(() => {
     setAfter("");
+    setSelected([]);
     setCatalogue({ items: [] });
   }, [projectId]);
   useEffect(() => {
@@ -72,6 +75,25 @@ export function WikiBrowser({
                 ? "当前有效"
                 : "此版本仅供查阅，当前回答不使用其中的旧内容"}
             </p>
+            {page.successors && page.successors.length > 0 && (
+              <section>
+                <h2>
+                  {page.lifecycle === "redirect"
+                    ? "此主题已合并"
+                    : "此主题已拆分"}
+                </h2>
+                <p>原入口与历史内容继续保留。当前内容请查看：</p>
+                <ul>
+                  {page.successors.map((successor) => (
+                    <li key={successor.pageId}>
+                      <a href={`/wiki/${successor.pageId}`}>
+                        {successor.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
             <article>
               <Markdown text={page.text} />
             </article>
@@ -85,6 +107,7 @@ export function WikiBrowser({
                 </li>
               ))}
             </ul>
+            <WikiHistoryPanel page={page} />
             {page.descriptor.identities.length > 0 && (
               <p>本主题保留了对象身份的原文依据，可在来源页面查看。</p>
             )}
@@ -101,15 +124,54 @@ export function WikiBrowser({
           <ul>
             {catalogue.items.map((item) => (
               <li key={item.id}>
+                {item.lifecycle === "active" && item.fresh && (
+                  <input
+                    type="checkbox"
+                    aria-label={`选择主题：${item.title}`}
+                    checked={selected.includes(item.id)}
+                    onChange={(event) =>
+                      setSelected(
+                        event.target.checked
+                          ? [...selected, item.id]
+                          : selected.filter((id) => id !== item.id),
+                      )
+                    }
+                  />
+                )}
                 <a href={`/wiki/${item.id}`}>{item.title}</a> ·{" "}
-                {item.lifecycle === "retired"
-                  ? "已退休，保留历史"
-                  : item.fresh
-                    ? "当前有效"
-                    : "等待更新或需要处理"}
+                {item.lifecycle === "redirect"
+                  ? "已合并，保留入口"
+                  : item.lifecycle === "split_entry"
+                    ? "已拆分，查看后继主题"
+                    : item.lifecycle === "retired"
+                      ? "已退休，保留历史"
+                      : item.fresh
+                        ? "当前有效"
+                        : "等待更新或需要处理"}
               </li>
             ))}
           </ul>
+          {selected.length >= 2 && selected.length <= 3 && (
+            <WikiChangeForm
+              key={selected.join(":")}
+              title="合并所选主题"
+              label="合并说明"
+              build={(key, reason) => ({
+                url: "/api/wiki-restructures",
+                body: {
+                  key,
+                  reason,
+                  kind: "merge",
+                  pages: catalogue.items
+                    .filter((item) => selected.includes(item.id))
+                    .map((item) => ({
+                      pageId: item.id,
+                      version: item.version,
+                    })),
+                },
+              })}
+            />
+          )}
           {!catalogue.items.length && (
             <p>
               还没有已发布的知识主题。来源准备好后，系统会提取并审核可用主题。

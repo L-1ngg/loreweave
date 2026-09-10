@@ -5,6 +5,77 @@ import type { WikiService } from "./wiki.ts";
 import { record } from "./answer-validation.ts";
 export function wikiRoutes(wiki: WikiService) {
   const app = new Hono();
+  app.post("/wiki-restructures", async (c) => {
+    const input: unknown = await c.req.json();
+    if (
+      !record(input) ||
+      typeof input.key !== "string" ||
+      !["merge", "split"].includes(String(input.kind)) ||
+      typeof input.reason !== "string" ||
+      !Array.isArray(input.pages) ||
+      input.pages.some(
+        (page) =>
+          !record(page) || !isUuid(page.pageId) || !isUuid(page.version),
+      )
+    )
+      throw new Error("invalid_input");
+    return c.json(
+      await wiki.restructure(credential(c), {
+        key: input.key,
+        kind: input.kind as "merge" | "split",
+        reason: input.reason,
+        pages: input.pages.map((page) => ({
+          pageId: String(page.pageId),
+          version: String(page.version),
+        })),
+      }),
+    );
+  });
+  app.post("/wiki-edit-sets/:id/restore", async (c) => {
+    const id = c.req.param("id"),
+      input: unknown = await c.req.json();
+    if (
+      !isUuid(id) ||
+      !record(input) ||
+      typeof input.key !== "string" ||
+      typeof input.reason !== "string"
+    )
+      throw new Error("invalid_input");
+    return c.json(
+      await wiki.restoreEditSet(credential(c), {
+        key: input.key,
+        editSetId: id,
+        reason: input.reason,
+      }),
+    );
+  });
+  app.get("/wiki/:id/history", async (c) => {
+    const id = c.req.param("id");
+    if (!isUuid(id)) throw new Error("invalid_input");
+    return c.json(await wiki.history(credential(c), id));
+  });
+  app.post("/wiki/:id/restore", async (c) => {
+    const id = c.req.param("id"),
+      input: unknown = await c.req.json();
+    if (
+      !isUuid(id) ||
+      !record(input) ||
+      typeof input.key !== "string" ||
+      typeof input.reason !== "string" ||
+      !isUuid(input.versionId) ||
+      !isUuid(input.expectedVersion)
+    )
+      throw new Error("invalid_input");
+    return c.json(
+      await wiki.restore(credential(c), {
+        key: input.key,
+        pageId: id,
+        versionId: input.versionId,
+        expectedVersion: input.expectedVersion,
+        reason: input.reason,
+      }),
+    );
+  });
   app.post("/wiki-contributions", async (c) => {
     const input: unknown = await c.req.json();
     if (

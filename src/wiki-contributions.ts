@@ -42,7 +42,7 @@ export class WikiContributions {
     if (input.target) {
       const title = normalizeTitle(input.target);
       const matches = await this.operations
-        .sql`SELECT p.id,v.title FROM wiki_pages p JOIN wiki_versions v ON v.id=p.current_version_id JOIN wiki_catalogue c ON c.page_id=p.id WHERE p.organization_id=${context.organizationId} AND p.project_id IS NOT DISTINCT FROM ${input.projectId ?? null}::uuid AND (c.normalized_title=${title} OR c.aliases ? ${title}) ORDER BY p.id LIMIT 3`;
+        .sql`SELECT p.id,v.title FROM wiki_pages p JOIN wiki_versions v ON v.id=p.current_version_id JOIN wiki_routing_catalogue c ON c.page_id=p.id WHERE p.organization_id=${context.organizationId} AND p.project_id IS NOT DISTINCT FROM ${input.projectId ?? null}::uuid AND (c.normalized_title=${title} OR c.routing_aliases ? ${title}) ORDER BY p.id LIMIT 3`;
       if (matches.length !== 1)
         return {
           status: "clarification" as const,

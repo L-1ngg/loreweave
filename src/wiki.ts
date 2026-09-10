@@ -1,7 +1,13 @@
-import { WikiDependencies } from "./wiki-dependencies.ts";
+import { WikiStructure, type RestructureInput } from "./wiki-structure.ts";
+import { WikiPublication } from "./wiki-publication.ts";
+import {
+  WikiHistory,
+  type RestoreEditSetInput,
+  type RestorePageInput,
+} from "./wiki-history.ts";
+import { WikiDependencies, queuePageRefresh } from "./wiki-dependencies.ts";
 import { reviewCurrentSupport } from "./wiki-support.ts";
 import { wikiReadiness } from "./wiki-readiness.ts";
-import { conflictPacks } from "./wiki-conflicts.ts";
 import {
   WikiContributions,
   type ContributionInput,
@@ -29,8 +35,8 @@ import {
   type Job,
   type Transaction,
 } from "./operations.ts";
-import { validateEmbeddings, type EmbeddingAdapter } from "./embeddings.ts";
-import { hash, validateDraft, validateReview } from "./answer-validation.ts";
+import { type EmbeddingAdapter } from "./embeddings.ts";
+import { hash } from "./answer-validation.ts";
 import { lexicalText } from "./indexing.ts";
 import { WikiModelRuntime } from "./wiki-model-runtime.ts";
 import type {
@@ -72,6 +78,26 @@ export class WikiService {
     );
     this.catalogue = new WikiCatalogue(this.operations, embeddings);
   }
+  private structure() {
+    return new WikiStructure(
+      this.operations,
+      this.access,
+      this.sources,
+      this.identities,
+      this.runtime,
+      new WikiPublication(
+        this.operations,
+        this.sources,
+        this.identities,
+        this.embeddings,
+        this.runtime,
+        this.model,
+      ),
+    );
+  }
+  restructure(token: string, input: RestructureInput) {
+    return this.structure().submit(token, input);
+  }
   async list(token: string, projectId?: string, after = "") {
     const context = await this.access.authorize(token, "read", projectId);
     const rows = await this.operations
@@ -111,12 +137,33 @@ export class WikiService {
       this.sources,
     ).repair(token, input);
   }
+  history(token: string, pageId: string) {
+    return new WikiHistory(this.operations, this.access).list(token, pageId);
+  }
+  restoreEditSet(token: string, input: RestoreEditSetInput) {
+    return new WikiHistory(this.operations, this.access).restoreSet(
+      token,
+      input,
+    );
+  }
+  restore(token: string, input: RestorePageInput) {
+    return new WikiHistory(this.operations, this.access).restore(token, input);
+  }
   async page(token: string, id: string, version?: string): Promise<WikiPage> {
     const context = await this.access.authorize(token, "read");
     const [row] = await this.operations
       .sql`SELECT p.id,p.current_version_id,p.lifecycle,p.retirement,v.*,e.eligible FROM wiki_pages p JOIN wiki_versions v ON v.page_id=p.id AND v.id=COALESCE(${version ?? null}::uuid,p.current_version_id) JOIN wiki_version_eligibility e ON e.id=v.id WHERE p.id=${id} AND p.organization_id=${context.organizationId}`;
     if (!row) throw new Error("not_found");
+    const successors = await this.operations
+      .sql`SELECT p.id,v.title FROM wiki_page_routes r JOIN wiki_pages p ON p.id=r.successor_id JOIN wiki_versions v ON v.id=p.current_version_id WHERE r.page_id=${id} ORDER BY p.id`;
+    const [editSet] = await this.operations
+      .sql`SELECT edit_set_id FROM wiki_edit_pages WHERE page_id=${id} AND after_state->>'version'=${String(row.id)} ORDER BY edit_set_id LIMIT 1`;
     return {
+      successors: successors.map((item) => ({
+        pageId: String(item.id),
+        title: String(item.title),
+      })),
+      ...(editSet ? { editSetId: String(editSet.edit_set_id) } : {}),
       id,
       version: String(row.id),
       title: String(row.title),
@@ -276,7 +323,14 @@ export class WikiService {
       await inspector.assertCurrent(tx, organizationId, inspection);
     };
     const edit = supported.items.length
-      ? await this.prepareContent(
+      ? await new WikiPublication(
+          this.operations,
+          this.sources,
+          this.identities,
+          this.embeddings,
+          this.runtime,
+          this.model,
+        ).prepare(
           job,
           organizationId,
           scope,
@@ -313,10 +367,13 @@ export class WikiService {
       : undefined;
     const projection = new WikiProjection(this.operations, this.embeddings);
     const dependencies = new WikiDependencies(this.operations);
+    await this.structure().queueRecorded(context?.organizationId);
     await dependencies.supersede(context?.organizationId);
     await projection.wake(context?.organizationId);
     const job = await this.operations.claim(
       [
+        "wiki.structure",
+        "wiki.restore",
         "wiki.refresh",
         "wiki.project",
         "wiki.dependencies",
@@ -329,6 +386,14 @@ export class WikiService {
     );
     if (!job) return false;
     try {
+      if (job.kind === "wiki.structure") {
+        await this.structure().run(job);
+        return true;
+      }
+      if (job.kind === "wiki.restore") {
+        await new WikiHistory(this.operations, this.access).run(job);
+        return true;
+      }
       if (job.kind === "wiki.dependencies" || job.kind === "wiki.identity") {
         await new WikiDependencies(this.operations).run(job);
         return true;
@@ -338,6 +403,30 @@ export class WikiService {
         return true;
       }
       if (job.kind === "wiki.revalidate") {
+        const targets = await this.operations
+          .sql`SELECT page_id FROM wiki_route_targets WHERE entry_id=${String(job.payload.pageId)} ORDER BY page_id`;
+        if (
+          targets.length &&
+          !targets.some((row) => row.page_id === job.payload.pageId)
+        ) {
+          await this.operations.commit(job, async (tx) => {
+            const contributions = (job.payload.contributions ?? []) as Array<{
+              versionId: string;
+              topic: TopicDescriptor;
+            }>;
+            if (contributions.length)
+              for (const contribution of contributions)
+                await queuePageRefresh(
+                  tx,
+                  job,
+                  String(job.payload.pageId),
+                  contribution,
+                );
+            else await queuePageRefresh(tx, job, String(job.payload.pageId));
+          });
+          return true;
+        }
+
         for (let attempt = 0; attempt < 3; attempt++)
           try {
             const edit = await this.prepareRefresh(job);
@@ -492,6 +581,8 @@ export class WikiService {
                 throw new Error("version_conflict");
             for (const edit of edits) await edit.check(tx);
             for (const edit of edits) await edit.apply(tx);
+            await tx`INSERT INTO knowledge_jobs(id,operation_id,kind,job_key,payload) SELECT gen_random_uuid(),operation_id,'wiki.structure',id::text,jsonb_build_object('proposalId',id) FROM wiki_structure_proposals WHERE operation_id=${job.operationId} AND status='pending' ON CONFLICT(operation_id,kind,job_key) DO NOTHING`;
+
             await tx`UPDATE wiki_work SET state=state||${tx.json(jsonValue({ coverage: extraction.coverage }))}::jsonb WHERE job_id=${job.id}`;
           });
           published = true;
@@ -509,6 +600,8 @@ export class WikiService {
         job,
         async (tx) => {
           await tx`UPDATE knowledge_jobs SET reason=${reason} WHERE id=${job.id}`;
+          if (job.kind === "wiki.structure")
+            await tx`UPDATE wiki_structure_proposals SET status='rejected' WHERE id=${String(job.payload.proposalId)} AND status='pending'`;
         },
         reason === "source_changed" || reason === "identity_changed"
           ? "superseded"
@@ -764,7 +857,14 @@ export class WikiService {
           );
         },
       };
-    return this.prepareContent(
+    return new WikiPublication(
+      this.operations,
+      this.sources,
+      this.identities,
+      this.embeddings,
+      this.runtime,
+      this.model,
+    ).prepare(
       job,
       organizationId,
       scope,
@@ -774,187 +874,6 @@ export class WikiService {
       pool.scopeRevisions,
       (tx) => inspector.assertCurrent(tx, organizationId, inspection),
     );
-  }
-  private async prepareContent(
-    job: Job,
-    organizationId: string,
-    scope: string,
-    topic: TopicDescriptor,
-    pack: WikiPack,
-    index: number | string,
-    revisions: Record<string, number>,
-    check: (tx: Transaction) => Promise<void>,
-    existing?: { id: string; version: string },
-  ): Promise<PreparedEdit> {
-    const blocks: Array<{ text: string; certificate: WikiCertificate }> = [];
-    const conflicts = await conflictPacks(
-      this.operations,
-      this.runtime,
-      job,
-      topic,
-      pack,
-      index,
-    );
-    const ordinaryBlocks = packetPacks(pack, 2000);
-    for (const [blockIndex, block] of [
-      ...ordinaryBlocks,
-      ...conflicts,
-    ].entries()) {
-      const requiredConflict =
-        blockIndex >= ordinaryBlocks.length
-          ? block.items.map((item) => item.handle)
-          : undefined;
-      let feedback: unknown;
-      let reviewed: { text: string; certificate: WikiCertificate } | undefined;
-      for (let attempt = 0; attempt < 3; attempt++) {
-        const draft = await this.runtime.request(
-          job,
-          `block:${index}:${blockIndex}`,
-          "generation",
-          3,
-          {
-            pack: block,
-            topic,
-            feedback,
-            ...(requiredConflict ? { requiredConflict } : {}),
-          },
-          (raw) => {
-            const draft = validateDraft(raw, block, {
-              maxBytes: 16000,
-              maxClaims: 128,
-            });
-            if (
-              draft.text !== `# ${topic.title}` &&
-              !draft.text.startsWith(`# ${topic.title}\n`)
-            )
-              throw new Error("unreviewed_title");
-            if (new TextEncoder().encode(draft.text).length > 4000)
-              throw new Error("wiki_block_too_large");
-            if (
-              requiredConflict &&
-              !draft.claims.some(
-                (claim) =>
-                  claim.start > topic.title.length + 2 &&
-                  requiredConflict.every((handle) =>
-                    claim.handles.includes(handle),
-                  ),
-              )
-            )
-              throw new Error("missing_conflict_claim");
-            return draft;
-          },
-        );
-        const review = await this.runtime.request(
-          job,
-          `block:${index}:${blockIndex}`,
-          "review",
-          3,
-          {
-            pack: block,
-            topic,
-            draft,
-            ...(requiredConflict ? { requiredConflict } : {}),
-          },
-          (raw) => validateReview(raw, draft, block, 16000),
-        );
-        if (review.claims.every((claim) => claim.verdict === "supported")) {
-          reviewed = {
-            text: draft.text,
-            certificate: {
-              draft,
-              evidence: block.items,
-              offset: blocks.reduce(
-                (total, item) => total + item.text.length + 2,
-                0,
-              ),
-              draftHash: draft.hash,
-              evidenceHash: block.hash,
-              review,
-              model: this.model.profile,
-              prompt: "wiki-support-v1",
-              policy: "V01-wiki-v1",
-              checkedAt: new Date().toISOString(),
-            },
-          };
-          break;
-        }
-        feedback = { draft, review };
-      }
-      if (!reviewed) throw new Error("insufficient_evidence");
-      blocks.push(reviewed);
-    }
-    const reviewed = {
-      text: blocks.map((block) => block.text).join("\n\n"),
-      certificates: blocks.map((block) => block.certificate),
-    };
-    let vector: number[] | undefined;
-    try {
-      const vectors = await this.embeddings.embed(
-        [descriptorText(topic)],
-        AbortSignal.timeout(45000),
-      );
-      validateEmbeddings(vectors, 1, this.embeddings.dimensions);
-      vector = vectors[0];
-    } catch {
-      // The required lexical catalogue publishes even when its optional vector projection is pending.
-    }
-    return {
-      revisions,
-      check,
-      apply: async (tx) => {
-        const publishedEntities = await this.identities.assertForPublication(
-          tx,
-          organizationId,
-          topic.identities,
-        );
-        await this.sources.assertCurrentForPublication(
-          tx,
-          organizationId,
-          pack.items,
-        );
-        await tx`SELECT pg_advisory_xact_lock(hashtextextended(${`wiki:${organizationId}`},0))`;
-        const pageId = existing ? String(existing.id) : crypto.randomUUID(),
-          versionId = crypto.randomUUID();
-        if (existing) {
-          const [page] =
-            await tx`SELECT current_version_id FROM wiki_pages WHERE id=${pageId} FOR UPDATE`;
-          if (page?.current_version_id !== existing.version)
-            throw new Error("version_conflict");
-        } else {
-          const [duplicate] =
-            await tx`SELECT c.page_id FROM wiki_catalogue c JOIN wiki_pages p ON p.id=c.page_id WHERE p.organization_id=${organizationId} AND COALESCE(p.project_id::text,'shared')=${scope} AND (EXISTS(SELECT 1 FROM jsonb_array_elements_text(${tx.json([topic.title, ...topic.aliases].map(normalize))}::jsonb) name WHERE c.normalized_title=name.value OR c.aliases ? name.value) OR (c.subject_key=${topic.subjectKey} AND c.aspect_key=${topic.aspectKey}))`;
-          const topicKey = hash({
-            subject: topic.subjectKey,
-            aspect: topic.aspectKey,
-          });
-          const [reservation] =
-            await tx`SELECT * FROM wiki_reservations WHERE organization_id=${organizationId} AND scope=${scope} AND topic_key=${topicKey} FOR UPDATE`;
-          if (reservation && reservation.operation_id !== job.operationId)
-            throw new Error("needs_attention:reservation_outcome");
-          if (duplicate)
-            throw new Error("needs_attention:literal_topic_collision");
-          await tx`INSERT INTO wiki_reservations(organization_id,scope,topic_key,operation_id,decision_id) VALUES(${organizationId},${scope},${topicKey},${job.operationId},${job.id}) ON CONFLICT DO NOTHING`;
-          await tx`INSERT INTO wiki_pages(id,organization_id,project_id) VALUES(${pageId},${organizationId},${scope === "shared" ? null : scope})`;
-        }
-        await tx`INSERT INTO wiki_versions(id,page_id,operation_id,expected_prior,title,body,sources,identity_dependencies,certificates,descriptor) VALUES(${versionId},${pageId},${job.operationId},${existing ? String(existing.version) : null},${topic.title},${reviewed!.text},${tx.json(jsonValue(pack.items))},${tx.json(topic.identities)},${tx.json(jsonValue(reviewed.certificates))},${tx.json(jsonValue(topic))})`;
-        for (const item of pack.items)
-          await tx`INSERT INTO wiki_page_sources(version_id,source_version_id,passage_id) VALUES(${versionId},${item.version},${item.passageId}) ON CONFLICT DO NOTHING`;
-        for (const version of new Set(pack.items.map((item) => item.version)))
-          await tx`INSERT INTO wiki_version_inputs(version_id,source_version_id) VALUES(${versionId},${version}) ON CONFLICT DO NOTHING`;
-        await tx`UPDATE wiki_pages SET current_version_id=${versionId},lifecycle='active',retirement=NULL WHERE id=${pageId}`;
-        await tx`UPDATE wiki_reservations SET state='published',page_id=${pageId} WHERE organization_id=${organizationId} AND scope=${scope} AND operation_id=${job.operationId} AND decision_id=${job.id} AND state='pending'`;
-        await tx`INSERT INTO wiki_catalogue(page_id,version_id,normalized_title,subject_key,aspect_key,descriptor,lexical_text,embedding,embedding_profile,dimensions,title_lexical,aliases,subject_ids,body_lexical) VALUES(${pageId},${versionId},${normalize(topic.title)},${topic.subjectKey},${topic.aspectKey},${tx.json(jsonValue(topic))},${lexicalText(descriptorText(topic))},${vector ? JSON.stringify(vector) : null}::vector,${this.embeddings.profile},${this.embeddings.dimensions},${lexicalText([topic.title, ...topic.aliases].join(" "))},${tx.json(topic.aliases.map(normalize))},${tx.json(publishedEntities)},${lexicalText(reviewed.text)}) ON CONFLICT(page_id) DO UPDATE SET version_id=excluded.version_id,normalized_title=excluded.normalized_title,subject_key=excluded.subject_key,aspect_key=excluded.aspect_key,descriptor=excluded.descriptor,lexical_text=excluded.lexical_text,embedding=excluded.embedding,embedding_profile=excluded.embedding_profile,dimensions=excluded.dimensions,title_lexical=excluded.title_lexical,aliases=excluded.aliases,subject_ids=excluded.subject_ids,body_lexical=excluded.body_lexical`;
-        if (!vector)
-          await this.operations.enqueue(
-            tx,
-            job.operationId,
-            "wiki.project",
-            { pageId, versionId },
-            versionId,
-          );
-        await tx`INSERT INTO wiki_catalogue_scopes(organization_id,scope,revision) VALUES(${organizationId},${scope},1) ON CONFLICT(organization_id,scope) DO UPDATE SET revision=wiki_catalogue_scopes.revision+1`;
-      },
-    };
   }
   async retryProjection(token: string, pageId: string, key: string) {
     const context = await this.access.authorize(token, "import"),
@@ -1026,7 +945,7 @@ export class WikiService {
   async navigation(token: string, projectId?: string) {
     const context = await this.access.authorize(token, "read", projectId);
     const rows = await this.operations
-      .sql`SELECT n.target_page_id,v.title,n.source_version_id,p.lifecycle,e.eligible FROM wiki_navigation n JOIN wiki_pages p ON p.id=n.target_page_id JOIN wiki_versions v ON v.id=p.current_version_id JOIN wiki_version_eligibility e ON e.id=v.id WHERE n.organization_id=${context.organizationId} AND n.scope=${projectId ?? "shared"} AND p.lifecycle='active' ORDER BY n.target_page_id,n.source_version_id`;
+      .sql`SELECT DISTINCT p.id AS target_page_id,v.title,n.source_version_id,p.lifecycle,e.eligible FROM wiki_navigation n JOIN wiki_route_targets route ON route.entry_id=n.target_page_id JOIN wiki_pages p ON p.id=route.page_id JOIN wiki_versions v ON v.id=p.current_version_id JOIN wiki_version_eligibility e ON e.id=v.id WHERE n.organization_id=${context.organizationId} AND n.scope=${projectId ?? "shared"} AND p.lifecycle='active' ORDER BY target_page_id,n.source_version_id`;
     return {
       items: rows.map((row) => ({
         pageId: String(row.target_page_id),
@@ -1042,13 +961,17 @@ export class WikiService {
       .sql`SELECT id FROM knowledge_operations WHERE id=${operationId} AND organization_id=${context.organizationId}`;
     if (!owner) throw new Error("not_found");
     const jobs = await this.operations
-      .sql`SELECT j.id,j.kind,j.state,j.reason,j.payload,w.state AS ledger,w.deadline FROM knowledge_jobs j LEFT JOIN wiki_work w ON w.job_id=j.id WHERE j.operation_id=${operationId} AND j.kind IN ('wiki.refresh','wiki.revalidate') ORDER BY j.id`;
+      .sql`SELECT j.id,j.kind,j.state,j.reason,j.payload,w.state AS ledger,w.deadline FROM knowledge_jobs j LEFT JOIN wiki_work w ON w.job_id=j.id WHERE j.operation_id=${operationId} AND j.kind IN ('wiki.refresh','wiki.revalidate','wiki.structure','wiki.restore') ORDER BY j.id`;
     const proposals = await this.operations
-      .sql`SELECT id,kind,page_ids,reason FROM wiki_structure_proposals WHERE operation_id=${operationId} ORDER BY id`;
+      .sql`SELECT id,kind,page_ids,reason,status,edit_set_id,input_manifest FROM wiki_structure_proposals WHERE operation_id=${operationId} ORDER BY id`;
     const stages = await this.operations
       .sql`SELECT kind,state FROM knowledge_jobs WHERE operation_id=${operationId}`;
     const results = await this.operations
       .sql`SELECT DISTINCT ON(r.page_id) r.* FROM wiki_refresh_results r JOIN knowledge_jobs j ON j.id=r.job_id WHERE j.operation_id=${operationId} ORDER BY r.page_id,(r.disposition='coalesced'),r.created_at DESC`;
+    const edits = await this.operations
+      .sql`SELECT e.id,e.kind,e.reason,e.restored_from FROM wiki_edit_sets e WHERE e.operation_id=${operationId} ORDER BY e.created_at,e.id`;
+    const versions = await this.operations
+      .sql`SELECT DISTINCT ON(v.page_id) v.page_id,v.id,p.lifecycle FROM wiki_versions v JOIN wiki_pages p ON p.id=v.page_id WHERE v.operation_id=${operationId} ORDER BY v.page_id,v.created_at DESC,v.id`;
     const walks = await this.operations
       .sql`SELECT w.* FROM wiki_dependency_walks w JOIN knowledge_jobs j ON j.id=w.job_id WHERE j.operation_id=${operationId} ORDER BY w.job_id`;
     return {
@@ -1058,11 +981,28 @@ export class WikiService {
           state: String(row.state),
         })),
       ),
-      pages: results.map((row) => ({
-        pageId: String(row.page_id),
-        version: String(row.version_id),
-        disposition: String(row.disposition),
+      editSets: edits.map((row) => ({
+        id: String(row.id),
+        kind: String(row.kind),
+        reason: String(row.reason),
+        restoredFrom: row.restored_from as string | null,
       })),
+      pages: [
+        ...versions
+          .filter(
+            (row) => !results.some((result) => result.page_id === row.page_id),
+          )
+          .map((row) => ({
+            pageId: String(row.page_id),
+            version: String(row.id),
+            disposition: String(row.lifecycle),
+          })),
+        ...results.map((row) => ({
+          pageId: String(row.page_id),
+          version: String(row.version_id),
+          disposition: String(row.disposition),
+        })),
+      ],
       walks: walks.map((row) => ({
         jobId: String(row.job_id),
         cursor: String(row.cursor),
@@ -1073,6 +1013,9 @@ export class WikiService {
       proposals: proposals.map((row) => ({
         id: String(row.id),
         kind: String(row.kind),
+        status: String(row.status),
+        editSetId: row.edit_set_id as string | null,
+        inputManifest: row.input_manifest,
         pageIds: row.page_ids as string[],
         reason: String(row.reason),
       })),

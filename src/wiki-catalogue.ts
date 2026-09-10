@@ -46,14 +46,14 @@ export class WikiCatalogue {
       .join(" | ");
     const sql = this.operations.sql;
     const statement = sql`WITH candidates AS (
-   SELECT p.id,p.project_id,p.lifecycle,p.created_at,v.id AS version,v.title,c.descriptor,e.eligible,c.normalized_title,c.aliases,
-    (c.normalized_title=${normalizeTitle(topic.title)} OR c.aliases ? ${normalizeTitle(topic.title)}) AS title_exact,
+   SELECT p.id,p.project_id,p.lifecycle,p.created_at,v.id AS version,v.title,c.descriptor,e.eligible,c.normalized_title,c.routing_aliases AS aliases,
+    (c.normalized_title=${normalizeTitle(topic.title)} OR c.routing_aliases ? ${normalizeTitle(topic.title)}) AS title_exact,
     c.title_search @@ to_tsquery('simple',${query}) AS title_match,ts_rank_cd(c.title_search,to_tsquery('simple',${query})) AS title_score,
     c.lexical @@ to_tsquery('simple',${query}) AS lexical_match,ts_rank_cd(c.lexical,to_tsquery('simple',${query})) AS lexical_score,
     (SELECT count(*) FROM jsonb_array_elements_text(c.subject_ids) subject WHERE subject.value IN (SELECT jsonb_array_elements_text(${sql.json(entities)}::jsonb))) AS entity_score,
     (c.embedding IS NOT NULL AND c.embedding_profile=${this.embeddings.profile} AND c.dimensions=${this.embeddings.dimensions}) AS vector_ready,
     CASE WHEN c.embedding_profile=${this.embeddings.profile} AND c.dimensions=${this.embeddings.dimensions} THEN c.embedding <=> ${vector ? JSON.stringify(vector) : null}::vector END AS distance
-   FROM wiki_pages p JOIN wiki_catalogue c ON c.page_id=p.id JOIN wiki_versions v ON v.id=c.version_id JOIN wiki_version_eligibility e ON e.id=v.id
+   FROM wiki_pages p JOIN wiki_routing_catalogue c ON c.page_id=p.id JOIN wiki_versions v ON v.id=c.version_id JOIN wiki_version_eligibility e ON e.id=v.id
    WHERE p.organization_id=${organizationId} AND (p.project_id IS NULL OR p.project_id::text=${scope})
   ), routes AS (
    (SELECT 'title' AS route,to_jsonb(candidates) AS card,row_number() OVER(ORDER BY title_exact DESC,title_score DESC,id) AS rank FROM candidates WHERE title_exact OR title_match ORDER BY title_exact DESC,title_score DESC,id LIMIT 20)

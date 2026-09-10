@@ -1,3 +1,4 @@
+import { scriptedStructure } from "./wiki-structure-model.ts";
 import type { Draft, Claim, Review } from "../answer-validation.ts";
 import type {
   WikiModel,
@@ -19,6 +20,8 @@ export class ScriptedWikiModel implements WikiModel {
   ): Promise<unknown> {
     signal.throwIfAborted();
     this.calls.push({ phase, input: structuredClone(input) });
+    if (phase === "structure" || phase === "structure_review")
+      return scriptedStructure(phase, input);
     const pack = input.pack as WikiPack;
     if (phase === "extraction") return extract(pack);
     const topic = input.topic as TopicDescriptor;
@@ -170,7 +173,10 @@ export class ScriptedWikiModel implements WikiModel {
     };
   }
 }
-function extract(pack: WikiPack): TopicExtraction {
+export function extract(
+  pack: WikiPack,
+  separateTopics = false,
+): TopicExtraction {
   const groups = new Map<string, TopicDescriptor>();
   const coverage: TopicExtraction["coverage"] = [];
   for (const item of pack.items) {
@@ -212,6 +218,26 @@ function extract(pack: WikiPack): TopicExtraction {
       outcome: "assigned",
     });
   }
+  if (
+    !separateTopics &&
+    groups.size > 1 &&
+    pack.items.some((item) => item.headingPath.includes("运维总览"))
+  )
+    return {
+      topics: [
+        {
+          ...groups.values().next().value!,
+          title: "运维规则",
+          subjectKey: "运维规则",
+          question: "日常运维有哪些规则？",
+          handles: [...groups.values()].flatMap((topic) => topic.handles),
+        },
+      ],
+      coverage: coverage.map((entry) => ({
+        ...entry,
+        topicIndexes: entry.outcome === "assigned" ? [0] : [],
+      })),
+    };
   return { topics: [...groups.values()], coverage };
 }
 function draft(pack: WikiPack, topic: TopicDescriptor) {

@@ -11,6 +11,13 @@ export async function queuePageRefresh(
   pageId: string,
   contribution?: { versionId: string; topic: TopicDescriptor },
 ) {
+  const routes =
+    await tx`SELECT page_id FROM wiki_route_targets WHERE entry_id=${pageId} ORDER BY page_id`;
+  if (routes.length && !routes.some((row) => row.page_id === pageId)) {
+    for (const route of routes)
+      await queuePageRefresh(tx, job, String(route.page_id), contribution);
+    return;
+  }
   await tx`SELECT pg_advisory_xact_lock(hashtextextended(${`wiki-work:${job.operationId}:${pageId}`},0))`;
   const [existing] =
     await tx`SELECT id,payload,state FROM knowledge_jobs WHERE operation_id=${job.operationId} AND kind='wiki.revalidate' AND job_key=${pageId} FOR UPDATE`;
@@ -31,7 +38,7 @@ export class WikiDependencies {
   constructor(private readonly operations: Operations) {}
   async readyJobs(organizationId?: string) {
     const rows = await this.operations
-      .sql`SELECT j.id FROM knowledge_jobs j JOIN knowledge_operations o ON o.id=j.operation_id WHERE (${organizationId ?? null}::uuid IS NULL OR o.organization_id=${organizationId ?? null}) AND j.kind IN ('wiki.refresh','wiki.project','wiki.dependencies','wiki.revalidate','wiki.identity') AND (j.state='queued' OR (j.state='running' AND j.lease_until<clock_timestamp())) AND (j.kind<>'wiki.revalidate' OR NOT EXISTS(SELECT 1 FROM knowledge_jobs upstream WHERE upstream.operation_id=j.operation_id AND (upstream.kind IN ('wiki.refresh','wiki.dependencies','wiki.identity') OR (upstream.kind='identity.revalidate' AND EXISTS(SELECT 1 FROM wiki_pages page JOIN wiki_versions version ON version.id=page.current_version_id WHERE page.id::text=j.job_key AND version.identity_dependencies<>'[]'::jsonb))) AND upstream.state IN ('queued','running','retry_wait','outcome_unknown'))) ORDER BY j.id LIMIT 20`;
+      .sql`SELECT j.id FROM knowledge_jobs j JOIN knowledge_operations o ON o.id=j.operation_id WHERE (${organizationId ?? null}::uuid IS NULL OR o.organization_id=${organizationId ?? null}) AND j.kind IN ('wiki.structure','wiki.restore','wiki.refresh','wiki.project','wiki.dependencies','wiki.revalidate','wiki.identity') AND (j.state='queued' OR (j.state='running' AND j.lease_until<clock_timestamp())) AND (j.kind<>'wiki.structure' OR NOT EXISTS(SELECT 1 FROM knowledge_jobs upstream WHERE upstream.operation_id=j.operation_id AND upstream.kind IN ('wiki.refresh','wiki.dependencies','wiki.revalidate','wiki.identity') AND upstream.state NOT IN ('succeeded','superseded'))) AND (j.kind<>'wiki.revalidate' OR NOT EXISTS(SELECT 1 FROM knowledge_jobs upstream WHERE upstream.operation_id=j.operation_id AND (upstream.kind IN ('wiki.refresh','wiki.dependencies','wiki.identity') OR (upstream.kind='identity.revalidate' AND EXISTS(SELECT 1 FROM wiki_pages page JOIN wiki_versions version ON version.id=page.current_version_id WHERE page.id::text=j.job_key AND version.identity_dependencies<>'[]'::jsonb))) AND upstream.state IN ('queued','running','retry_wait','outcome_unknown'))) ORDER BY j.id LIMIT 20`;
     return rows.map((row) => String(row.id));
   }
   async supersede(organizationId?: string) {
