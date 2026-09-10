@@ -789,6 +789,26 @@ This records the naming decision. GitHub repository creation and publication
 remain separate actions; this decision does not rename the local directory or
 existing implementation packages.
 
+### Q41: Retire the old repository baseline before product implementation
+
+The user approved adding this prerequisite on 2026-09-10.
+
+Track repository retirement in [work item 00 / #19](https://github.com/L-1ngg/loreweave/issues/19)
+under the [GitHub specification](https://github.com/L-1ngg/loreweave/issues/1).
+It blocks the first product slice, #2, while preserving the original 01–17
+work-item numbering and the nine-module design.
+
+Preserve a remotely recoverable Git baseline, then remove retired Python code,
+interfaces, dependencies and tooling from the active tree. Retain useful behavior
+cases for the assigned new-system tests; archive superseded designs and historical
+evaluation evidence. Make current repository entry points agree with the actual
+post-cleanup tree. Deferred capabilities stay scope notes rather than empty
+modules or speculative interfaces. Application bootstrap belongs to #2.
+
+Existing databases, object-store contents, running services, untracked local files
+and credentials are outside this repository task. This approval adds the work
+item and its dependency; no cleanup or product implementation has been executed.
+
 ## Remaining preparation and execution boundaries
 
 - Routine design defaults are owned by the blueprint and do not require another

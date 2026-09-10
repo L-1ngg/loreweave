@@ -2,22 +2,24 @@
 
 The [specification issue](https://github.com/L-1ngg/loreweave/issues/1) owns product acceptance outcomes. The
 [module map](../../docs/design/rag-v1/README.md) owns responsibilities and
-interfaces. These 17 work items are vertical delivery slices selected under the
-user's routine-design/decomposition delegation on 2026-09-10.
+interfaces. The plan contains one repository retirement prerequisite (00) and
+17 product delivery slices (01–17). The user approved adding prerequisite 00
+on 2026-09-10; existing work-item numbers remain stable.
 
 At migration on 2026-09-10, all tickets were scoped as `ready-for-agent` and none
 was implemented. GitHub Issues own current status, blockers and acceptance evidence;
 this file is a navigation map. Local spec/ticket files are historical snapshots.
 Implementation still starts from an explicit execution request. A readiness
 label is neither user acceptance of measured quality nor a request to run tools
-against production. The initial starting frontier is [work item 01](https://github.com/L-1ngg/loreweave/issues/2).
+against production. The starting frontier is [work item 00](https://github.com/L-1ngg/loreweave/issues/19).
 Check live dependencies before starting later work.
 
 ## Dependency map
 
 | Work item | Blocked by | Modules touched |
 | --- | --- | --- |
-| [01 Run a bounded evidence-tool turn in the browser](https://github.com/L-1ngg/loreweave/issues/2) | None | M07, M06, M09 |
+| [00 Retire the legacy Python system and prepare LoreWeave engineering entry points](https://github.com/L-1ngg/loreweave/issues/19) | None | Repository preparation for M01–M09 |
+| [01 Run a bounded evidence-tool turn in the browser](https://github.com/L-1ngg/loreweave/issues/2) | [#19](https://github.com/L-1ngg/loreweave/issues/19) | M07, M06, M09 |
 | [02 Persist conversations and settle cancellation correctly](https://github.com/L-1ngg/loreweave/issues/3) | [#2](https://github.com/L-1ngg/loreweave/issues/2) | M07, M08, M09 |
 | [03 Apply organization access and project scope to knowledge operations](https://github.com/L-1ngg/loreweave/issues/4) | [#3](https://github.com/L-1ngg/loreweave/issues/3) | M01, M07, M09 |
 | [04 Import Markdown and inspect versioned original passages](https://github.com/L-1ngg/loreweave/issues/5) | [#4](https://github.com/L-1ngg/loreweave/issues/4) | M02, M08, M09 |
@@ -37,6 +39,7 @@ Check live dependencies before starting later work.
 
 ```mermaid
 flowchart TD
+    T00[00 Retire legacy repository baseline] --> T01
     T01 --> T02
     T02 --> T03
     T03 --> T04
@@ -86,7 +89,11 @@ that bounded task. Keep shared state changes sequential within their owners.
 Add implementation-specific paths only once they exist; this plan specifies
 behavior rather than assuming today's source layout.
 
-Each ticket must demonstrate an end-to-end behavior, including the relevant
+Prerequisite 00 verifies repository retirement, recoverable history and coherent
+engineering entry points; it does not require a running Bun application. Product
+slice 01 introduces the application bootstrap and its actual build/test commands.
+
+Each product ticket must demonstrate an end-to-end behavior, including the relevant
 transport/view and persistence where introduced by that slice. Early development
 fixtures are explicitly identified; later production-capable slices must replace
 them at the same interfaces. The final assessment uses a frozen corpus and real

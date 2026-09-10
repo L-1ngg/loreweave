@@ -8,7 +8,7 @@ and source-backed answers. Naming is confirmed in
 Construction entry point, aligned on 2026-09-10. Start with the
 [construction specification](https://github.com/L-1ngg/loreweave/issues/1), then the
 [nine-module map](design/rag-v1/README.md) and
-[17 delivery work items](../.scratch/rag-v1/README.md).
+[18 work items](../.scratch/rag-v1/README.md).
 [Shared contracts](design/rag-v1/contracts.md) and module documents own callable
 behavior; [alignment notes](design/rag-v1/alignment.md) record refinements made
 while converting the discussion into a buildable plan. The D-series overview
@@ -379,8 +379,14 @@ frequency are not yet measured facts; use Chinese and English development cases
 initially and version the actual corpus manifest when available.
 
 The [work-item map](../.scratch/rag-v1/README.md) replaces the earlier broad phase
-list with 17 vertical slices and explicit blockers. Begin with the pinned SDK
-browser/evidence-tool path, then add persistence, access and original sources.
+list with one repository retirement prerequisite and 17 vertical product slices.
+Begin with [work item 00 / #19](https://github.com/L-1ngg/loreweave/issues/19):
+preserve recoverable history, retire unused Python code and tooling, retain useful
+behavior cases, and archive superseded documentation. This is a repository-only
+precondition; existing data, running services and local credentials remain outside
+its scope. Completion unblocks the pinned SDK browser/evidence-tool path in #2,
+which introduces the Bun application and build/test commands. Then add
+persistence, access and original sources.
 Source answering unlocks separate Wiki, graph, MCP and evaluation work. Each
 GitHub issue owns its acceptance criteria, status and blockers; the map provides
 navigation to the same delivery slices.

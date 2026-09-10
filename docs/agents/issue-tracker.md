@@ -2,8 +2,12 @@
 
 The user requested migration to `L-1ngg/loreweave` GitHub Issues on 2026-09-10.
 Start at the [construction specification](https://github.com/L-1ngg/loreweave/issues/1)
-and its 17 sub-issues. The [local navigation map](../../.scratch/rag-v1/README.md)
+and its 18 sub-issues. The [local navigation map](../../.scratch/rag-v1/README.md)
 links the original work-item numbers to their GitHub issues.
+
+Repository retirement [#19](https://github.com/L-1ngg/loreweave/issues/19) is work
+item 00 and blocks the first product slice, #2. Its acceptance evidence concerns
+the repository baseline; application behavior begins with #2.
 
 - The specification issue owns product scope and numbered acceptance outcomes.
 - Each work-item issue owns its acceptance criteria, status and execution evidence.
