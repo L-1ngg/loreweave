@@ -1,10 +1,14 @@
 # LoreWeave construction specification
 
+> Archived migration snapshot, 2026-09-10. The [GitHub issue](https://github.com/L-1ngg/loreweave/issues/1)
+> owns the current scope, acceptance criteria, status and execution evidence.
+> Read and update that issue before implementation; this snapshot is historical.
+
 Product name: **LoreWeave**. Repository slug: **`loreweave`**.
 The confirmed naming decision is recorded in
 [Q40](../../docs/rag-optimization-design.md#q40-product-and-repository-name).
 
-**Status:** ready-for-agent
+**Status at migration:** ready-for-agent
 
 This is a reviewable construction baseline synthesized on 2026-09-10 under the
 user's planning and routine-design delegation. Readiness describes specification

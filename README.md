@@ -10,7 +10,7 @@ PostgreSQL with pgvector, a React interface, and Forge Agent SDK integration.
 
 **Status: construction plan ready; the redesigned product is not implemented.**
 Start with the [construction blueprint](docs/rag-v1-blueprint.md),
-[specification](.scratch/rag-v1/spec.md),
+[specification](https://github.com/L-1ngg/loreweave/issues/1),
 [nine-module map](docs/design/rag-v1/README.md), and
 [17 delivery work items](.scratch/rag-v1/README.md).
 The [design record](docs/rag-optimization-design.md) captures confirmed decisions.

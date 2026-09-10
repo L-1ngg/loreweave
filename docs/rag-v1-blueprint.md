@@ -6,7 +6,7 @@ and source-backed answers. Naming is confirmed in
 [Q40](rag-optimization-design.md#q40-product-and-repository-name).
 
 Construction entry point, aligned on 2026-09-10. Start with the
-[construction specification](../.scratch/rag-v1/spec.md), then the
+[construction specification](https://github.com/L-1ngg/loreweave/issues/1), then the
 [nine-module map](design/rag-v1/README.md) and
 [17 delivery work items](../.scratch/rag-v1/README.md).
 [Shared contracts](design/rag-v1/contracts.md) and module documents own callable
@@ -382,7 +382,8 @@ The [work-item map](../.scratch/rag-v1/README.md) replaces the earlier broad pha
 list with 17 vertical slices and explicit blockers. Begin with the pinned SDK
 browser/evidence-tool path, then add persistence, access and original sources.
 Source answering unlocks separate Wiki, graph, MCP and evaluation work. Each
-ticket owns its acceptance criteria and status; the map owns delivery order.
+GitHub issue owns its acceptance criteria, status and blockers; the map provides
+navigation to the same delivery slices.
 
 Each slice must exercise its public module interfaces with meaningful failure
 and recovery cases. No quality or latency target is claimed achieved by writing

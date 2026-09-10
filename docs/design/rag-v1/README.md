@@ -4,7 +4,7 @@ Status: first aligned construction baseline, 2026-09-10. Module boundaries and
 work-item granularity are selected under the user's design delegation. Product
 implementation has not started.
 
-Read [the specification](../../../.scratch/rag-v1/spec.md) for product scope,
+Read [the specification](https://github.com/L-1ngg/loreweave/issues/1) for product scope,
 [shared contracts](contracts.md) for cross-module rules, and the relevant module
 below for its interface. [Work items](../../../.scratch/rag-v1/README.md) describe
 vertical delivery slices. A module is a responsibility and test seam, not a
@@ -63,13 +63,13 @@ source baseline and adapter verification limits.
 
 | Document | Authority |
 | --- | --- |
-| Construction spec | Product requirements and numbered acceptance outcomes |
+| GitHub specification issue | Product requirements and numbered acceptance outcomes |
 | Shared/module contracts | Interface meaning, state ownership and invariants |
 | ADRs | Hard-to-reverse choices and their rationale |
 | Evaluation plan | Dataset and quality/performance measurement defaults |
 | Design discussion | User confirmations and delegations, including historical choices |
 | Blueprint | Architectural overview and navigation to the construction documents |
-| Local work items | Delivery slices, blockers, acceptance criteria and execution evidence |
+| GitHub work-item issues | Delivery slices, blockers, acceptance criteria and execution evidence |
 
 The spec consolidates the earlier discussion; it does not erase confirmed goals.
 [Alignment notes](alignment.md) record what this pass clarified and which claims

@@ -1,4 +1,4 @@
-# My-RAG project guidance
+# LoreWeave project guidance
 
 Global communication and execution rules remain in
 [/home/l1ngg/.agents/AGENTS.md](/home/l1ngg/.agents/AGENTS.md).
@@ -20,10 +20,12 @@ scope come from the active user request, not a ticket's readiness label.
 
 ### Issue tracker
 
-Use local Markdown for My-RAG specs and work items. Read
+Use [LoreWeave GitHub Issues](https://github.com/L-1ngg/loreweave/issues) for
+current specs, work items, dependencies and execution evidence. Read
 [tracker conventions](docs/agents/issue-tracker.md) when creating, refining or
 executing tickets. Forge integration defect reports go to the separately
-authorized upstream repository under Q38, not to a presumed My-RAG remote.
+authorized upstream repository under Q38. Local `.scratch/rag-v1` spec/ticket
+files are archived migration snapshots; read the linked live issue before work.
 
 ### Domain docs
 

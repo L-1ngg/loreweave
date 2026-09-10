@@ -1,6 +1,10 @@
 # 11: Retrieve source-backed qualified graph relationships
 
-**Status:** ready-for-agent
+> Archived migration snapshot, 2026-09-10. The [GitHub issue](https://github.com/L-1ngg/loreweave/issues/12)
+> owns the current scope, acceptance criteria, status and execution evidence.
+> Read and update that issue before implementation; this snapshot is historical.
+
+**Status at migration:** ready-for-agent
 
 **Parent:** [Construction specification](../spec.md)
 
