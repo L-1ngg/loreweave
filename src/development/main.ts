@@ -1,3 +1,4 @@
+import { IdentityService } from "../identity.ts";
 import { EvidenceService } from "../evidence.ts";
 import { SourceService } from "../sources.ts";
 import { ControlledEmbeddings } from "./embeddings.ts";
@@ -24,11 +25,13 @@ const imports = new SourceService(
   access,
   new ControlledEmbeddings(),
 );
+const identities = new IdentityService(databaseUrl, access, imports);
 let worker: Promise<void> | undefined;
 async function prepareSources() {
   while (!closing) {
     try {
-      if (!(await imports.workOne())) await Bun.sleep(200);
+      if (!(await imports.workOne()) && !(await identities.workOne()))
+        await Bun.sleep(200);
     } catch (error) {
       console.error(
         "Source worker unavailable",
@@ -45,6 +48,7 @@ async function close() {
   server?.stop(true);
   provider?.stop();
   await worker;
+  await identities.close();
   await imports.close();
   await conversations.close();
   await access.close();
@@ -72,6 +76,7 @@ try {
     access,
   });
   const app = createApp(host, sources, {
+    identities,
     imports,
     browserOrigin: "http://127.0.0.1:41735",
     access,

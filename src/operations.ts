@@ -23,6 +23,18 @@ export class Operations {
   constructor(url: string) {
     this.sql = postgres(url, { max: 5, onnotice: () => {} });
   }
+  async lookup(
+    context: TrustedContext,
+    key: string,
+    hash: string,
+  ): Promise<string | undefined> {
+    if (!key || key.length > 200) throw new Error("invalid_input");
+    const [existing] = await this
+      .sql`SELECT id,payload_hash FROM knowledge_operations WHERE organization_id=${context.organizationId} AND actor_id=${context.actorId} AND operation_key=${key}`;
+    if (!existing) return undefined;
+    if (existing.payload_hash !== hash) throw new Error("version_conflict");
+    return String(existing.id);
+  }
   async accept<T>(
     context: TrustedContext,
     key: string,
@@ -49,8 +61,9 @@ export class Operations {
     operationId: string,
     kind: string,
     payload: Record<string, unknown>,
+    jobKey = "",
   ): Promise<void> {
-    await tx`INSERT INTO knowledge_jobs(id,operation_id,kind,payload) VALUES(${crypto.randomUUID()},${operationId},${kind},${tx.json(payload as postgres.JSONValue)})`;
+    await tx`INSERT INTO knowledge_jobs(id,operation_id,kind,payload,job_key) VALUES(${crypto.randomUUID()},${operationId},${kind},${tx.json(payload as postgres.JSONValue)},${jobKey})`;
   }
   async claim(kinds: string[], leaseMs = 60000): Promise<Job | undefined> {
     const [row] = await this
@@ -72,15 +85,17 @@ export class Operations {
   }
   async commit(
     job: Job,
-    effect: (tx: Transaction) => Promise<void>,
+    effect: (tx: Transaction) => Promise<void | JobState>,
     state: JobState = "succeeded",
   ): Promise<void> {
     await this.sql.begin(async (tx) => {
       const [row] =
         await tx`SELECT id FROM knowledge_jobs WHERE id=${job.id} AND fence=${job.fence} AND state='running' AND lease_until>clock_timestamp() FOR UPDATE`;
       if (!row) throw new Error("stale_worker");
-      await effect(tx);
-      await tx`UPDATE knowledge_jobs SET state=${state},lease_until=NULL WHERE id=${job.id}`;
+      const outcome = (await effect(tx)) ?? state;
+      const [completed] =
+        await tx`UPDATE knowledge_jobs SET state=${outcome},lease_until=NULL WHERE id=${job.id} AND fence=${job.fence} AND state='running' AND lease_until>clock_timestamp() RETURNING id`;
+      if (!completed) throw new Error("stale_worker");
     });
   }
   async close() {

@@ -3,7 +3,7 @@
 An agent-powered knowledge base with a living wiki, graph-assisted retrieval,
 and source-backed answers.
 
-**Current capability: authenticated Markdown knowledge conversations and document updates (#2–#7).**
+**Current capability: authenticated Markdown knowledge conversations, document updates and evidenced identities (#2–#8).**
 Members import versioned originals, ask questions through Forge, and open exact
 passages behind answer citations. PostgreSQL lexical/vector retrieval uses RRF;
 the answer pipeline validates claim spans and citations, performs a separate
@@ -61,6 +61,15 @@ are exhausted, only independently reviewed, still-current claims with complete
 premises can survive as a partial answer; otherwise the run reports a source-change gap.
 Source freshness is checked at final admission, not promised indefinitely after delivery.
 
+Source pages also record exact source mentions and expose identity explanations.
+Names alone stay distinct. The current conservative checker recognizes explicit
+quoted equivalence statements and structured `service-id` / `repository-url`
+assertions; uncertain prose stays unresolved. Identity validity checks transitive
+original leaves and binding revisions before consumers can join facts, with durable
+20-record revalidation batches after source activation. See the
+[identity runtime boundary](docs/development/identity.md) for supported forms,
+scopes, correction commands and verification limits.
+
 ## Checks
 
 ```sh
@@ -81,6 +90,7 @@ bun run test:access
 bun run test:sources
 bun run test:evidence
 bun run test:updates
+bun run test:identity
 bun x playwright install chromium
 bun run test:browser
 bun run build

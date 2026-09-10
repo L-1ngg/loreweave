@@ -17,6 +17,15 @@ export function accessError(context: Context, error: unknown) {
       error.code === "23505")
   )
     return context.json({ error: "version_conflict" }, 409);
+  if (
+    [
+      "source_changed",
+      "identity_unresolved",
+      "identity_cycle",
+      "insufficient_evidence",
+    ].includes(message)
+  )
+    return context.json({ error: message }, 409);
   if (message === "not_found") return context.json({ error: message }, 404);
   return context.json({ error: "unavailable" }, 503);
 }

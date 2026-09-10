@@ -275,3 +275,45 @@ test("selected source updates keep old citations readable and link the new curre
   await expect(page.getByRole("article")).toContainText("星期三");
   await expect(page.getByText("当前生效来源", { exact: true })).toBeVisible();
 });
+
+test("source context records a mention and exposes its original-backed identity explanation", async ({
+  page,
+}) => {
+  const uploaded = await page.request.post("/api/attachments", {
+    multipart: {
+      file: {
+        name: "对象身份.md",
+        mimeType: "text/markdown",
+        buffer: Buffer.from("Atlas 是本项目的订单服务。"),
+      },
+    },
+  });
+  const accepted = await page.request.post("/api/imports", {
+    data: {
+      attachmentId: (await uploaded.json()).id,
+      key: crypto.randomUUID(),
+    },
+  });
+  const operation = (await accepted.json()) as {
+    id: string;
+    versionId: string;
+  };
+  await expect
+    .poll(
+      async () =>
+        (await (await page.request.get(`/api/imports/${operation.id}`)).json())
+          .source,
+    )
+    .toBe("searchable");
+  await page.goto(`/sources/${operation.versionId}`);
+  await page.getByLabel("对象名称").fill("Atlas");
+  await page.getByRole("button", { name: "记录原文提及" }).click();
+  await expect(page.getByLabel("身份解释")).toContainText("Atlas");
+  await expect(page.getByLabel("身份解释")).toContainText("独立提及");
+  await expect(
+    page.getByLabel("身份解释").getByRole("link", { name: "依据原文 1" }),
+  ).toHaveAttribute("href", new RegExp(`/sources/${operation.versionId}#`));
+  await page.reload();
+  await page.getByRole("button", { name: "Atlas：查看身份依据" }).click();
+  await expect(page.getByLabel("身份解释")).toContainText("独立提及");
+});

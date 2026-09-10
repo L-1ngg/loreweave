@@ -1,3 +1,5 @@
+import { IdentityService } from "./identity.ts";
+import { identityRoutes } from "./identity-http.ts";
 import { SourceService } from "./sources.ts";
 import { sourceRoutes, isUuid } from "./source-http.ts";
 import { AccessService } from "./access.ts";
@@ -15,6 +17,7 @@ export function createApp(
     browserOrigin?: string;
     access?: AccessService;
     imports?: SourceService;
+    identities?: IdentityService;
   } = {},
 ) {
   const app = new Hono();
@@ -40,6 +43,7 @@ export function createApp(
       await next();
     });
   }
+  if (options.identities) app.route("/api", identityRoutes(options.identities));
   if (options.imports) app.route("/api", sourceRoutes(options.imports));
   app.post("/api/runs", async (context) => {
     let input: unknown;

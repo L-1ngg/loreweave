@@ -1,3 +1,4 @@
+import { IdentityPanel } from "./identities.tsx";
 import { SourceImports, type Attachment } from "./imports.tsx";
 import { Markdown, markdownContext } from "./markdown.tsx";
 import type { SourceVersion } from "../src/sources.ts";
@@ -248,9 +249,11 @@ function App({ projectId }: { projectId: string }) {
 function SourcePage({
   version,
   canImport,
+  canCorrect,
 }: {
   version: string;
   canImport: boolean;
+  canCorrect: boolean;
 }) {
   const [attachment, setAttachment] = useState<Attachment>();
   const [revision, setRevision] = useState(0);
@@ -318,6 +321,12 @@ function SourcePage({
               <a href={`/api/sources/${source.version}/original`}>
                 下载原始 Markdown
               </a>
+              <IdentityPanel
+                key={`${source.version}:${source.state}`}
+                version={source.version}
+                passages={source.passages}
+                canCorrect={canCorrect && source.state === "active"}
+              />
               <article>
                 {source.passages.map((passage) => (
                   <section key={passage.id} id={passage.id}>
@@ -349,6 +358,7 @@ createRoot(document.getElementById("root")!).render(
         <SourcePage
           version={version}
           canImport={actor.grants.includes("import")}
+          canCorrect={actor.grants.includes("correct")}
         />
       ) : (
         <App projectId={projectId} />
