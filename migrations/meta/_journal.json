@@ -92,6 +92,34 @@
       "when": 1788998400012,
       "tag": "0012_wiki_decisions",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1788998400013,
+      "tag": "0013_wiki_dependencies",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1788998400014,
+      "tag": "0014_wiki_refresh",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1788998400015,
+      "tag": "0015_wiki_contributions",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1788998400016,
+      "tag": "0016_wiki_edit_sets",
+      "breakpoints": true
     }
   ]
 }

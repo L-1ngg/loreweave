@@ -17,6 +17,19 @@ export class WikiModelRuntime {
     input: Record<string, unknown>,
     validate: (raw: unknown) => T,
   ): Promise<T> {
+    if (phase === "planning" || phase === "extraction" || phase === "support") {
+      const rows = await this.operations
+        .sql`SELECT g.id,g.body FROM wiki_guidance g JOIN knowledge_operations o ON o.id=${job.operationId} AND o.organization_id=g.organization_id WHERE g.operation_id=o.id OR (g.prior_operation_id IS NULL AND (g.page_id IS NULL OR g.page_id::text=${String(job.payload.pageId ?? "")}) AND (g.project_id IS NULL OR g.project_id::text=${String(input.scope ?? "")})) ORDER BY g.created_at,g.id`;
+      // Guidance is routing context; it never enters evidence packs or claim manifests.
+      if (rows.length)
+        input = {
+          ...input,
+          guidance: rows.map((row) => ({
+            id: String(row.id),
+            text: String(row.body),
+          })),
+        };
+    }
     if (new TextEncoder().encode(JSON.stringify(input)).length > 15500)
       throw new Error("needs_attention:model_input_limit");
     const inputHash = hash(input);

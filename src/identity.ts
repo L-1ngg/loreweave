@@ -228,6 +228,20 @@ export class IdentityService {
       throw new Error("identity_changed");
     return [...new Set(rows.map((row) => String(row.canonical_id)))];
   }
+  async maintenanceDependencies(operationId: string, mentionIds: string[]) {
+    if (!mentionIds.length) return [];
+    if (mentionIds.length > 100)
+      throw new Error("invalid_identity_dependencies");
+    const rows = await this.operations
+      .sql`SELECT DISTINCT ON(m.id) m.id,m.current_revision_id,p.id AS proof_id FROM identity_mentions m JOIN knowledge_operations o ON o.organization_id=m.organization_id AND o.id=${operationId} JOIN identity_proof_eligibility p ON p.revision_id=m.current_revision_id AND p.valid WHERE m.id IN ${this.operations.sql(mentionIds)} ORDER BY m.id,p.id`;
+    if (rows.length !== new Set(mentionIds).size)
+      throw new Error("needs_attention:unresolved_identity");
+    return rows.map((row) => ({
+      mentionId: String(row.id),
+      revisionId: String(row.current_revision_id),
+      proofId: String(row.proof_id),
+    }));
+  }
   async history(token: string, mentionId: string) {
     const context = await this.access.authorize(token, "read");
     const rows = await this.operations
@@ -527,10 +541,19 @@ export class IdentityService {
       proofs: plans.map((plan) => plan.proof),
     };
   }
-  async workOne(): Promise<
+  async workOne(
+    token?: string,
+  ): Promise<
     { operationId: string; processed: number; complete: boolean } | undefined
   > {
-    const job = await this.operations.claim(["identity.revalidate"], 120000);
+    const context = token
+      ? await this.access.authorize(token, "correct")
+      : undefined;
+    const job = await this.operations.claim(
+      ["identity.revalidate"],
+      120000,
+      context?.organizationId,
+    );
     if (!job) return undefined;
     const changedBinding =
       typeof job.payload.mentionId === "string"

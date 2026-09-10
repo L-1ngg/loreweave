@@ -196,9 +196,9 @@ test("natural-language attachment import survives reload and malformed UTF-8 rep
   await expect(page.getByText("已附加：conversation.md")).toBeVisible();
   await page.getByLabel("问题").fill("请把附件导入知识库");
   await page.getByRole("button", { name: "提问", exact: true }).click();
-  await expect(page.getByTestId("answer")).toContainText("已受理 1 项导入");
+  await expect(page.getByTestId("answer")).toContainText("已受理 1 项知识变更");
   await page.reload();
-  await expect(page.getByTestId("answer")).toContainText("已受理 1 项导入");
+  await expect(page.getByTestId("answer")).toContainText("已受理 1 项知识变更");
   await page.getByLabel("Markdown 文件").setInputFiles({
     name: "invalid.md",
     mimeType: "text/markdown",
@@ -335,4 +335,72 @@ test("browsing a reviewed Wiki topic exposes source citations and a return to qu
   await expect(page.getByText("当前有效", { exact: true })).toBeVisible();
   await page.getByRole("link", { name: /原文 1/ }).click();
   await expect(page.getByRole("article")).toContainText("30 天");
+});
+
+test("natural-language correction is attributed, preserves conflicting originals and has a durable Wiki outcome", async ({
+  page,
+}) => {
+  await expect
+    .poll(
+      async () =>
+        (await (await page.request.get("/api/wiki")).json()).items.find(
+          (item: { title: string }) => item.title === "日志保留",
+        )?.fresh,
+      { timeout: 20000 },
+    )
+    .toBe(true);
+  await page
+    .getByLabel("问题")
+    .fill("请纠正「日志保留」：演示项目的应用日志保留 90 天。");
+  await page.getByRole("button", { name: "提问", exact: true }).click();
+  await expect(page.getByTestId("answer")).toContainText("已受理 1 项知识变更");
+  await expect
+    .poll(async () => {
+      const { operations: list } = await (
+        await page.request.get("/api/imports")
+      ).json();
+      const candidates = await Promise.all(
+        list.map(async (operation: { id: string; versionId: string }) => ({
+          operation,
+          source: await (
+            await page.request.get(`/api/sources/${operation.versionId}`)
+          ).json(),
+        })),
+      );
+      const attributed = candidates.find(
+        (candidate) => candidate.source.attribution,
+      );
+      return attributed?.operation.id;
+    })
+    .toBeTruthy();
+  const current = await (await page.request.get("/api/wiki")).json(),
+    topic = current.items.find(
+      (item: { title: string }) => item.title === "日志保留",
+    );
+  await expect
+    .poll(
+      async () =>
+        (await (await page.request.get(`/api/wiki/${topic.id}`)).json()).fresh,
+      { timeout: 20000 },
+    )
+    .toBe(true);
+  await page.goto(`/wiki/${topic.id}`);
+  await expect(page.getByRole("article")).toContainText("30 天");
+  await expect(page.getByRole("article")).toContainText("90 天");
+  await page.getByRole("link", { name: /成员补充/ }).click();
+  await expect(page.getByText(/成员补充 · 作者/)).toBeVisible();
+});
+
+test("unknown correction target asks for clarification without creating a note", async ({
+  page,
+}) => {
+  const before = await (await page.request.get("/api/imports")).json();
+  await page
+    .getByLabel("问题")
+    .fill("请纠正「不存在的主题」：生产日志保留 12 天。");
+  await page.getByRole("button", { name: "提问", exact: true }).click();
+  await expect(page.getByTestId("answer")).toContainText("没有找到指定主题");
+  expect(
+    (await (await page.request.get("/api/imports")).json()).operations.length,
+  ).toBe(before.operations.length);
 });

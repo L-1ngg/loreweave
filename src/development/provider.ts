@@ -87,6 +87,13 @@ export function startScriptedProvider(options: ScriptedOptions = {}) {
           instruction,
         ),
       );
+      const correction = instruction.match(/^请纠正「([^」]+)」[：:]\s*(.+)$/s);
+      const preference = instruction.match(/^请记住整理偏好[：:]\s*(.+)$/s);
+      const contribution = correction
+        ? { kind: "fact", target: correction[1], text: correction[2] }
+        : preference
+          ? { kind: "guidance", text: preference[1] }
+          : undefined;
       const tool =
         !summary &&
         (!attachment || importing) &&
@@ -115,7 +122,11 @@ export function startScriptedProvider(options: ScriptedOptions = {}) {
             ? {
                 type: "tool_use",
                 id: `call-${count}`,
-                name: importing ? "import_markdown" : "search_evidence",
+                name: importing
+                  ? "import_markdown"
+                  : contribution
+                    ? "contribute_knowledge"
+                    : "search_evidence",
                 input: {},
               }
             : {
@@ -132,7 +143,9 @@ export function startScriptedProvider(options: ScriptedOptions = {}) {
                   type: "input_json_delta",
                   partial_json: JSON.stringify(
                     options.toolArguments ??
-                      (importing ? { attachmentId: attachment } : {}),
+                      (importing
+                        ? { attachmentId: attachment }
+                        : (contribution ?? {})),
                   ),
                 },
               },

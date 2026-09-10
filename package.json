@@ -25,7 +25,8 @@
     "test:evidence": "bun --no-env-file test tests/evidence.test.ts",
     "test:updates": "bun --no-env-file test tests/updates.test.ts",
     "test:identity": "bun --no-env-file test tests/identity.test.ts",
-    "test:wiki": "bun --no-env-file test tests/wiki.test.ts"
+    "test:wiki": "bun --no-env-file test tests/wiki.test.ts",
+    "test:wiki-refresh": "bun --no-env-file test tests/wiki-refresh.test.ts"
   },
   "dependencies": {
     "@earendil-works/pi-ai": "0.85.1",

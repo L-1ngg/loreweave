@@ -27,7 +27,7 @@ export class WikiInspection {
   ) {}
   async inspect(
     job: Job,
-    index: number,
+    index: number | string,
     topic: TopicDescriptor,
     candidates: WikiCandidate[],
     contribution: WikiPack,
@@ -139,7 +139,6 @@ export class WikiInspection {
             if (
               raw.complete === true &&
               (!Array.isArray(raw.relevant) ||
-                !raw.relevant.length ||
                 raw.relevant.some(
                   (ref) =>
                     !record(ref) ||

@@ -2,7 +2,13 @@ import React, { useEffect, useState } from "react";
 import type { WikiPage } from "../src/wiki-types.ts";
 import { Markdown } from "./markdown.tsx";
 interface Catalogue {
-  items: Array<{ id: string; version: string; title: string; fresh: boolean }>;
+  items: Array<{
+    id: string;
+    version: string;
+    title: string;
+    fresh: boolean;
+    lifecycle: string;
+  }>;
   next?: string;
 }
 export function WikiBrowser({
@@ -54,6 +60,13 @@ export function WikiBrowser({
         page ? (
           <>
             <h1>{page.title}</h1>
+            {page.lifecycle === "retired" && page.retirement && (
+              <p role="status">
+                此主题已退休：当前来源不再提供支持（
+                {new Date(page.retirement.at).toLocaleString()}
+                ）。历史内容和链接继续保留。
+              </p>
+            )}
             <p>
               {page.fresh
                 ? "当前有效"
@@ -89,7 +102,11 @@ export function WikiBrowser({
             {catalogue.items.map((item) => (
               <li key={item.id}>
                 <a href={`/wiki/${item.id}`}>{item.title}</a> ·{" "}
-                {item.fresh ? "当前有效" : "等待更新或需要处理"}
+                {item.lifecycle === "retired"
+                  ? "已退休，保留历史"
+                  : item.fresh
+                    ? "当前有效"
+                    : "等待更新或需要处理"}
               </li>
             ))}
           </ul>
@@ -103,6 +120,112 @@ export function WikiBrowser({
             <button onClick={() => setAfter(catalogue.next!)}>下一页</button>
           )}
         </>
+      )}
+    </main>
+  );
+}
+
+export function WikiMaintenance({ id }: { id: string }) {
+  const [record, setRecord] = useState<{
+      status: string;
+      pages: Array<{ pageId: string; disposition: string }>;
+      jobs: Array<{ id: string; state: string; reason?: string }>;
+    }>(),
+    [error, setError] = useState(""),
+    [repair, setRepair] = useState({ key: crypto.randomUUID(), guidance: "" }),
+    [busy, setBusy] = useState(false),
+    [revision, setRevision] = useState(0);
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch(`/api/wiki-operations/${id}`, { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("无法读取维护记录");
+        setRecord(await response.json());
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted) setError(error.message);
+      });
+    return () => controller.abort();
+  }, [id, revision]);
+  return (
+    <main>
+      <a href="/wiki">← 返回知识主题</a>
+      <h1>知识维护记录</h1>
+      {error && <p role="alert">{error}</p>}
+      <p role="status">
+        {record?.status === "ready"
+          ? "处理完成"
+          : record?.status === "failed"
+            ? "需要处理"
+            : "等待处理"}
+        。原文可用性单独记录。
+      </p>
+      <button onClick={() => setRevision((value) => value + 1)}>
+        刷新进度
+      </button>
+      <ul>
+        {record?.pages.map((page) => (
+          <li key={page.pageId}>
+            <a href={`/wiki/${page.pageId}`}>查看主题</a>：
+            {page.disposition === "retired"
+              ? "已退休"
+              : page.disposition === "coalesced"
+                ? "已合并重复工作"
+                : "已发布"}
+          </li>
+        ))}
+      </ul>
+      <ul>
+        {record?.jobs
+          .filter((job) => job.reason)
+          .map((job) => (
+            <li key={job.id}>{job.reason}</li>
+          ))}
+      </ul>
+      {record?.status === "failed" && (
+        <form
+          onSubmit={async (event) => {
+            event.preventDefault();
+            setBusy(true);
+            setError("");
+            try {
+              const response = await fetch(
+                `/api/wiki-operations/${id}/repair`,
+                {
+                  method: "POST",
+                  headers: { "content-type": "application/json" },
+                  body: JSON.stringify(repair),
+                },
+              );
+              if (!response.ok)
+                throw new Error("修复未确认，请重试相同请求或检查维护记录。");
+              const result = await response.json();
+              window.location.assign(`/wiki-operations/${result.operationId}`);
+            } catch (error) {
+              setError(error instanceof Error ? error.message : "无法提交修复");
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          <label>
+            修复说明
+            <textarea
+              required
+              maxLength={300}
+              value={repair.guidance}
+              onChange={(event) =>
+                setRepair({
+                  key: crypto.randomUUID(),
+                  guidance: event.target.value,
+                })
+              }
+            />
+          </label>
+          <button disabled={busy} type="submit">
+            提交修复
+          </button>
+        </form>
       )}
     </main>
   );

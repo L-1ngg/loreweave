@@ -1,4 +1,4 @@
-import { WikiBrowser } from "./wiki.tsx";
+import { WikiBrowser, WikiMaintenance } from "./wiki.tsx";
 import { IdentityPanel } from "./identities.tsx";
 import { SourceImports, type Attachment } from "./imports.tsx";
 import { Markdown, markdownContext } from "./markdown.tsx";
@@ -264,7 +264,11 @@ function SourcePage({
       Partial<
         Pick<
           SourceVersion,
-          "passages" | "state" | "projectId" | "currentVersionId"
+          | "passages"
+          | "state"
+          | "projectId"
+          | "currentVersionId"
+          | "attribution"
         >
       >
   >();
@@ -323,6 +327,13 @@ function SourcePage({
               <a href={`/api/sources/${source.version}/original`}>
                 下载原始 Markdown
               </a>
+              {source.attribution && (
+                <p>
+                  成员补充 · 作者 {source.attribution.actorId} ·{" "}
+                  {source.attribution.projectId ? "项目资料" : "组织共享资料"}
+                  。此内容保留为来源陈述。
+                </p>
+              )}
               <IdentityPanel
                 key={`${source.version}:${source.state}`}
                 version={source.version}
@@ -353,11 +364,16 @@ function SourcePage({
   );
 }
 const wikiMatch = window.location.pathname.match(/^\/wiki(?:\/([^/]+))?$/);
+const maintenanceId = window.location.pathname.match(
+  /^\/wiki-operations\/([^/]+)$/,
+)?.[1];
 const version = window.location.pathname.match(/^\/sources\/([^/]+)$/)?.[1];
 createRoot(document.getElementById("root")!).render(
   <AccessShell>
     {({ actor, projectId }) =>
-      wikiMatch ? (
+      maintenanceId ? (
+        <WikiMaintenance id={maintenanceId} />
+      ) : wikiMatch ? (
         <WikiBrowser
           projectId={projectId}
           {...(wikiMatch[1] ? { id: wikiMatch[1] } : {})}

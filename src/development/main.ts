@@ -83,6 +83,7 @@ try {
   });
   provider = startScriptedProvider({ delayMs: 120 });
   host = new KnowledgeHost({
+    wiki,
     providerUrl: provider.url,
     sources,
     conversations,

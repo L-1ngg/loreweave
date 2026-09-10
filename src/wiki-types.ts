@@ -1,7 +1,13 @@
 import type { EvidencePack, EvidenceItem } from "./evidence.ts";
 import type { Draft, Review } from "./answer-validation.ts";
 export type WikiPhase =
-  "extraction" | "planning" | "inspection" | "generation" | "review";
+  | "extraction"
+  | "planning"
+  | "inspection"
+  | "support"
+  | "conflicts"
+  | "generation"
+  | "review";
 export interface WikiModel {
   request(
     phase: WikiPhase,
@@ -52,6 +58,7 @@ export interface WikiPage {
   sources: EvidenceItem[];
   certificates: WikiCertificate[];
   descriptor: TopicDescriptor;
+  retirement?: { reason: string; at: string; operationId: string };
 }
 export interface WikiCandidate {
   omitted?: string[];

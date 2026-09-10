@@ -90,8 +90,15 @@ test("selected-document HTTP updates preserve identity and prior evidence until 
     expect(await f.sources.current(f.token, original.versionId)).toBe(true);
     await f.sources.workOne();
     expect(
-      (await f.sources.inspect(f.token, operation.id)).maintenance,
-    ).toHaveLength(3);
+      (await f.sources.inspect(f.token, operation.id)).maintenance
+        .map((job) => job.kind)
+        .sort(),
+    ).toEqual([
+      "graph.refresh",
+      "identity.revalidate",
+      "wiki.dependencies",
+      "wiki.refresh",
+    ]);
     expect(await f.sources.current(f.token, operation.versionId)).toBe(true);
     expect(await f.sources.current(f.token, original.versionId)).toBe(false);
     expect(

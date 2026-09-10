@@ -218,6 +218,7 @@ test("concurrent equivalent creations replan against the published reservation a
     const first = await f.source("a.md", "生产日志保留 30 天。"),
       second = await f.source("b.md", "测试日志保留 7 天。");
     await Promise.all([f.wiki.workOne(f.token), f.wiki.workOne(f.token)]);
+    while (await f.wiki.workOne(f.token)) {}
     const pages = await f.wiki.list(f.token);
     expect(pages.items).toHaveLength(1);
     const page = await f.wiki.page(f.token, pages.items[0]!.id);
@@ -784,6 +785,7 @@ test("large topic planning uses bounded original context while all assigned pass
     expect(pages.items).toHaveLength(1);
     const page = await f.wiki.page(f.token, pages.items[0]!.id);
     expect(page.text).toContain("区域 100");
+    expect(page.text).not.toContain("来源分歧尚未解决");
     expect(page.sources).toHaveLength(100);
     expect((await f.wiki.inspect(f.token, operation.id)).jobs[0]!.state).toBe(
       "succeeded",

@@ -1,6 +1,7 @@
 import type { Transaction } from "./operations.ts";
+import { wikiReadiness } from "./wiki-readiness.ts";
 import { createHash } from "node:crypto";
-import { AccessService } from "./access.ts";
+import { AccessService, type TrustedContext } from "./access.ts";
 import { Operations } from "./operations.ts";
 import {
   parseMarkdown,
@@ -28,6 +29,7 @@ export interface ImportInput {
   expectedPrior?: string;
 }
 export interface SourceOperation {
+  wiki: ReturnType<typeof wikiReadiness>;
   id: string;
   documentId: string;
   versionId: string;
@@ -41,6 +43,7 @@ export interface SourceOperation {
   }>;
 }
 export interface SourceVersion {
+  attribution?: { actorId: string; projectId?: string; pageId?: string };
   projectId?: string;
   currentVersionId: string;
   id: string;
@@ -135,24 +138,64 @@ export class SourceService {
       context,
       input.key,
       hash,
-      async (tx, operationId) => {
-        const documentId = input.documentId ?? crypto.randomUUID(),
-          versionId = crypto.randomUUID();
-        if (input.documentId) {
-          const [document] =
-            await tx`SELECT active_version_id FROM source_documents WHERE id=${documentId} AND organization_id=${context.organizationId} AND project_id IS NOT DISTINCT FROM ${input.projectId ?? null}::uuid FOR UPDATE`;
-          if (!document) throw new Error("not_found");
-          if (document.active_version_id !== input.expectedPrior)
-            throw new Error("version_conflict");
-        } else
-          await tx`INSERT INTO source_documents(id,organization_id,project_id) VALUES(${documentId},${context.organizationId},${input.projectId ?? null})`;
-        await tx`INSERT INTO source_versions(id,document_id,operation_id,expected_prior,filename,original) VALUES(${versionId},${documentId},${operationId},${input.expectedPrior ?? null},${input.filename},${Buffer.from(input.bytes)})`;
-        await this.operations.enqueue(tx, operationId, "source.prepare", {
-          versionId,
-        });
-      },
+      (tx, operationId) => this.stageVersion(tx, context, operationId, input),
     );
     return this.inspect(token, id);
+  }
+  /** M05's attributed note joins its accepted intent and preparation job in one transaction. */
+  async stageNote(
+    tx: Transaction,
+    context: TrustedContext,
+    operationId: string,
+    input: { text: string; pageId?: string; projectId?: string },
+  ) {
+    if (
+      !input.text.trim() ||
+      new TextEncoder().encode(input.text).length > 4000
+    )
+      throw new Error("invalid_input");
+    await this.stageVersion(
+      tx,
+      context,
+      operationId,
+      {
+        key: operationId,
+        filename: "成员补充.md",
+        bytes: new TextEncoder().encode(input.text),
+        ...(input.projectId ? { projectId: input.projectId } : {}),
+      },
+      input.pageId ? { pageId: input.pageId } : {},
+    );
+  }
+  private async stageVersion(
+    tx: Transaction,
+    context: TrustedContext,
+    operationId: string,
+    input: ImportInput,
+    note?: { pageId?: string },
+  ) {
+    const documentId = input.documentId ?? crypto.randomUUID(),
+      versionId = crypto.randomUUID();
+    if (input.documentId) {
+      const [document] =
+        await tx`SELECT active_version_id FROM source_documents WHERE id=${documentId} AND organization_id=${context.organizationId} AND project_id IS NOT DISTINCT FROM ${input.projectId ?? null}::uuid FOR UPDATE`;
+      if (!document) throw new Error("not_found");
+      if (document.active_version_id !== input.expectedPrior)
+        throw new Error("version_conflict");
+    } else
+      await tx`INSERT INTO source_documents(id,organization_id,project_id) VALUES(${documentId},${context.organizationId},${input.projectId ?? null})`;
+    await tx`INSERT INTO source_versions(id,document_id,operation_id,expected_prior,filename,original) VALUES(${versionId},${documentId},${operationId},${input.expectedPrior ?? null},${input.filename},${Buffer.from(input.bytes)})`;
+    if (note) {
+      if (note.pageId) {
+        const [page] =
+          await tx`SELECT id FROM wiki_pages WHERE id=${note.pageId} AND organization_id=${context.organizationId} AND project_id IS NOT DISTINCT FROM ${input.projectId ?? null}::uuid FOR SHARE`;
+        if (!page) throw new Error("not_found");
+      }
+      await tx`INSERT INTO source_notes(version_id,actor_id,project_id,page_id) VALUES(${versionId},${context.actorId},${input.projectId ?? null},${note.pageId ?? null})`;
+    }
+    await this.operations.enqueue(tx, operationId, "source.prepare", {
+      versionId,
+    });
   }
   async inspect(token: string, id: string): Promise<SourceOperation> {
     const context = await this.access.authorize(token, "read");
@@ -174,6 +217,11 @@ export class SourceService {
     const jobs = await this.operations
       .sql`SELECT id,operation_id,kind,state,reason FROM knowledge_jobs WHERE operation_id IN ${this.operations.sql(rows.map((row) => String(row.operation_id)))} AND kind<>'source.prepare' ORDER BY kind`;
     return rows.map((row) => ({
+      wiki: wikiReadiness(
+        jobs
+          .filter((job) => job.operation_id === row.operation_id)
+          .map((job) => ({ kind: String(job.kind), state: String(job.state) })),
+      ),
       id: String(row.operation_id),
       documentId: String(row.document_id),
       versionId: String(row.id),
@@ -245,6 +293,30 @@ export class SourceService {
         await tx`UPDATE source_versions SET state='superseded' WHERE id=${version.expected_prior}`;
         await tx`UPDATE source_versions SET decoded=${parsed.decoded},parser_profile=${parserProfile},embedding_profile=${this.embeddings.profile},dimensions=${this.embeddings.dimensions},state='active' WHERE id=${String(version.id)}`;
         await tx`UPDATE source_documents SET active_version_id=${String(version.id)} WHERE id=${String(version.document_id)}`;
+        if (version.expected_prior)
+          await this.operations.enqueue(
+            tx,
+            job.operationId,
+            "wiki.dependencies",
+            {
+              documentId: String(version.document_id),
+              versionId: String(version.id),
+            },
+          );
+        const [note] =
+          await tx`SELECT page_id FROM source_notes WHERE version_id=${String(version.id)}`;
+        if (note?.page_id)
+          await this.operations.enqueue(
+            tx,
+            job.operationId,
+            "wiki.revalidate",
+            {
+              documentId: String(version.document_id),
+              versionId: String(version.id),
+              pageId: String(note.page_id),
+            },
+            String(note.page_id),
+          );
         for (const kind of [
           "identity.revalidate",
           "wiki.refresh",
@@ -298,13 +370,22 @@ export class SourceService {
     id: string,
   ): Promise<SourceVersion> {
     const [row] = await this.operations
-      .sql`SELECT v.*,d.project_id,d.active_version_id FROM source_versions v JOIN source_documents d ON d.id=v.document_id WHERE v.id=${id} AND d.organization_id=${organizationId} AND v.state IN ('active','superseded')`;
+      .sql`SELECT v.*,d.project_id,d.active_version_id,n.actor_id,n.page_id AS note_page_id FROM source_versions v JOIN source_documents d ON d.id=v.document_id LEFT JOIN source_notes n ON n.version_id=v.id WHERE v.id=${id} AND d.organization_id=${organizationId} AND v.state IN ('active','superseded')`;
     if (!row) throw new Error("not_found");
     const passages = await this.operations
       .sql`SELECT * FROM source_passages WHERE version_id=${id} ORDER BY ordinal`;
     return {
       id: String(row.document_id),
       currentVersionId: String(row.active_version_id),
+      ...(row.actor_id
+        ? {
+            attribution: {
+              actorId: String(row.actor_id),
+              ...(row.project_id ? { projectId: String(row.project_id) } : {}),
+              ...(row.note_page_id ? { pageId: String(row.note_page_id) } : {}),
+            },
+          }
+        : {}),
       ...(row.project_id ? { projectId: String(row.project_id) } : {}),
       version: id,
       title: String(row.filename),

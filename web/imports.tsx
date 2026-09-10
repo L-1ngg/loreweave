@@ -185,30 +185,35 @@ export function SourceImports({
                 <span>
                   {" "}
                   · Wiki：
-                  {operation.maintenance.find(
-                    (job) => job.kind === "wiki.refresh",
-                  )?.state === "succeeded"
+                  {operation.wiki === "ready"
                     ? "已处理"
-                    : operation.maintenance.find(
-                          (job) => job.kind === "wiki.refresh",
-                        )?.state === "failed"
+                    : operation.wiki === "failed"
                       ? "需要处理"
                       : "等待更新"}{" "}
                   · 图谱待刷新
                   {operation.maintenance.find(
-                    (job) => job.kind === "wiki.refresh",
+                    (job) =>
+                      job.kind.startsWith("wiki.") &&
+                      job.kind !== "wiki.project" &&
+                      Boolean(job.reason),
                   )?.reason && (
                     <details>
+                      <a href={`/wiki-operations/${operation.id}`}>
+                        查看维护与修复
+                      </a>
                       <summary>Wiki 未完成的原因</summary>
                       <p>
                         {
                           operation.maintenance.find(
-                            (job) => job.kind === "wiki.refresh",
+                            (job) =>
+                              job.kind.startsWith("wiki.") &&
+                              job.kind !== "wiki.project" &&
+                              Boolean(job.reason),
                           )?.reason
                         }
                       </p>
                       <p>
-                        原文仍可检索；请修订来源或在维护重试功能可用后重新处理。
+                        原文仍可检索；请修订来源或打开维护记录提交修复说明。
                       </p>
                     </details>
                   )}

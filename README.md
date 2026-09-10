@@ -123,8 +123,9 @@ and page versions. At most three planner requests and seven inspection requests
 share durable operation limits. Generation/review use at most three requests each
 per block. UTF-8 byte bounds conservatively limit source packets, routing text,
 planner inputs/outputs and generated blocks without assuming a provider tokenizer.
-All pages in a source edit set publish atomically, with reservations and catalogue
-revision checks; unresolved work leaves effective pages intact. Counters, hashes,
+Related discovery edits publish atomically with catalogue changes, reservations
+and revision checks; mandatory page work coalesces matching revision results.
+Each affected page has a required refresh result. Counters, hashes,
 remaining ranges and failure reasons are available through the maintenance read API.
 
 `GET /api/wiki` and `GET /api/wiki/:id?version=...` expose pages and original
@@ -134,8 +135,14 @@ by original version/passage. Old source/identity dependencies immediately make
 Wiki prose ineligible. Missing vectors permit lexical publication and original
 fallback; novelty waits for a catalogue revision/projection event within its
 existing deadline. `WikiService.retryProjection` provides an idempotent repair
-entry for the later operation interface. Mandatory dependency fan-out, retirement
-and restructuring are delivered in #10/#11; this slice records proposals only.
+entry for catalogue recovery. Source/identity changes now enumerate all historical
+dependents in batches of 20, coalesce discovery with page revalidation, and retire
+or revive the same page ID after complete support review. Source receipts expose
+aggregate Wiki readiness separately from source searchability. See the
+[refresh and correction runtime](docs/development/wiki-refresh.md) for attributed
+member notes, retained guidance, natural-language fixtures, maintenance UI and
+explicit repair. Merge/split/restore execution remains #11; discovery records
+those proposals without executing them.
 
 ## Interrupted execution
 

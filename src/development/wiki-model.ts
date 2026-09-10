@@ -22,6 +22,58 @@ export class ScriptedWikiModel implements WikiModel {
     const pack = input.pack as WikiPack;
     if (phase === "extraction") return extract(pack);
     const topic = input.topic as TopicDescriptor;
+    if (phase === "conflicts")
+      return {
+        evidenceHash: pack.hash,
+        pairs: (input.left as string[]).flatMap((left) =>
+          (input.right as string[]).map((right) => {
+            const a = pack.items.find((item) => item.handle === left)!,
+              b = pack.items.find((item) => item.handle === right)!;
+            return {
+              left,
+              right,
+              verdict: fixtureConflict(a.text, b.text)
+                ? "conflict"
+                : "compatible",
+              scopeChecked: true,
+              reason: "Controlled comparison retaining both original scopes",
+            };
+          }),
+        ),
+      };
+    if (phase === "support")
+      return {
+        claimId: (input.claim as { id: string }).id,
+        claimVerdict: pack.items.some((item) =>
+          (input.claim as { text: string }).text.includes(item.text.trim()),
+        )
+          ? "supported"
+          : "absent",
+        qualifiersChecked: true,
+        claimReason:
+          "Controlled comparison of each retained claim and original scope",
+        claimHandles: pack.items
+          .filter((item) =>
+            (input.claim as { text: string }).text.includes(item.text.trim()),
+          )
+          .map((item) => item.handle),
+        evidenceHash: pack.hash,
+        pageVersion: input.pageVersion,
+        coverage: pack.items.map((item) => ({
+          handle: item.handle,
+          outcome: (
+            topic.subjectKey.startsWith("rule:")
+              ? item.text.includes(`规则 ${topic.subjectKey.slice(5)}：`)
+              : item.text.includes(topic.subjectKey) ||
+                extract({ ...pack, items: [item] }).topics.some(
+                  (candidate) => candidate.subjectKey === topic.subjectKey,
+                )
+          )
+            ? "support"
+            : "context",
+          reason: "Controlled fixture subject and applicable original scope",
+        })),
+      };
     if (phase === "planning") {
       const candidates = input.candidates as WikiCandidate[];
       const matched = candidates.find(
@@ -96,12 +148,20 @@ export class ScriptedWikiModel implements WikiModel {
       return result;
     }
     return {
-      relevant: (input.window as Array<{ text: string; kind: string }>).map(
-        (range, index) => ({
-          range: index,
-          start: 0,
-          end: Math.min(range.text.length, 80),
-        }),
+      relevant: (input.window as Array<{ text: string; kind: string }>).flatMap(
+        (range, index) =>
+          range.kind === "original" &&
+          !(topic.subjectKey.startsWith("rule:")
+            ? range.text.includes(`规则 ${topic.subjectKey.slice(5)}：`)
+            : range.text.includes(topic.subjectKey.slice(0, 2)))
+            ? []
+            : [
+                {
+                  range: index,
+                  start: 0,
+                  end: Math.min(range.text.length, 80),
+                },
+              ],
       ),
       windowHash: input.windowHash,
       complete: true,
@@ -185,5 +245,39 @@ function draft(pack: WikiPack, topic: TopicDescriptor) {
       premises: [],
     });
   }
+  if (
+    pack.items.some((a, index) =>
+      pack.items.slice(index + 1).some((b) => fixtureConflict(a.text, b.text)),
+    )
+  ) {
+    const start = text.length + 2;
+    text +=
+      "\n\n来源分歧尚未解决：上述来源陈述了不同的日志保留期限；请结合各自适用范围判断。";
+    claims.push({
+      id: "conflict",
+      start,
+      end: text.length,
+      role: "fact",
+      handles: pack.items.map((item) => item.handle),
+      subject: topic.subjectKey,
+      scope: "上述来源各自的适用范围",
+      conditions: [],
+      attribution: "inference",
+      premises: claims
+        .filter((claim) => claim.id !== "title")
+        .map((claim) => claim.id),
+    });
+  }
   return { text, claims };
+}
+function fixtureConflict(a: string, b: string) {
+  const duration = (text: string) => text.match(/日志保留\s*(\d+)\s*天/)?.[1];
+  const scope = (text: string) =>
+    text.match(/(?:区域|环境)\s*\d+/)?.[0] ?? text.match(/生产|测试/)?.[0];
+  return Boolean(
+    duration(a) &&
+    duration(b) &&
+    duration(a) !== duration(b) &&
+    !(scope(a) && scope(b) && scope(a) !== scope(b)),
+  );
 }

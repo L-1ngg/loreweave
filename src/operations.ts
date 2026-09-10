@@ -69,12 +69,15 @@ export class Operations {
     kinds: string[],
     leaseMs = 60000,
     organizationId?: string,
+    eligibleIds?: string[],
   ): Promise<Job | undefined> {
+    if (eligibleIds && !eligibleIds.length) return undefined;
     const [row] = await this
       .sql`UPDATE knowledge_jobs SET state='running', attempt=attempt+1, fence=fence+1,
       lease_until=clock_timestamp()+${leaseMs}*interval '1 millisecond'
       WHERE id=(SELECT id FROM knowledge_jobs WHERE kind IN ${this.sql(kinds)} AND (${organizationId ?? null}::uuid IS NULL OR operation_id IN (SELECT id FROM knowledge_operations WHERE organization_id=${organizationId ?? null})) AND
       ((state='queued' OR (state='retry_wait' AND kind NOT LIKE 'wiki.%')) OR (state='running' AND lease_until<clock_timestamp()))
+      AND (${eligibleIds === undefined} OR id::text IN (SELECT value FROM jsonb_array_elements_text(${this.sql.json(eligibleIds ?? [])}::jsonb)))
       ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING *`;
     return row
       ? {
