@@ -10,6 +10,7 @@ import { KnowledgeHost } from "../host.ts";
 import { createApp } from "../http.ts";
 import { startScriptedProvider } from "./provider.ts";
 import { FixtureSources } from "./sources.ts";
+import { GraphService } from "../graph.ts";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl)
@@ -36,6 +37,13 @@ const wiki = new WikiService(
   new ControlledEmbeddings(),
   new ScriptedWikiModel(),
 );
+const graph = new GraphService(
+  databaseUrl,
+  access,
+  imports,
+  identities,
+  new ScriptedWikiModel(),
+);
 let worker: Promise<void> | undefined;
 async function prepareSources() {
   while (!closing) {
@@ -43,7 +51,8 @@ async function prepareSources() {
       if (
         !(await imports.workOne()) &&
         !(await identities.workOne()) &&
-        !(await wiki.workOne())
+        !(await wiki.workOne()) &&
+        !(await graph.workOne())
       )
         await Bun.sleep(200);
     } catch (error) {
@@ -63,6 +72,7 @@ async function close() {
   provider?.stop();
   await worker;
   await wiki.close();
+  await graph.close();
   await identities.close();
   await imports.close();
   await conversations.close();
@@ -97,6 +107,7 @@ try {
     imports,
     browserOrigin: "http://127.0.0.1:41735",
     access,
+    graph,
   });
   server = Bun.serve({
     hostname: "127.0.0.1",

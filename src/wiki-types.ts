@@ -3,6 +3,8 @@ import type { Draft, Review } from "./answer-validation.ts";
 export type WikiPhase =
   | "structure"
   | "structure_review"
+  | "graph_extraction"
+  | "graph_review"
   | "extraction"
   | "planning"
   | "inspection"

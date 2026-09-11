@@ -1,3 +1,4 @@
+import { hash } from "../answer-validation.ts";
 import { scriptedStructure } from "./wiki-structure-model.ts";
 import type { Draft, Claim, Review } from "../answer-validation.ts";
 import type {
@@ -22,6 +23,18 @@ export class ScriptedWikiModel implements WikiModel {
     this.calls.push({ phase, input: structuredClone(input) });
     if (phase === "structure" || phase === "structure_review")
       return scriptedStructure(phase, input);
+    if (phase === "graph_extraction") return graphExtract(input);
+    if (phase === "graph_review") {
+      const packet = input.packet as { relations: unknown[] };
+      return {
+        evidenceHash: hash(packet.relations),
+        complete: true,
+        relations: packet.relations.map(() => ({
+          verdict: "supported",
+          qualifiersChecked: true,
+        })),
+      };
+    }
     const pack = input.pack as WikiPack;
     if (phase === "extraction") return extract(pack);
     const topic = input.topic as TopicDescriptor;
@@ -172,6 +185,28 @@ export class ScriptedWikiModel implements WikiModel {
       remaining: [],
     };
   }
+}
+function graphExtract(input: Record<string, unknown>) {
+  const pack = input.pack as WikiPack;
+  const relations = pack.items.flatMap((item) => {
+    const match = item.text.match(/(.+?)依赖(.+?)[。.!！]?$/);
+    if (!match) return [];
+    const subject = match[1]!.trim(),
+      object = match[2]!.trim();
+    return [
+      {
+        subjectMention: subject,
+        objectMention: object,
+        predicate: "dependency",
+        direction: "forward",
+        relationText: item.text.trim(),
+        scope: "source",
+        qualifiers: { status: "current" },
+        locators: [item.passageId],
+      },
+    ];
+  });
+  return { relations, exclusions: [], complete: true };
 }
 export function extract(
   pack: WikiPack,

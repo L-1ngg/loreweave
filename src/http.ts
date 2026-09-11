@@ -10,6 +10,8 @@ import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import { KnowledgeHost } from "./host.ts";
 import { FixtureSources } from "./development/sources.ts";
+import { graphRoutes } from "./graph-http.ts";
+import type { GraphService } from "./graph.ts";
 
 /** Development-only transport. Binding and origin checks do not replace M01 auth. */
 export function createApp(
@@ -21,6 +23,7 @@ export function createApp(
     imports?: SourceService;
     identities?: IdentityService;
     wiki?: WikiService;
+    graph?: GraphService;
   } = {},
 ) {
   const app = new Hono();
@@ -49,6 +52,7 @@ export function createApp(
   if (options.wiki) app.route("/api", wikiRoutes(options.wiki));
   if (options.identities) app.route("/api", identityRoutes(options.identities));
   if (options.imports) app.route("/api", sourceRoutes(options.imports));
+  if (options.graph) app.route("/api", graphRoutes(options.graph));
   app.post("/api/runs", async (context) => {
     let input: unknown;
     try {
