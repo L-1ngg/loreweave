@@ -31,7 +31,7 @@ async function fixture(
   const { token } = await access.login(account);
   const sources = new SourceService(url!, access, embeddings),
     identities = new IdentityService(url!, access, sources);
-  const wiki = new WikiService(
+  let wiki = new WikiService(
     url!,
     access,
     sources,
@@ -44,7 +44,20 @@ async function fixture(
     access,
     sources,
     identities,
-    wiki,
+    get wiki() {
+      return wiki;
+    },
+    async restartWiki() {
+      await wiki.close();
+      wiki = new WikiService(
+        url!,
+        access,
+        sources,
+        identities,
+        embeddings,
+        model,
+      );
+    },
     model,
     async source(filename: string, text: string, projectId?: string) {
       const operation = await sources.submit(token, {
@@ -499,7 +512,9 @@ test("overflow beyond four packet topics advances a bounded child over the remai
         (_, i) => `环境 ${i} 日志保留 ${i + 1} 天。`,
       ).join("\n\n"),
     );
-    while (await f.wiki.workOne(f.token)) {}
+    while (await f.wiki.workOne(f.token)) {
+      await f.restartWiki();
+    }
     expect((await f.wiki.list(f.token)).items).toHaveLength(5);
     expect((await f.wiki.inspect(f.token, operation.id)).jobs[0]!.state).toBe(
       "succeeded",

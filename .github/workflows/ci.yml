@@ -40,6 +40,8 @@ jobs:
       - run: bun run test:sources
       - run: bun run test:evidence
       - run: bun run test:updates
+      - run: bun run test:operations
+      - run: bun run test:graph
       - run: bun run test:mcp
       - run: bun run test:intents
       - run: bun run test:identity
@@ -48,5 +50,12 @@ jobs:
       - run: bun run test:wiki-history
       - run: bun run test:upstream
       - run: bun x playwright install --with-deps chromium
+      # Browser workers execute queued jobs globally; keep module failure fixtures
+      # in their own database so they cannot consume browser maintenance admission.
+      - run: createdb -h 127.0.0.1 -U loreweave loreweave_browser_test
+        env:
+          PGPASSWORD: loreweave_test
       - run: bun run test:browser
+        env:
+          TEST_DATABASE_URL: postgres://loreweave:loreweave_test@127.0.0.1:5432/loreweave_browser_test
       - run: bun run build

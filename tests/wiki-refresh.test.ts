@@ -1,3 +1,5 @@
+import { MaintenanceService } from "../src/maintenance.ts";
+import { commitAckLoss } from "./fixtures/commit-ack-loss.ts";
 import type {
   WikiModel,
   WikiPhase,
@@ -27,21 +29,34 @@ async function fixture(model: WikiModel = new ScriptedWikiModel()) {
   const { token } = await access.login(account);
   const embeddings = new ControlledEmbeddings(),
     sources = new SourceService(url!, access, embeddings),
-    identities = new IdentityService(url!, access, sources),
-    wiki = new WikiService(
-      url!,
-      access,
-      sources,
-      identities,
-      embeddings,
-      model,
-    );
+    identities = new IdentityService(url!, access, sources);
+  let wiki = new WikiService(
+    url!,
+    access,
+    sources,
+    identities,
+    embeddings,
+    model,
+  );
   return {
     access,
     token,
     sources,
     identities,
-    wiki,
+    get wiki() {
+      return wiki;
+    },
+    async restartWiki() {
+      await wiki.close();
+      wiki = new WikiService(
+        url!,
+        access,
+        sources,
+        identities,
+        embeddings,
+        model,
+      );
+    },
     async close() {
       await wiki.close();
       await identities.close();
@@ -284,7 +299,14 @@ test("forty-five historical dependents are enumerated in durable 20/20/5 batches
     } while (after);
     expect(ids).toHaveLength(45);
     const update = await f.source(text + "\n", first);
-    while (await f.wiki.workOne(f.token)) {}
+    let previousBatches = 0;
+    while (await f.wiki.workOne(f.token)) {
+      const walk = (await f.wiki.inspect(f.token, update.id)).walks[0];
+      if (walk && walk.batchSizes.length > previousBatches) {
+        previousBatches = walk.batchSizes.length;
+        await f.restartWiki();
+      }
+    }
     const result = await f.wiki.inspect(f.token, update.id);
     expect(result.walks[0]!.batchSizes).toEqual([20, 20, 5]);
     expect(new Set(result.walks[0]!.pageIds)).toEqual(new Set(ids));
@@ -308,10 +330,14 @@ test("retirement preserves historical entry points and later support revives the
   const f = await fixture();
   try {
     const first = await f.source("生产日志保留 30 天。");
-    while (await f.wiki.workOne(f.token)) {}
+    while (await f.wiki.workOne(f.token)) {
+      await f.restartWiki();
+    }
     const initial = (await f.wiki.list(f.token)).items[0]!;
     const removed = await f.source("无", first);
-    while (await f.wiki.workOne(f.token)) {}
+    while (await f.wiki.workOne(f.token)) {
+      await f.restartWiki();
+    }
     expect((await f.wiki.page(f.token, initial.id)).retirement?.reason).toBe(
       "no_current_support",
     );
@@ -327,7 +353,9 @@ test("retirement preserves historical entry points and later support revives the
       ).pages,
     ).toBe(0);
     await f.source("生产日志保留 90 天。", removed);
-    while (await f.wiki.workOne(f.token)) {}
+    while (await f.wiki.workOne(f.token)) {
+      await f.restartWiki();
+    }
     const current = await f.wiki.page(f.token, initial.id);
     expect(current.lifecycle).toBe("active");
     expect(current.fresh).toBe(true);
@@ -701,6 +729,90 @@ test("a failed member of a related update set cannot publish its successful peer
       expect(current.fresh).toBe(false);
     }
   } finally {
+    await f.close();
+  }
+}, 30000);
+
+test("Wiki retirement and reactivation recover lost COMMIT acknowledgements without duplicate publication", async () => {
+  const model = new ScriptedWikiModel(),
+    f = await fixture(model);
+  const maintenance = new MaintenanceService(url!, f.access);
+  async function interruptPublication(domain: RegExp) {
+    const proxy = await commitAckLoss(url!, domain);
+    const worker = new WikiService(
+      proxy.url,
+      f.access,
+      f.sources,
+      f.identities,
+      new ControlledEmbeddings(),
+      model,
+    );
+    try {
+      for (let step = 0; step < 20 && !proxy.dropped; step++) {
+        if (!(await worker.workOne(f.token))) break;
+      }
+      expect(proxy.dropped).toBe(true);
+    } finally {
+      await worker.close();
+      await proxy.close();
+    }
+  }
+  try {
+    const source = await f.source("生产日志保留 30 天。");
+    while (await f.wiki.workOne(f.token)) {}
+    const initial = (await f.wiki.list(f.token)).items[0]!;
+    const removed = await f.source("无", source);
+    await interruptPublication(/UPDATE wiki_pages SET lifecycle='retired'/);
+    const retired = await f.wiki.page(f.token, initial.id);
+    expect(retired.lifecycle).toBe("retired");
+    expect(retired.retirement?.operationId).toBe(removed.id);
+    const status = await maintenance.inspect(f.token, removed.id);
+    expect(
+      status.jobs.some(
+        (job) =>
+          job.kind === "wiki.revalidate" &&
+          job.state === "succeeded" &&
+          job.receipt.outcome === "succeeded",
+      ),
+    ).toBe(true);
+    await f.restartWiki();
+    while (await f.wiki.workOne(f.token)) {}
+    expect((await f.wiki.page(f.token, initial.id)).version).toBe(
+      retired.version,
+    );
+    expect(
+      (
+        await f.wiki.search(f.token, {
+          question: "日志",
+          signal: AbortSignal.timeout(1000),
+        })
+      ).pages,
+    ).toBe(0);
+    const revived = await f.source("生产日志保留 90 天。", removed);
+    await interruptPublication(/UPDATE wiki_pages SET current_version_id=/);
+    const published = await f.wiki.page(f.token, initial.id);
+    expect(published.lifecycle).toBe("active");
+    expect(published.text).toContain("90 天");
+    const before = await f.wiki.history(f.token, initial.id);
+    await f.restartWiki();
+    while (await f.wiki.workOne(f.token)) {}
+    expect((await f.wiki.page(f.token, initial.id)).version).toBe(
+      published.version,
+    );
+    expect(await f.wiki.history(f.token, initial.id)).toEqual(before);
+    const ready = await f.sources.inspect(f.token, revived.id);
+    expect(ready.wiki).toBe("ready");
+    const evidence = new EvidenceService(f.sources, f.wiki);
+    const pack = await evidence.retrieve(f.token, {
+      runId: crypto.randomUUID(),
+      question: "生产日志保留多久",
+      signal: AbortSignal.timeout(2000),
+    });
+    expect(pack.items.some((item) => item.text.includes("90 天"))).toBe(true);
+    expect(pack.items.some((item) => item.text.includes("30 天"))).toBe(false);
+    evidence.release(pack.runId);
+  } finally {
+    await maintenance.close();
     await f.close();
   }
 }, 30000);

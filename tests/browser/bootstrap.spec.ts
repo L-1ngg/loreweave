@@ -404,3 +404,36 @@ test("unknown correction target asks for clarification without creating a note",
     (await (await page.request.get("/api/imports")).json()).operations.length,
   ).toBe(before.operations.length);
 });
+
+test("maintenance status shows source, Wiki and graph independently after an import", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByLabel("Markdown 文件").setInputFiles({
+    name: "maintenance.md",
+    mimeType: "text/markdown",
+    buffer: Buffer.from("生产日志保留 30 天。"),
+  });
+  await expect(page.getByRole("button", { name: "直接导入" })).toBeEnabled();
+  await page.getByRole("button", { name: "直接导入" }).click();
+  const records = page.getByRole("list", { name: "导入记录" });
+  await expect(records).toContainText("来源可检索");
+  const link = records.getByRole("link", { name: "查看处理记录" }).first();
+  await expect(link).toBeVisible();
+  await page.goto((await link.getAttribute("href"))!);
+  await expect(
+    page.getByRole("heading", { name: "知识变更处理记录" }),
+  ).toBeVisible();
+  await expect(page.getByText("来源：已完成", { exact: false })).toBeVisible();
+  await expect(page.getByText("图谱：已完成", { exact: false })).toBeVisible();
+  await expect(
+    page.getByText("已核对提交记录", { exact: false }).first(),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "返回提问" }).click();
+  await page.getByLabel("问题").fill("生产日志保留多久？");
+  await page.getByRole("button", { name: "提问", exact: true }).click();
+  await expect(page.getByTestId("answer")).toContainText("30 天");
+  await expect(
+    page.getByRole("link", { name: / · [0-9a-f-]{36}$/ }).first(),
+  ).toBeVisible();
+});

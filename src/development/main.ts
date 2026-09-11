@@ -1,3 +1,4 @@
+import { MaintenanceService } from "../maintenance.ts";
 import { ExternalKnowledge } from "../external-knowledge.ts";
 import { WikiService } from "../wiki.ts";
 import { ScriptedWikiModel } from "./wiki-model.ts";
@@ -20,6 +21,7 @@ if (!databaseUrl)
   );
 const access = new AccessService(databaseUrl);
 const conversations = new PostgresConversations(databaseUrl);
+const maintenance = new MaintenanceService(databaseUrl, access);
 let host: KnowledgeHost | undefined;
 let provider: ReturnType<typeof startScriptedProvider> | undefined;
 let server: ReturnType<typeof Bun.serve> | undefined;
@@ -77,6 +79,7 @@ async function close() {
   await identities.close();
   await imports.close();
   await conversations.close();
+  await maintenance.close();
   await access.close();
 }
 try {
@@ -106,6 +109,7 @@ try {
   const external = new ExternalKnowledge(access, imports, evidence, host);
   const app = createApp(host, sources, {
     external,
+    maintenance,
     identities,
     wiki,
     imports,

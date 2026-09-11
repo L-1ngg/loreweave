@@ -1,3 +1,5 @@
+import type { MaintenanceService } from "./maintenance.ts";
+import { maintenanceRoutes } from "./maintenance-http.ts";
 import { mcpHandler } from "./mcp.ts";
 import type { ExternalKnowledge } from "./external-knowledge.ts";
 import { wikiRoutes } from "./wiki-http.ts";
@@ -20,6 +22,7 @@ export function createApp(
   host: KnowledgeHost,
   sources: FixtureSources,
   options: {
+    maintenance?: MaintenanceService;
     external?: ExternalKnowledge;
     browserOrigin?: string;
     access?: AccessService;
@@ -56,6 +59,8 @@ export function createApp(
       await next();
     });
   }
+  if (options.maintenance)
+    app.route("/api", maintenanceRoutes(options.maintenance));
   if (options.wiki) app.route("/api", wikiRoutes(options.wiki));
   if (options.identities) app.route("/api", identityRoutes(options.identities));
   if (options.imports) app.route("/api", sourceRoutes(options.imports));

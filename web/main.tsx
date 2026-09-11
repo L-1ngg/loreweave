@@ -1,3 +1,4 @@
+import { OperationPage } from "./operations.tsx";
 import { WikiBrowser, WikiMaintenance } from "./wiki.tsx";
 import { IdentityPanel } from "./identities.tsx";
 import { SourceImports, type Attachment } from "./imports.tsx";
@@ -405,6 +406,9 @@ function SourcePage({
   );
 }
 const wikiMatch = window.location.pathname.match(/^\/wiki(?:\/([^/]+))?$/);
+const operationId = window.location.pathname.match(
+  /^\/operations\/([^/]+)$/,
+)?.[1];
 const maintenanceId = window.location.pathname.match(
   /^\/wiki-operations\/([^/]+)$/,
 )?.[1];
@@ -412,7 +416,12 @@ const version = window.location.pathname.match(/^\/sources\/([^/]+)$/)?.[1];
 createRoot(document.getElementById("root")!).render(
   <AccessShell>
     {({ actor, projectId, selectProject }) =>
-      maintenanceId ? (
+      operationId ? (
+        <OperationPage
+          id={operationId}
+          canReconcile={actor.grants.includes("admin")}
+        />
+      ) : maintenanceId ? (
         <WikiMaintenance id={maintenanceId} />
       ) : wikiMatch ? (
         <WikiBrowser

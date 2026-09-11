@@ -3,7 +3,7 @@
 An agent-powered knowledge base with a living wiki, graph-assisted retrieval,
 and source-backed answers.
 
-**Current capability: authenticated Markdown knowledge conversations, document updates, evidenced identities and reviewed Wiki topics (#2–#9).**
+**Current capability: authenticated Markdown conversations, versioned sources, evidenced identities, reviewed Wiki/graph maintenance and read-only MCP access.**
 Members import versioned originals, ask questions through Forge, and open exact
 passages behind answer citations. PostgreSQL lexical/vector retrieval uses RRF;
 the answer pipeline validates claim spans and citations, performs a separate
@@ -12,9 +12,8 @@ reconnect, source activation and operation receipts persist in PostgreSQL.
 
 The local runtime uses deterministic embedding and extractive generation/review
 fixtures. It verifies the execution and validation contracts; it does not measure
-semantic model quality, independent factual truth or production capacity. The Wiki
-worker uses a scripted topic model; graph maintenance and full dependency refresh
-remain subsequent delivery slices.
+semantic model quality, independent factual truth or production capacity. Wiki and graph maintenance use scripted models; their scheduling, provenance and
+recovery are checked separately from real-model quality.
 
 ## Run locally
 
@@ -48,8 +47,8 @@ model quotes matching originals with attribution; it is not a general answering 
 Choose a Markdown file (up to 1 MiB), then use “直接导入” or ask “请把附件导入知识库”.
 Source preparation survives browser and process restarts; the source becomes searchable
 only after all vectors and lexical records are committed. The current embedding adapter
-is a deterministic integration fixture, not a semantic model. Identity and Wiki
-maintenance run in the background; graph events remain durably queued. The question-answer
+is a deterministic integration fixture, not a semantic model. Identity, Wiki and graph
+maintenance run in the background, with independent readiness and failure states. The question-answer
 fixture now retrieves those imported originals. The conversation URL restores progress without submitting another turn. This entry point remains a local scripted development service.
 
 Open a current source and use “更新此文档” → “提交新版本” to replace that
@@ -141,7 +140,7 @@ or revive the same page ID after complete support review. Source receipts expose
 aggregate Wiki readiness separately from source searchability. See the
 [refresh and correction runtime](docs/development/wiki-refresh.md) for attributed
 member notes, retained guidance, natural-language fixtures, maintenance UI and
-explicit repair. Merge/split/restore execution remains #11; discovery records
+explicit repair. Merge/split/restore execution uses versioned edit sets; discovery records
 those proposals without executing them.
 
 ## Interrupted execution
@@ -188,3 +187,12 @@ revocable API credentials, explicit project scope and the same evidence/answer
 services as browser requests. See [MCP usage and response contract](docs/development/mcp.md)
 for credential issuance, client configuration, scope, gaps and historical reads.
 Run `bun run test:mcp` with `TEST_DATABASE_URL` set to a disposable database.
+
+
+## Maintenance recovery
+
+Source, Wiki and graph outcomes are shown independently in import records.
+“查看处理记录” opens `/operations/<id>` with durable jobs and commit receipts.
+Administrators can reconcile uncertain outcomes without resubmitting source edits.
+See [maintenance recovery](docs/development/maintenance-recovery.md) for worker
+replacement, logical budgets, graph membership history and validation boundaries.

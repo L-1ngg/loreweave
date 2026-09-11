@@ -1,3 +1,9 @@
+import { GraphQueries } from "./graph-queries.ts";
+import {
+  graphOriginals,
+  graphPackets,
+  type GraphOriginal,
+} from "./graph-packets.ts";
 import { AccessService } from "./access.ts";
 import { hash, record } from "./answer-validation.ts";
 import { IdentityService } from "./identity.ts";
@@ -46,10 +52,7 @@ function normalizeRelation(relation: GraphRelation) {
     predicate,
     direction: relationMapping.direction.get(relation.direction) ?? "forward",
     scope: relation.scope.trim() || "source",
-    qualifiers: {
-      ...relation.qualifiers,
-      ...(relation.qualifiers.status ? {} : { status: "current" as const }),
-    },
+    qualifiers: { ...relation.qualifiers },
   };
 }
 export class GraphService {
@@ -60,7 +63,7 @@ export class GraphService {
     private readonly access: AccessService,
     private readonly sources: SourceService,
     private readonly identities: IdentityService,
-    model: GraphModel,
+    private readonly model: GraphModel,
   ) {
     this.operations = new Operations(url);
     this.runtime = new WikiModelRuntime(
@@ -68,6 +71,9 @@ export class GraphService {
       model,
       new BackgroundAdmission(url),
     );
+  }
+  private profile() {
+    return `graph-v3:${this.model.profile}:${normalizationProfile}:vocabulary-v1`;
   }
   async workOne(token?: string) {
     const context = token
@@ -88,6 +94,17 @@ export class GraphService {
         job,
         async (tx) => {
           await tx`UPDATE knowledge_jobs SET reason=${reason} WHERE id=${job.id}`;
+          if (reason === "identity_changed" && !job.payload.identityRetry) {
+            await this.operations.enqueue(
+              tx,
+              job.operationId,
+              "graph.refresh",
+              { ...job.payload, identityRetry: true },
+              `${job.id}:identity-retry`,
+            );
+          }
+          await tx`UPDATE graph_generations SET state=${reason.startsWith("source_changed") || reason.startsWith("identity_changed") ? "superseded" : "failed"},coverage=coverage||${tx.json({ failure: reason })}::jsonb WHERE trigger_job_id=${job.id} AND state='staged'`;
+          await tx`UPDATE graph_packets SET state='failed',error=${reason} WHERE generation_id IN(SELECT id FROM graph_generations WHERE trigger_job_id=${job.id}) AND state='pending'`;
         },
         reason.startsWith("source_changed") ||
           reason.startsWith("identity_changed")
@@ -102,131 +119,88 @@ export class GraphService {
       job.operationId,
       versionId,
     );
-    const items = source.passages.flatMap((passage, passageIndex) => {
-      const points = Array.from(passage.text),
-        chunks = [];
-      for (let offset = 0; offset < points.length; offset += 3000) {
-        const text = points.slice(offset, offset + 3000).join("");
-        chunks.push({
-          documentId: source.id,
-          version: source.version,
-          passageId: passage.id,
-          title: source.title,
-          text,
-          headingPath: passage.headingPath,
-          start: passage.start + offset,
-          end: passage.start + offset + text.length,
-          handle: `g${passage.ordinal}:${offset}`,
-          context: [
-            passage.headingPath.join(" > "),
-            source.passages[passageIndex - 1]?.text.slice(-500) ?? "",
-            source.passages[passageIndex + 1]?.text.slice(0, 500) ?? "",
-          ]
-            .filter(Boolean)
-            .join("\n"),
-        });
-      }
-      return chunks;
-    });
+    const items = graphOriginals(source);
     return { source, items, hash: hash(items) };
   }
   private async run(job: Job) {
     const [owner] = await this.operations
       .sql`SELECT organization_id FROM knowledge_operations WHERE id=${job.operationId}`;
     const org = String(owner!.organization_id);
-    let versionId = String(job.payload.versionId ?? "");
-    let identityVersions: string[] = [];
     if (job.kind === "graph.identity") {
-      const sources = await this.operations
-        .sql`SELECT DISTINCT s.id FROM source_versions s JOIN graph_supports g ON g.source_version_id=s.id JOIN graph_generations gen ON gen.id=g.generation_id AND gen.state='active' WHERE g.identity_dependencies @> ${this.operations.sql.json([{ mention_id: String(job.payload.mentionId) }])}::jsonb ORDER BY s.id`;
-      identityVersions = sources.map((source) => String(source.id));
-      versionId = identityVersions.shift() ?? "";
-      if (!versionId) throw new Error("needs_attention:unresolved_identity");
+      const mentions = (job.payload.mentionIds ??
+        (job.payload.mentionId ? [job.payload.mentionId] : [])) as string[];
+      const versions = await this.operations
+        .sql`SELECT DISTINCT d.active_version_id AS id FROM source_documents d
+        WHERE d.organization_id=${org} AND d.active_version_id IS NOT NULL AND (
+          EXISTS(SELECT 1 FROM identity_mentions m WHERE m.version_id=d.active_version_id AND m.id::text IN ${this.operations.sql(mentions.length ? mentions : [""])}) OR
+          EXISTS(SELECT 1 FROM graph_supports support JOIN graph_generations g ON g.id=support.generation_id, jsonb_to_recordset(support.identity_dependencies) dep(mention_id text)
+            WHERE g.document_id=d.id AND dep.mention_id IN ${this.operations.sql(mentions.length ? mentions : [""])} ) OR
+          EXISTS(SELECT 1 FROM graph_packets p JOIN graph_generations g ON g.id=p.generation_id,
+            jsonb_array_elements_text(p.endpoint_mentions) endpoint
+            WHERE g.source_version_id=d.active_version_id AND g.state IN('active','staged','failed')
+              AND endpoint.value IN ${this.operations.sql(mentions.length ? mentions : [""])})) ORDER BY d.active_version_id`;
+      await this.operations.commit(job, async (tx) => {
+        for (const version of versions)
+          await this.operations.enqueue(
+            tx,
+            job.operationId,
+            "graph.refresh",
+            { versionId: String(version.id), identityReplacement: true },
+            `${job.id}:${String(version.id)}`,
+          );
+      });
+      return;
     }
+    const versionId = String(job.payload.versionId ?? "");
     const pack = await this.sourcePack(job, versionId);
     const identitySnapshot = await this.operations
       .sql`SELECT m.id,m.current_revision_id FROM identity_mentions m WHERE m.version_id=${versionId} ORDER BY m.id`;
-    const generationId = crypto.randomUUID();
-    await this.operations.checkpoint(job, async (tx) => {
-      await tx`INSERT INTO graph_generations(id,organization_id,document_id,source_version_id,profile,state,trigger_operation_id,coverage) VALUES(${generationId},${org},${pack.source.id},${pack.source.version},'graph-v1','staged',${job.operationId},${tx.json({ sourceHash: pack.hash, identitySnapshot })})`;
+    // A compact monotonic revision snapshot catches identity events consumed while
+    // the model is still discovering previously unknown cross-source endpoints.
+    const epoch = async (tx: Transaction) => {
+      const [row] =
+        await tx`SELECT count(*)::text AS mentions,COALESCE(sum(r.revision),0)::text AS revisions
+        FROM identity_mentions m JOIN identity_revisions r ON r.id=m.current_revision_id WHERE m.organization_id=${org}`;
+      return row!;
+    };
+    const generationId = await this.operations.checkpoint(job, async (tx) => {
+      const [existing] =
+        await tx`SELECT id,coverage,profile,source_version_id FROM graph_generations WHERE trigger_job_id=${job.id} FOR UPDATE`;
+      if (existing) {
+        if (
+          existing.source_version_id !== versionId ||
+          existing.profile !== this.profile() ||
+          existing.coverage.sourceHash !== pack.hash
+        )
+          throw new Error("source_changed");
+        if (hash(existing.coverage.identitySnapshot) !== hash(identitySnapshot))
+          throw new Error("identity_changed");
+        return String(existing.id);
+      }
+      const id = crypto.randomUUID();
+      await tx`INSERT INTO graph_generations(id,organization_id,document_id,source_version_id,profile,state,trigger_operation_id,trigger_job_id,coverage) VALUES(${id},${org},${pack.source.id},${pack.source.version},${this.profile()},'staged',${job.operationId},${job.id},${tx.json({ sourceHash: pack.hash, identitySnapshot, identityEpoch: await epoch(tx) })})`;
+      return id;
     });
-    const packets: Array<{
-      key: string;
-      items: typeof pack.items;
-      kind?: string;
-    }> = [];
-    const manifest: Array<{ key: string; kind: string; locators: string[] }> =
-      [];
-    let index = 0;
-    for (let start = 0; start < pack.items.length;) {
-      const packetItems = [];
-      let primaryTokens = 0;
-      let contextTokens = 0;
-      const packetStart = start;
-      while (
-        start < pack.items.length &&
-        primaryTokens + estimatedTokens(pack.items[start]!.text) <= 3000 &&
-        contextTokens + estimatedTokens(pack.items[start]!.context ?? "") <=
-          1000
-      ) {
-        const item = pack.items[start++]!;
-        packetItems.push(item);
-        primaryTokens += estimatedTokens(item.text);
-        contextTokens += estimatedTokens(item.context ?? "");
-      }
-      if (!packetItems.length)
-        throw new Error("needs_attention:graph_packet_overflow");
-      const items = packetItems,
-        key = `packet:${index++}`;
-      packets.push({ key, items });
-      manifest.push({
-        key,
-        kind: "primary",
-        locators: [...new Set(items.map((item) => item.passageId))],
-      });
-      await this.operations.checkpoint(job, async (tx) => {
-        await tx`INSERT INTO graph_packets(generation_id,packet_key,source_locators,state) VALUES(${generationId},${key},${tx.json(items.map((item) => ({ version: item.version, passageId: item.passageId, start: item.start, end: item.end })))} ,'pending')`;
-      });
-      if (pack.items.length > items.length) {
-        const bridgeCandidates = [
-          pack.items[Math.max(0, packetStart - 1)],
-          pack.items[Math.min(pack.items.length - 1, start)],
-        ].filter(
-          (item): item is (typeof pack.items)[number] =>
-            item !== undefined && !items.includes(item as never),
-        );
-        const bridgeItems: typeof pack.items = [];
-        let bridgeTokens = 0;
-        for (const item of bridgeCandidates) {
-          const cost =
-            estimatedTokens(item.text) + estimatedTokens(item.context ?? "");
-          if (bridgeTokens + cost > 4000) continue;
-          bridgeItems.push(item);
-          bridgeTokens += cost;
-        }
-        const bridgeKey = `bridge:${key}`;
-        packets.push({ key: bridgeKey, items: bridgeItems, kind: "bridge" });
-        manifest.push({
-          key: bridgeKey,
-          kind: "bridge",
-          locators: [...new Set(bridgeItems.map((item) => item.passageId))],
-        });
-        await this.operations.checkpoint(job, async (tx) => {
-          await tx`INSERT INTO graph_packets(generation_id,packet_key,source_locators,state) VALUES(${generationId},${bridgeKey},${tx.json(bridgeItems.map((item) => ({ version: item.version, passageId: item.passageId, start: item.start, end: item.end })))} ,'pending')`;
-        });
-      }
-    }
-    if (!packets.length) {
-      packets.push({ key: "packet:0", items: [] });
-      manifest.push({ key: "packet:0", kind: "primary", locators: [] });
-      await this.operations.checkpoint(job, async (tx) => {
-        await tx`INSERT INTO graph_packets(generation_id,packet_key,source_locators,state) VALUES(${generationId},'packet:0','[]'::jsonb,'pending')`;
-      });
-    }
+    const packets = graphPackets(pack.items);
+    const manifest = packets.map((packet) => ({
+      key: packet.key,
+      kind: packet.kind,
+      locators: packet.items.map((item) => ({
+        version: item.version,
+        passageId: item.passageId,
+        start: item.start,
+        end: item.end,
+      })),
+    }));
     await this.operations.checkpoint(job, async (tx) => {
-      await tx`UPDATE graph_generations SET coverage=coverage || ${tx.json({ packetManifest: manifest, contextPolicy: "heading+adjacent-500", normalizationProfile })} WHERE id=${generationId}`;
+      for (const packet of manifest)
+        await tx`INSERT INTO graph_packets(generation_id,packet_key,source_locators,state) VALUES(${generationId},${packet.key},${tx.json(packet.locators)},'pending') ON CONFLICT(generation_id,packet_key) DO NOTHING`;
+      await tx`UPDATE graph_generations SET coverage=coverage||${tx.json({ packetManifest: manifest, contextPolicy: "utf8-byte-bound+adjacent-and-anchor-v3", normalizationProfile })}::jsonb WHERE id=${generationId}`;
     });
     for (const packet of packets) {
+      const [completed] = await this.operations
+        .sql`SELECT state,identity_dependencies,exclusions FROM graph_packets WHERE generation_id=${generationId} AND packet_key=${packet.key}`;
+      if (completed?.state === "reviewed") continue;
       const raw = await this.runtime.request(
         job,
         packet.key,
@@ -250,7 +224,86 @@ export class GraphService {
         },
         (value) => validatePacket(value, packet.items),
       );
-      const reviewed = await this.runtime.request(
+      // Register all endpoint inputs before resolving them. Identity events then see
+      // exclusion-only references even when the referenced mention belongs elsewhere.
+      await this.operations.checkpoint(job, async (tx) => {
+        const endpoints = [
+          ...new Set([
+            ...raw.relations.flatMap((relation) => [
+              relation.subjectMention,
+              relation.objectMention,
+            ]),
+            ...raw.exclusions.flatMap((exclusion) =>
+              exclusion.mention ? [exclusion.mention] : [],
+            ),
+          ]),
+        ];
+        // Serialize registration with M03 pointer updates: an event commits either
+        // before this epoch check or after these reverse dependencies are visible.
+        await tx`SELECT id FROM identity_mentions WHERE organization_id=${org} AND id::text IN ${tx(endpoints.length ? endpoints : [""])} ORDER BY id FOR SHARE`;
+        await tx`UPDATE graph_packets SET endpoint_mentions=${tx.json(endpoints)} WHERE generation_id=${generationId} AND packet_key=${packet.key}`;
+        const [generation] =
+          await tx`SELECT coverage FROM graph_generations WHERE id=${generationId}`;
+        if (hash(generation!.coverage.identityEpoch) !== hash(await epoch(tx)))
+          throw new Error(
+            job.payload.identityRetry
+              ? "needs_attention:identity_changed"
+              : "identity_changed",
+          );
+      });
+      const bindings: Array<{
+        mentionId: string;
+        revisionId: string;
+        proofId: string;
+      }> = completed?.identity_dependencies ?? [];
+      const exclusions: GraphPacketResult["exclusions"] =
+        completed?.identity_dependencies == null
+          ? [...raw.exclusions]
+          : completed.exclusions;
+      if (completed?.identity_dependencies == null) {
+        for (const mentionId of new Set(
+          raw.relations.flatMap((relation) => [
+            relation.subjectMention,
+            relation.objectMention,
+          ]),
+        )) {
+          if (
+            !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+              mentionId,
+            )
+          ) {
+            exclusions.push({
+              kind: "unresolved_identity",
+              reason: "endpoint has no resolved mention",
+              mention: mentionId,
+            });
+            continue;
+          }
+          try {
+            bindings.push(
+              ...(await this.identities.maintenanceDependencies(
+                job.operationId,
+                [mentionId],
+              )),
+            );
+          } catch (error) {
+            if (
+              !(error instanceof Error) ||
+              error.message !== "needs_attention:unresolved_identity"
+            )
+              throw error;
+            exclusions.push({
+              kind: "unresolved_identity",
+              reason: "endpoint has no current original proof",
+              mention: mentionId,
+            });
+          }
+        }
+        await this.operations.checkpoint(job, async (tx) => {
+          await tx`UPDATE graph_packets SET identity_dependencies=${tx.json(bindings)},exclusions=${tx.json(exclusions)} WHERE generation_id=${generationId} AND packet_key=${packet.key}`;
+        });
+      }
+      await this.runtime.request(
         job,
         packet.key,
         "graph_review",
@@ -259,24 +312,11 @@ export class GraphService {
         (value) => validateReview(value, raw),
       );
       await this.operations.checkpoint(job, async (tx) => {
-        await tx`UPDATE graph_packets SET state='reviewed',relations=${tx.json(jsonValue(raw.relations))},exclusions=${tx.json(jsonValue(raw.exclusions))} WHERE generation_id=${generationId} AND packet_key=${packet.key}`;
+        await tx`UPDATE graph_packets SET state='reviewed',relations=${tx.json(jsonValue(raw.relations))},exclusions=${tx.json(jsonValue(exclusions))} WHERE generation_id=${generationId} AND packet_key=${packet.key}`;
       });
     }
     await this.operations.commit(job, async (tx) => {
-      await this.publish(
-        tx,
-        job,
-        org,
-        generationId,
-        pack.source.id,
-        versionId,
-        packets.map((packet) => packet.items).flat(),
-      );
-      for (const replacementVersion of identityVersions)
-        await this.operations.enqueue(tx, job.operationId, "graph.refresh", {
-          versionId: replacementVersion,
-          identityReplacement: true,
-        });
+      await this.publish(tx, job, org, generationId, pack.source.id, versionId);
     });
   }
   private async publish(
@@ -286,23 +326,48 @@ export class GraphService {
     generationId: string,
     documentId: string,
     versionId: string,
-    items: any[],
   ) {
     const [current] =
-      await tx`SELECT active_version_id FROM source_documents WHERE id=${documentId} AND organization_id=${org} FOR SHARE`;
+      await tx`SELECT active_version_id,project_id FROM source_documents WHERE id=${documentId} AND organization_id=${org} FOR SHARE`;
     if (current?.active_version_id !== versionId)
       throw new Error("source_changed");
+    const [generation] =
+      await tx`SELECT coverage FROM graph_generations WHERE id=${generationId}`;
+    const currentIdentities =
+      await tx`SELECT m.id,m.current_revision_id FROM identity_mentions m WHERE m.version_id=${versionId} ORDER BY m.id FOR SHARE`;
+    if (hash(generation!.coverage.identitySnapshot) !== hash(currentIdentities))
+      throw new Error("identity_changed");
     const packets =
-      await tx`SELECT relations FROM graph_packets WHERE generation_id=${generationId} AND state='reviewed'`;
+      await tx`SELECT relations,identity_dependencies FROM graph_packets WHERE generation_id=${generationId} AND state='reviewed'`;
     const [coverage] =
       await tx`SELECT COUNT(*) FILTER (WHERE state<>'reviewed')::int AS incomplete FROM graph_packets WHERE generation_id=${generationId}`;
     if (Number(coverage?.incomplete ?? 0) !== 0)
       throw new Error("needs_attention:graph_coverage");
-    const relations = packets.flatMap(
-      (row) => row.relations as GraphRelation[],
+    for (const packet of packets)
+      await this.identities.assertForPublication(
+        tx,
+        org,
+        packet.identity_dependencies ?? [],
+      );
+    const relations = packets.flatMap((row) =>
+      (row.relations as GraphRelation[]).map((relation) => ({
+        relation,
+        bindings: (row.identity_dependencies ?? []) as Array<{
+          mentionId: string;
+          revisionId: string;
+          proofId: string;
+        }>,
+      })),
     );
-    for (const relation of relations) {
+    for (const { relation, bindings } of relations) {
       const normalized = normalizeRelation(relation);
+      const subjectBinding = bindings.find(
+        (ref) => ref.mentionId === relation.subjectMention,
+      );
+      const objectBinding = bindings.find(
+        (ref) => ref.mentionId === relation.objectMention,
+      );
+      if (!subjectBinding || !objectBinding) continue;
       if (
         !/^[0-9a-f-]{36}$/i.test(normalized.subjectMention) ||
         !/^[0-9a-f-]{36}$/i.test(normalized.objectMention) ||
@@ -311,20 +376,20 @@ export class GraphService {
       )
         continue;
       const [subject] =
-        await tx`SELECT m.current_revision_id,rev.canonical_id,(SELECT p.id FROM identity_proof_eligibility p WHERE p.revision_id=m.current_revision_id AND p.valid ORDER BY p.id LIMIT 1) AS proof_id FROM identity_mentions m JOIN identity_revisions rev ON rev.id=m.current_revision_id WHERE m.id=${relation.subjectMention} AND m.organization_id=${org} AND EXISTS(SELECT 1 FROM identity_proof_eligibility p WHERE p.revision_id=m.current_revision_id AND p.valid)`;
+        await tx`SELECT m.current_revision_id,rev.canonical_id,(SELECT p.id FROM identity_proof_eligibility p WHERE p.revision_id=m.current_revision_id AND p.valid ORDER BY p.id LIMIT 1) AS proof_id FROM identity_mentions m JOIN identity_revisions rev ON rev.id=m.current_revision_id WHERE m.id=${relation.subjectMention} AND m.organization_id=${org} AND m.current_revision_id=${subjectBinding.revisionId} AND EXISTS(SELECT 1 FROM identity_proof_eligibility p WHERE p.revision_id=m.current_revision_id AND p.valid)`;
       const [object] =
-        await tx`SELECT m.current_revision_id,rev.canonical_id,(SELECT p.id FROM identity_proof_eligibility p WHERE p.revision_id=m.current_revision_id AND p.valid ORDER BY p.id LIMIT 1) AS proof_id FROM identity_mentions m JOIN identity_revisions rev ON rev.id=m.current_revision_id WHERE m.id=${relation.objectMention} AND m.organization_id=${org} AND EXISTS(SELECT 1 FROM identity_proof_eligibility p WHERE p.revision_id=m.current_revision_id AND p.valid)`;
+        await tx`SELECT m.current_revision_id,rev.canonical_id,(SELECT p.id FROM identity_proof_eligibility p WHERE p.revision_id=m.current_revision_id AND p.valid ORDER BY p.id LIMIT 1) AS proof_id FROM identity_mentions m JOIN identity_revisions rev ON rev.id=m.current_revision_id WHERE m.id=${relation.objectMention} AND m.organization_id=${org} AND m.current_revision_id=${objectBinding.revisionId} AND EXISTS(SELECT 1 FROM identity_proof_eligibility p WHERE p.revision_id=m.current_revision_id AND p.valid)`;
       if (!subject || !object) continue;
       const identityDeps = [
         {
           mention_id: normalized.subjectMention,
           revision_id: String(subject.current_revision_id),
-          proof_id: String(subject.proof_id),
+          proof_id: subjectBinding.proofId,
         },
         {
           mention_id: normalized.objectMention,
           revision_id: String(object.current_revision_id),
-          proof_id: String(object.proof_id),
+          proof_id: objectBinding.proofId,
         },
       ];
       const fingerprint = hash({
@@ -332,20 +397,22 @@ export class GraphService {
         object: String(object.canonical_id),
         predicate: normalized.predicate,
         direction: normalized.direction,
-        scope: normalized.scope,
+        scope: {
+          projectId: current.project_id ?? null,
+          wording: normalized.scope,
+        },
         qualifiers: normalized.qualifiers,
         profile: normalizationProfile,
       });
       const [claim] =
         await tx`INSERT INTO graph_claims(id,organization_id,fingerprint,subject_id,object_id,predicate,direction,qualifiers,relation_text,status) VALUES(${crypto.randomUUID()},${org},${fingerprint},${String(subject.canonical_id)},${String(object.canonical_id)},${normalized.predicate},${normalized.direction},${tx.json(jsonValue(normalized.qualifiers))},${normalized.relationText},'active') ON CONFLICT(organization_id,fingerprint) DO UPDATE SET relation_text=excluded.relation_text,status='active' RETURNING id`;
       if (!claim) continue;
-      await tx`INSERT INTO graph_supports(claim_id,generation_id,source_version_id,locators,identity_dependencies) VALUES(${String(claim.id)},${generationId},${versionId},${tx.json(normalized.locators)},${tx.json(identityDeps)}) ON CONFLICT DO NOTHING`;
+      await tx`INSERT INTO graph_supports(claim_id,generation_id,source_version_id,locators,identity_dependencies) VALUES(${String(claim.id)},${generationId},${versionId},${tx.json(normalized.locators)},${tx.json(identityDeps)}) ON CONFLICT(claim_id,generation_id) DO UPDATE SET locators=(SELECT jsonb_agg(DISTINCT value) FROM jsonb_array_elements(graph_supports.locators||excluded.locators))`;
     }
-    await tx`DELETE FROM graph_supports WHERE generation_id IN (SELECT id FROM graph_generations WHERE document_id=${documentId} AND state='active')`;
     await tx`UPDATE graph_generations SET state='superseded' WHERE document_id=${documentId} AND state='active'`;
     await tx`UPDATE graph_generations SET state='active' WHERE id=${generationId}`;
   }
-  async neighborhood(
+  neighborhood(
     token: string,
     input: {
       entityId: string;
@@ -353,117 +420,35 @@ export class GraphService {
       predicate?: string;
       hops?: number;
     },
+    signal?: AbortSignal,
   ) {
-    const context = await this.access.authorize(token, "read", input.projectId);
-    const hops = Math.min(2, Math.max(1, input.hops ?? 2));
-    const rows = await this.operations
-      .sql`WITH RECURSIVE walk(id,depth,path) AS (
-        SELECT ${input.entityId}::uuid,0,ARRAY[${input.entityId}::uuid]
-        UNION ALL
-        SELECT CASE WHEN c.subject_id=walk.id THEN c.object_id ELSE c.subject_id END,
-          walk.depth+1, path || CASE WHEN c.subject_id=walk.id THEN c.object_id ELSE c.subject_id END
-        FROM walk
-        JOIN graph_claims c ON (c.subject_id=walk.id OR c.object_id=walk.id)
-        JOIN graph_supports s ON s.claim_id=c.id
-        JOIN graph_generations g ON g.id=s.generation_id AND g.state='active'
-        JOIN source_versions v ON v.id=s.source_version_id AND v.state='active'
-        JOIN source_documents d ON d.id=v.document_id
-        WHERE walk.depth<${hops} AND c.organization_id=${context.organizationId} AND c.status='active'
-          AND (${context.scope.projectId ?? null}::uuid IS NULL OR d.project_id IS NULL OR d.project_id=${context.scope.projectId ?? null}::uuid)
-          AND NOT EXISTS (SELECT 1 FROM jsonb_to_recordset(s.identity_dependencies) dep(mention_id uuid, revision_id uuid, proof_id uuid) LEFT JOIN identity_mentions im ON im.id=dep.mention_id LEFT JOIN identity_proof_eligibility pe ON pe.id=dep.proof_id AND pe.revision_id=dep.revision_id AND pe.valid WHERE im.current_revision_id IS DISTINCT FROM dep.revision_id OR pe.id IS NULL)
-          AND NOT (CASE WHEN c.subject_id=walk.id THEN c.object_id ELSE c.subject_id END = ANY(path))
-      )
-      SELECT DISTINCT ON (c.id) c.id,c.subject_id,c.object_id,c.predicate,c.direction,c.qualifiers,c.relation_text,s.source_version_id,s.locators
-      FROM graph_claims c
-      JOIN graph_supports s ON s.claim_id=c.id
-      JOIN graph_generations g ON g.id=s.generation_id AND g.state='active'
-      JOIN source_versions v ON v.id=s.source_version_id AND v.state='active'
-      JOIN source_documents d ON d.id=v.document_id
-      JOIN walk ON walk.id IN (c.subject_id,c.object_id)
-      WHERE c.organization_id=${context.organizationId} AND c.status='active'
-      AND (${context.scope.projectId ?? null}::uuid IS NULL OR d.project_id IS NULL OR d.project_id=${context.scope.projectId ?? null}::uuid)
-      AND NOT EXISTS (SELECT 1 FROM jsonb_to_recordset(s.identity_dependencies) dep(mention_id uuid, revision_id uuid, proof_id uuid) LEFT JOIN identity_mentions im ON im.id=dep.mention_id LEFT JOIN identity_proof_eligibility pe ON pe.id=dep.proof_id AND pe.revision_id=dep.revision_id AND pe.valid WHERE im.current_revision_id IS DISTINCT FROM dep.revision_id OR pe.id IS NULL)
-      ${input.predicate ? this.operations.sql`AND c.predicate=${input.predicate}` : this.operations.sql``}
-      LIMIT 101`;
-    return {
-      claims: rows.map((row) => ({
-        id: String(row.id),
-        subjectMention: String(row.subject_id),
-        objectMention: String(row.object_id),
-        predicate: String(row.predicate),
-        direction: String(row.direction),
-        qualifiers: row.qualifiers,
-        relationText: String(row.relation_text),
-        sourceVersion: String(row.source_version_id),
-        support: (row.locators as string[]).map((passageId) => ({
-          version: String(row.source_version_id),
-          passageId,
-        })),
-      })),
-      truncated: rows.length > 100,
-      pending: await this.pending(context.organizationId),
-    };
+    return new GraphQueries(this.operations, this.access).neighborhood(
+      token,
+      input,
+      signal,
+    );
   }
-  async search(
+  search(
     token: string,
     question: string,
     projectId?: string,
     signal?: AbortSignal,
   ) {
-    signal?.throwIfAborted();
-    const context = await this.access.authorize(token, "read", projectId);
-    const terms = question
-      .split(/\s+/)
-      .map((term) => term.replace(/[%'_]/g, "").trim())
-      .filter((term) => term.length >= 2)
-      .slice(0, 8);
-    const pattern = terms.length ? `%${terms.join("%")}%` : "%";
-    const query = this.operations.sql`
-      SELECT DISTINCT ON (c.id) c.id,c.subject_id,c.object_id,c.predicate,c.direction,c.qualifiers,c.relation_text,
-        s.source_version_id,s.locators
-      FROM graph_claims c JOIN graph_supports s ON s.claim_id=c.id
-      JOIN graph_generations g ON g.id=s.generation_id AND g.state='active'
-      JOIN source_versions v ON v.id=s.source_version_id AND v.state='active'
-      JOIN source_documents d ON d.id=v.document_id
-      WHERE c.organization_id=${context.organizationId} AND c.status='active'
-        AND (${context.scope.projectId ?? null}::uuid IS NULL OR d.project_id IS NULL OR d.project_id=${context.scope.projectId ?? null}::uuid)
-        AND c.relation_text ILIKE ${pattern}
-      LIMIT 100`;
-    const cancel = () => query.cancel();
-    signal?.addEventListener("abort", cancel, { once: true });
-    let rows;
-    try {
-      rows = await query;
-    } finally {
-      signal?.removeEventListener("abort", cancel);
-    }
-    signal?.throwIfAborted();
-    return {
-      claims: rows.map((row) => ({
-        id: String(row.id),
-        predicate: String(row.predicate),
-        direction: String(row.direction),
-        qualifiers: row.qualifiers,
-        relationText: String(row.relation_text),
-        sourceVersion: String(row.source_version_id),
-        support: (row.locators as string[]).map((passageId) => ({
-          version: String(row.source_version_id),
-          passageId,
-        })),
-      })),
-      truncated: rows.length >= 100,
-      pending: await this.pending(context.organizationId),
-    };
-  }
-  async pending(organizationId: string) {
-    const [row] = await this.operations
-      .sql`SELECT count(*) AS count FROM graph_generations WHERE organization_id=${organizationId} AND state='staged'`;
-    return Number(row?.count ?? 0) > 0;
+    return new GraphQueries(this.operations, this.access).search(
+      token,
+      question,
+      projectId,
+      signal,
+    );
   }
   async inspect(token: string, operationId: string) {
     const context = await this.access.authorize(token, "read");
     const rows = await this.operations
-      .sql`SELECT g.id,g.state,g.coverage,COUNT(p.*)::int AS packets,COUNT(p.*) FILTER(WHERE p.state='reviewed')::int AS reviewed FROM graph_generations g LEFT JOIN graph_packets p ON p.generation_id=g.id WHERE g.trigger_operation_id=${operationId} AND g.organization_id=${context.organizationId} GROUP BY g.id`;
+      .sql`SELECT g.id,g.state,g.coverage,g.trigger_job_id,COUNT(p.*)::int AS packets,COUNT(p.*) FILTER(WHERE p.state='reviewed')::int AS reviewed,
+        (SELECT count(*)::int FROM graph_supports s WHERE s.generation_id=g.id) AS memberships,
+        (SELECT jsonb_agg(jsonb_build_object('key',detail.packet_key,'state',detail.state,'locators',detail.source_locators,'exclusions',detail.exclusions,'error',detail.error) ORDER BY detail.packet_key) FROM graph_packets detail WHERE detail.generation_id=g.id) AS details,
+        (SELECT jsonb_agg(jsonb_build_object('unit',a.unit_key,'phase',a.phase,'attempt',a.attempt,'state',a.state) ORDER BY a.unit_key,a.phase,a.attempt) FROM wiki_model_attempts a WHERE a.job_id=g.trigger_job_id) AS requests,
+        (SELECT jsonb_agg(jsonb_build_object('unit',u.unit_key,'deadline',u.deadline) ORDER BY u.unit_key) FROM wiki_work_units u WHERE u.job_id=g.trigger_job_id) AS deadlines FROM graph_generations g LEFT JOIN graph_packets p ON p.generation_id=g.id WHERE g.trigger_operation_id=${operationId} AND g.organization_id=${context.organizationId} GROUP BY g.id`;
     return {
       generations: rows.map((row) => ({
         id: String(row.id),
@@ -471,6 +456,29 @@ export class GraphService {
         coverage: row.coverage,
         packets: Number(row.packets),
         reviewed: Number(row.reviewed),
+        memberships: Number(row.memberships),
+        details: (row.details ?? []) as Array<{
+          key: string;
+          state: string;
+          locators: Array<{
+            version: string;
+            passageId: string;
+            start: number;
+            end: number;
+          }>;
+          exclusions: GraphPacketResult["exclusions"];
+          error: string | null;
+        }>,
+        requests: (row.requests ?? []) as Array<{
+          unit: string;
+          phase: string;
+          attempt: number;
+          state: string;
+        }>,
+        deadlines: (row.deadlines ?? []) as Array<{
+          unit: string;
+          deadline: string;
+        }>,
       })),
     };
   }
@@ -478,10 +486,10 @@ export class GraphService {
     return this.operations.close();
   }
 }
-function estimatedTokens(value: string) {
-  return Math.max(1, Math.ceil(Array.from(value).length / 4));
-}
-function validatePacket(raw: unknown, items: any[]): GraphPacketResult {
+function validatePacket(
+  raw: unknown,
+  items: GraphOriginal[],
+): GraphPacketResult {
   if (
     !record(raw) ||
     !Array.isArray(raw.relations) ||

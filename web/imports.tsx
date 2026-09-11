@@ -190,7 +190,20 @@ export function SourceImports({
                     : operation.wiki === "failed"
                       ? "需要处理"
                       : "等待更新"}{" "}
-                  · 图谱待刷新
+                  · 图谱：
+                  {operation.graph === "ready"
+                    ? "已处理"
+                    : operation.graph === "failed"
+                      ? "需要处理"
+                      : "等待更新"}
+                  {" · "}
+                  <a
+                    href={`/operations/${operation.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    查看处理记录
+                  </a>
                   {operation.maintenance.find(
                     (job) =>
                       job.kind.startsWith("wiki.") &&

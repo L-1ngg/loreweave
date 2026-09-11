@@ -95,12 +95,53 @@ export class Operations {
     effect: (tx: Transaction) => Promise<void | JobState>,
     state: JobState = "succeeded",
   ): Promise<void> {
-    await this.sql.begin(async (tx) => {
-      await assertLease(tx, job);
-      const outcome = (await effect(tx)) ?? state;
-      const [completed] =
-        await tx`UPDATE knowledge_jobs SET state=${outcome},lease_until=NULL WHERE id=${job.id} AND fence=${job.fence} AND state='running' AND lease_until>clock_timestamp() RETURNING id`;
-      if (!completed) throw new Error("stale_worker");
+    if (await this.committed(job)) return;
+    try {
+      await this.sql.begin(async (tx) => {
+        await assertLease(tx, job);
+        const outcome = (await effect(tx)) ?? state;
+        const [completed] =
+          await tx`UPDATE knowledge_jobs SET state=${outcome},lease_until=NULL WHERE id=${job.id} AND fence=${job.fence} AND state='running' AND lease_until>clock_timestamp() RETURNING id`;
+        if (!completed) throw new Error("stale_worker");
+        await tx`INSERT INTO knowledge_job_commits(job_id,fence,outcome) VALUES(${job.id},${job.fence},${outcome})`;
+      });
+    } catch (error) {
+      // A lost COMMIT acknowledgement is resolved against the transaction's receipt.
+      // If the database is still unavailable the caller must keep the outcome unknown.
+      if (await this.committed(job).catch(() => undefined)) return;
+      throw error;
+    }
+  }
+  async committed(
+    job: Pick<Job, "id" | "fence">,
+  ): Promise<{ outcome: JobState; committedAt: string } | undefined> {
+    const [row] = await this
+      .sql`SELECT outcome,committed_at FROM knowledge_job_commits WHERE job_id=${job.id} AND fence=${job.fence}`;
+    return row
+      ? {
+          outcome: row.outcome as JobState,
+          committedAt: new Date(row.committed_at).toISOString(),
+        }
+      : undefined;
+  }
+  /** Unknown outcomes are inspected under the job lock before any dispatch becomes eligible. */
+  async reconcile(jobId: string, organizationId: string) {
+    return this.sql.begin(async (tx) => {
+      const [job] =
+        await tx`SELECT j.* FROM knowledge_jobs j JOIN knowledge_operations o ON o.id=j.operation_id WHERE j.id=${jobId} AND o.organization_id=${organizationId} FOR UPDATE OF j`;
+      if (!job) throw new Error("not_found");
+      if (
+        job.state === "outcome_unknown" &&
+        job.reason === "needs_attention:legacy_unknown"
+      )
+        throw new Error("unavailable");
+      if (job.state !== "outcome_unknown")
+        return { state: String(job.state), recovered: false };
+      const [receipt] =
+        await tx`SELECT outcome FROM knowledge_job_commits WHERE job_id=${jobId} AND fence=${Number(job.fence)}`;
+      const state = receipt ? String(receipt.outcome) : "queued";
+      await tx`UPDATE knowledge_jobs SET state=${state},reason=NULL,lease_until=NULL WHERE id=${jobId}`;
+      return { state, recovered: Boolean(receipt) };
     });
   }
   async checkpoint<T>(
@@ -115,7 +156,9 @@ export class Operations {
     }) as Promise<T>;
   }
   async close() {
-    await this.sql.end();
+    // A lost transaction connection can retain a reservation in the driver.
+    // Shutdown still drains normally, with a finite fallback for that dead socket.
+    await this.sql.end({ timeout: 5 });
   }
 }
 

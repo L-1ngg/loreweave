@@ -29,7 +29,9 @@
     "test:wiki-refresh": "bun --no-env-file test tests/wiki-refresh.test.ts",
     "test:wiki-history": "bun --no-env-file test tests/wiki-history.test.ts",
     "test:intents": "bun --no-env-file test tests/intents.test.ts",
-    "test:mcp": "bun --no-env-file test tests/mcp.test.ts"
+    "test:mcp": "bun --no-env-file test tests/mcp.test.ts",
+    "test:graph": "bun --no-env-file test tests/graph.test.ts",
+    "test:operations": "bun --no-env-file test tests/operations.test.ts"
   },
   "dependencies": {
     "@earendil-works/pi-ai": "0.85.1",

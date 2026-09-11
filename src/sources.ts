@@ -1,3 +1,4 @@
+import { graphReadiness } from "./graph-readiness.ts";
 import type { Transaction } from "./operations.ts";
 import { wikiReadiness } from "./wiki-readiness.ts";
 import { createHash } from "node:crypto";
@@ -29,6 +30,7 @@ export interface ImportInput {
   expectedPrior?: string;
 }
 export interface SourceOperation {
+  graph: ReturnType<typeof graphReadiness>;
   wiki: ReturnType<typeof wikiReadiness>;
   id: string;
   documentId: string;
@@ -267,6 +269,11 @@ export class SourceService {
     const jobs = await this.operations
       .sql`SELECT id,operation_id,kind,state,reason FROM knowledge_jobs WHERE operation_id IN ${this.operations.sql(rows.map((row) => String(row.operation_id)))} AND kind<>'source.prepare' ORDER BY kind`;
     return rows.map((row) => ({
+      graph: graphReadiness(
+        jobs
+          .filter((job) => job.operation_id === row.operation_id)
+          .map((job) => ({ kind: String(job.kind), state: String(job.state) })),
+      ),
       wiki: wikiReadiness(
         jobs
           .filter((job) => job.operation_id === row.operation_id)
@@ -546,12 +553,13 @@ export class SourceService {
     signal?: AbortSignal,
   ) {
     const context = await this.access.authorize(token, "read");
-    if (!refs.length) return new Map<string, ParsedPassage & { id: string }>();
+    if (!refs.length)
+      return new Map<string, SourceCandidate & { id: string }>();
     const query = this.operations.sql`
-      SELECT p.id,p.version_id,p.kind,p.heading_path,p.start_offset,p.end_offset,p.original_text
+      SELECT p.id,p.version_id,p.kind,p.heading_path,p.start_offset,p.end_offset,p.original_text,d.id AS document_id,v.filename
       FROM source_passages p JOIN source_versions v ON v.id=p.version_id
       JOIN source_documents d ON d.id=v.document_id
-      JOIN jsonb_to_recordset(${this.operations.sql.json(refs)}::jsonb) ref(version uuid, passage_id uuid)
+      JOIN jsonb_to_recordset(${this.operations.sql.json(refs.map((ref) => ({ version: ref.version, passage_id: ref.passageId })))}::jsonb) ref(version uuid, passage_id uuid)
         ON ref.version=p.version_id AND ref.passage_id=p.id
       WHERE d.organization_id=${context.organizationId}`;
     const cancel = () => query.cancel();
@@ -564,6 +572,10 @@ export class SourceService {
           `${row.version_id}:${row.id}`,
           {
             id: String(row.id),
+            documentId: String(row.document_id),
+            version: String(row.version_id),
+            passageId: String(row.id),
+            title: String(row.filename),
             kind: row.kind,
             headingPath: row.heading_path as string[],
             start: Number(row.start_offset),

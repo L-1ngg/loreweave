@@ -135,6 +135,7 @@ export class EvidenceService {
         graphCandidates = result.claims.length;
         if (result.truncated) gaps.push("graph_claim_limit");
         if (result.pending) gaps.push("graph_pending");
+        gaps.push(...result.gaps);
         const refs = [
           ...new Map(
             result.claims
@@ -158,10 +159,10 @@ export class EvidenceService {
               );
               if (!passage) throw new Error("not_found");
               graphOriginals.push({
-                documentId: "",
+                documentId: passage.documentId,
                 version: support.version,
                 passageId: support.passageId,
-                title: passage.headingPath.join(" / "),
+                title: passage.title,
                 text: passage.text,
                 headingPath: passage.headingPath,
                 start: passage.start,
