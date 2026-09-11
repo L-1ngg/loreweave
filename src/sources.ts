@@ -45,6 +45,8 @@ export interface SourceOperation {
   }>;
 }
 export interface SourceVersion {
+  parserProfile: string;
+  embeddingProfile: string;
   attribution?: { actorId: string; projectId?: string; pageId?: string };
   projectId?: string;
   currentVersionId: string;
@@ -432,6 +434,8 @@ export class SourceService {
     const passages = await this.operations
       .sql`SELECT * FROM source_passages WHERE version_id=${id} ORDER BY ordinal`;
     return {
+      parserProfile: String(row.parser_profile),
+      embeddingProfile: String(row.embedding_profile),
       id: String(row.document_id),
       currentVersionId: String(row.active_version_id),
       ...(row.actor_id

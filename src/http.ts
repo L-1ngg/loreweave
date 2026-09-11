@@ -65,6 +65,7 @@ export function createApp(
   if (options.identities) app.route("/api", identityRoutes(options.identities));
   if (options.imports) app.route("/api", sourceRoutes(options.imports));
   if (options.graph) app.route("/api", graphRoutes(options.graph));
+  app.get("/api/runtime", (context) => context.json(host.configuration()));
   app.post("/api/runs", async (context) => {
     let input: unknown;
     try {

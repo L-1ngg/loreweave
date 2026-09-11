@@ -96,7 +96,15 @@ try {
     organizationId: await access.organization(organization),
   });
   provider = startScriptedProvider({ delayMs: 120 });
-  const evidence = new EvidenceService(imports, wiki, graph);
+  const profile = process.env.LOREWEAVE_RETRIEVAL_PROFILE;
+  if (profile && !["source", "wiki", "graph", "combined"].includes(profile))
+    throw new Error("invalid retrieval profile");
+  const evidence = new EvidenceService(
+    imports,
+    wiki,
+    graph,
+    profile as import("../evidence.ts").RetrievalProfile | undefined,
+  );
   host = new KnowledgeHost({
     wiki,
     providerUrl: provider.url,

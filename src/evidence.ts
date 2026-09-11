@@ -11,6 +11,7 @@ import {
 } from "./answer-validation.ts";
 import { SourceService, type SourceCandidate } from "./sources.ts";
 import type { GraphService } from "./graph.ts";
+export type RetrievalProfile = "source" | "wiki" | "graph" | "combined";
 export interface EvidenceItem extends SourceCandidate {
   handle: string;
 }
@@ -21,6 +22,10 @@ export interface EvidencePack {
   hash: string;
   diagnostics: {
     wikiCandidates?: number;
+    graphCandidates?: number;
+    retrieved?: SourceCandidate[];
+    retrievalProfile?: RetrievalProfile | "default";
+    requestedRoutes?: string[];
     lexicalCandidates: number;
     vectorCandidates: number;
     retrievalMs: number;
@@ -81,7 +86,17 @@ export class EvidenceService {
     private readonly sources: SourceService,
     private readonly wiki?: Pick<WikiService, "search">,
     private readonly graph?: Pick<GraphService, "search">,
+    readonly profile?: RetrievalProfile,
   ) {}
+  configuration() {
+    return {
+      profile: this.profile ?? "default",
+      wiki: Boolean(this.wiki),
+      graph: Boolean(this.graph),
+      retrieval: "hybrid-rrf60-v1",
+      context: "8000-16000-v1",
+    };
+  }
   async retrieve(
     token: string,
     input: {
@@ -108,7 +123,14 @@ export class EvidenceService {
       wikiOriginals: SourceCandidate[] = [];
     let graphCandidates = 0;
     let graphOriginals: SourceCandidate[] = [];
-    if (this.wiki) {
+    const useWiki =
+      !this.profile || ["wiki", "combined"].includes(this.profile);
+    const useGraph = this.profile
+      ? ["graph", "combined"].includes(this.profile)
+      : /依赖|关系|项目|数据库|负责|属于|连接|dependency|relationship/i.test(
+          input.question,
+        );
+    if (useWiki && this.wiki) {
       try {
         const result = await this.wiki.search(token, input);
         wikiCandidates = result.pages;
@@ -118,13 +140,8 @@ export class EvidenceService {
         input.signal.throwIfAborted();
         gaps.push("wiki_unavailable");
       }
-    } else gaps.push("wiki_unavailable");
-    if (
-      /依赖|关系|项目|数据库|负责|属于|连接|dependency|relationship/i.test(
-        input.question,
-      ) &&
-      this.graph
-    ) {
+    } else if (useWiki) gaps.push("wiki_unavailable");
+    if (useGraph && this.graph) {
       try {
         const result = await this.graph.search(
           token,
@@ -178,6 +195,7 @@ export class EvidenceService {
         gaps.push("graph_unavailable");
       }
     }
+    if (useGraph && !this.graph) gaps.push("graph_unavailable");
     const ranked = new Map<
       string,
       { candidate: SourceCandidate; score: number }
@@ -244,6 +262,13 @@ export class EvidenceService {
       hash: hash(items),
       diagnostics: {
         wikiCandidates,
+        graphCandidates,
+        requestedRoutes: [
+          "source",
+          ...(useWiki ? ["wiki"] : []),
+          ...(useGraph ? ["graph"] : []),
+        ],
+        retrievalProfile: this.profile ?? ("default" as const),
         lexicalCandidates: candidates.lexical.length,
         vectorCandidates: candidates.vector.length,
         retrievalMs: performance.now() - started,

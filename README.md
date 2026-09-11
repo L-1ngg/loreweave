@@ -196,3 +196,8 @@ Source, Wiki and graph outcomes are shown independently in import records.
 Administrators can reconcile uncertain outcomes without resubmitting source edits.
 See [maintenance recovery](docs/development/maintenance-recovery.md) for worker
 replacement, logical budgets, graph membership history and validation boundaries.
+
+Evaluation tooling and dataset preparation are described in
+[the evaluation harness guide](docs/development/evaluation.md). Use root
+`test:evaluation`, `eval:fixture`, `eval:run` and `eval:grade`; real quality and
+capacity acceptance remain separate from controlled fixture verification.

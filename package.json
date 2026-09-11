@@ -31,7 +31,11 @@
     "test:intents": "bun --no-env-file test tests/intents.test.ts",
     "test:mcp": "bun --no-env-file test tests/mcp.test.ts",
     "test:graph": "bun --no-env-file test tests/graph.test.ts",
-    "test:operations": "bun --no-env-file test tests/operations.test.ts"
+    "test:operations": "bun --no-env-file test tests/operations.test.ts",
+    "test:evaluation": "bun --no-env-file test tests/evaluation.test.ts",
+    "eval:run": "bun --no-env-file scripts/evaluate.ts",
+    "eval:fixture": "bun --no-env-file scripts/evaluate-fixture.ts",
+    "eval:grade": "bun --no-env-file scripts/evaluate-grade.ts"
   },
   "dependencies": {
     "@earendil-works/pi-ai": "0.85.1",

@@ -146,6 +146,20 @@ export class KnowledgeHost {
     }, 50);
     this.poller.unref();
   }
+  configuration() {
+    return {
+      ...this.options.evidence?.configuration(),
+      deadlines: {
+        ordinaryMs: this.options.timing?.ordinaryMs ?? 30000,
+        complexMs: this.options.timing?.complexMs ?? 60000,
+        ordinaryReserveMs: this.options.timing?.ordinaryReserveMs ?? 8000,
+        complexReserveMs: this.options.timing?.complexReserveMs ?? 15000,
+      },
+      answeringModel: "scripted-extractive-v1",
+      policy: "evidence-validation-v1",
+      budgets: "3-exploration-2-generation-2-review-v1",
+    };
+  }
   private async poll(): Promise<void> {
     if (this.closed || this.polling) return;
     this.polling = true;
@@ -1101,6 +1115,7 @@ export class KnowledgeHost {
                 run.snapshot.diagnostics = {
                   ...previous,
                   ...pack.diagnostics,
+                  retrieved: pack.items,
                   embeddingRequests: previous.embeddingRequests,
                   retrievalMs:
                     previous.retrievalMs + pack.diagnostics.retrievalMs,
@@ -1290,6 +1305,7 @@ export class KnowledgeHost {
         run.snapshot.diagnostics = {
           ...previous,
           ...pack.diagnostics,
+          retrieved: pack.items,
           embeddingRequests: previous.embeddingRequests,
           retrievalMs: previous.retrievalMs + pack.diagnostics.retrievalMs,
         };
