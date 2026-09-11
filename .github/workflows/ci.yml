@@ -40,6 +40,7 @@ jobs:
       - run: bun run test:sources
       - run: bun run test:evidence
       - run: bun run test:updates
+      - run: bun run test:intents
       - run: bun run test:identity
       - run: bun run test:wiki
       - run: bun run test:wiki-refresh

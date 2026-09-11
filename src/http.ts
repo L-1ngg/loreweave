@@ -76,6 +76,11 @@ export function createApp(
         input.attachmentIds.some((id) => !isUuid(id)))
     )
       return context.json({ error: "invalid_input" }, 400);
+    for (const key of ["sourceVersion", "pageId", "pageVersion"] as const)
+      if (key in input && !isUuid((input as Record<string, unknown>)[key]))
+        return context.json({ error: "invalid_input" }, 400);
+    if ("pageVersion" in input && !("pageId" in input))
+      return context.json({ error: "invalid_input" }, 400);
     if ("complex" in input && typeof input.complex !== "boolean")
       return context.json({ error: "invalid_input" }, 400);
     if (
@@ -86,6 +91,7 @@ export function createApp(
       return context.json({ error: "invalid_input" }, 400);
     if (
       ("projectId" in input &&
+        input.projectId !== null &&
         (typeof input.projectId !== "string" ||
           !/^[0-9a-f-]{36}$/i.test(input.projectId))) ||
       Object.keys(input).some(
@@ -96,6 +102,9 @@ export function createApp(
             "conversationId",
             "projectId",
             "attachmentIds",
+            "sourceVersion",
+            "pageId",
+            "pageVersion",
           ].includes(key),
       )
     )
@@ -104,12 +113,19 @@ export function createApp(
       return context.json(
         await host.start({
           question: input.question,
+          ...("sourceVersion" in input
+            ? { sourceVersion: input.sourceVersion as string }
+            : {}),
+          ...("pageId" in input ? { pageId: input.pageId as string } : {}),
+          ...("pageVersion" in input
+            ? { pageVersion: input.pageVersion as string }
+            : {}),
           ...("attachmentIds" in input
             ? { attachmentIds: input.attachmentIds as string[] }
             : {}),
           ...(options.access ? { credential: credential(context) } : {}),
           ...("projectId" in input
-            ? { projectId: input.projectId as string }
+            ? { projectId: input.projectId as string | null }
             : {}),
           ...("conversationId" in input
             ? { conversationId: input.conversationId as string }

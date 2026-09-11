@@ -53,6 +53,8 @@ export interface WikiCertificate {
   checkedAt: string;
 }
 export interface WikiPage {
+  currentVersion?: string;
+  projectId?: string;
   id: string;
   version: string;
   title: string;

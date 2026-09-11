@@ -8,6 +8,7 @@ export interface ContributionInput {
   kind: "fact" | "guidance";
   text: string;
   target?: string;
+  pageId?: string;
   projectId?: string;
 }
 /** The actor/scope comes from authentication. User facts remain attributed sources. */
@@ -34,12 +35,18 @@ export class WikiContributions {
       kind: input.kind,
       text: input.text,
       target: input.target ?? null,
+      pageId: input.pageId ?? null,
       projectId: input.projectId ?? null,
     });
     const prior = await this.operations.lookup(context, input.key, inputHash);
     if (prior) return { status: "accepted" as const, operationId: prior };
     let pageId: string | undefined;
-    if (input.target) {
+    if (input.pageId) {
+      const [page] = await this.operations
+        .sql`SELECT id FROM wiki_pages WHERE id=${input.pageId} AND organization_id=${context.organizationId} AND project_id IS NOT DISTINCT FROM ${input.projectId ?? null}::uuid`;
+      if (!page) throw new Error("not_found");
+      pageId = String(page.id);
+    } else if (input.target) {
       const title = normalizeTitle(input.target);
       const matches = await this.operations
         .sql`SELECT p.id,v.title FROM wiki_pages p JOIN wiki_versions v ON v.id=p.current_version_id JOIN wiki_routing_catalogue c ON c.page_id=p.id WHERE p.organization_id=${context.organizationId} AND p.project_id IS NOT DISTINCT FROM ${input.projectId ?? null}::uuid AND (c.normalized_title=${title} OR c.routing_aliases ? ${title}) ORDER BY p.id LIMIT 3`;

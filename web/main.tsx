@@ -21,8 +21,22 @@ const labels: Record<RunSnapshot["status"], string> = {
   timed_out: "时间预算已用完",
   canceled: "已取消",
 };
-function App({ projectId }: { projectId: string }) {
+function App({
+  projectId,
+  selectProject,
+}: {
+  projectId: string;
+  selectProject: (id: string) => void;
+}) {
   const [question, setQuestion] = useState("");
+  const [selection, setSelection] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    return Object.fromEntries(
+      ["sourceVersion", "pageId", "pageVersion"].flatMap((key) =>
+        params.get(key) ? [[key, params.get(key)!]] : [],
+      ),
+    );
+  });
   const [attachment, setAttachment] = useState<Attachment>();
   const [run, setRun] = useState<RunSnapshot>();
   const [error, setError] = useState("");
@@ -33,7 +47,9 @@ function App({ projectId }: { projectId: string }) {
   );
   const [history, setHistory] = useState<RunSnapshot[]>([]);
   const [loading, setLoading] = useState(Boolean(conversationId.current));
-  function attach(accepted: RunSnapshot) {
+  function attach(accepted: RunSnapshot, synchronizeScope = true) {
+    if (synchronizeScope && accepted.scope)
+      selectProject(accepted.scope.projectId ?? "");
     stream.current?.close();
     setRun(accepted);
     if (accepted.settledAt) return;
@@ -45,6 +61,12 @@ function App({ projectId }: { projectId: string }) {
           (message as MessageEvent<string>).data,
         ) as RunEvent;
         setRun(event.run);
+        if (
+          synchronizeScope &&
+          event.run.scope &&
+          (event.type === "result" || event.type === "settled")
+        )
+          selectProject(event.run.scope.projectId ?? "");
         if (event.type === "settled") events.close();
       });
     events.onerror = () =>
@@ -93,7 +115,8 @@ function App({ projectId }: { projectId: string }) {
         body: JSON.stringify({
           question,
           ...(attachment ? { attachmentIds: [attachment.id] } : {}),
-          ...(projectId ? { projectId } : {}),
+          projectId: projectId || null,
+          ...selection,
           ...(conversationId.current
             ? { conversationId: conversationId.current }
             : {}),
@@ -102,9 +125,12 @@ function App({ projectId }: { projectId: string }) {
       if (!response.ok) throw new Error("暂时无法接受查询，请稍后重试。");
       const accepted = (await response.json()) as RunSnapshot;
       setAttachment(undefined);
+      setSelection({});
       conversationId.current = accepted.conversationId;
       const url = new URL(window.location.href);
       url.searchParams.set("conversation", accepted.conversationId);
+      for (const key of ["sourceVersion", "pageId", "pageVersion"])
+        url.searchParams.delete(key);
       window.history.replaceState(null, "", url);
       setHistory((previous) => [
         ...previous.filter((item) => item.id !== accepted.id),
@@ -149,6 +175,10 @@ function App({ projectId }: { projectId: string }) {
         attachment={attachment}
         onAttachment={setAttachment}
       />
+      {selection.sourceVersion && <p>已选择来源文档，可提问或用附件更新。</p>}
+      {selection.pageId && (
+        <p>已选择 Wiki 主题，可补充事实、保留偏好或恢复历史。</p>
+      )}
       <form onSubmit={submit}>
         <label htmlFor="question">问题</label>
         <textarea
@@ -181,7 +211,7 @@ function App({ projectId }: { projectId: string }) {
                   void fetch(`/api/runs/${item.id}`)
                     .then(async (response) => {
                       if (!response.ok) throw new Error("无法读取历史记录");
-                      attach((await response.json()) as RunSnapshot);
+                      attach((await response.json()) as RunSnapshot, false);
                     })
                     .catch((error) => setError(String(error.message)));
                 }}
@@ -217,6 +247,12 @@ function App({ projectId }: { projectId: string }) {
                 ))}
               </ul>
             </>
+          )}
+          {Boolean(run.operations?.length) && (
+            <p role="status" data-testid="accepted-operations">
+              已受理 {run.operations!.length}{" "}
+              项知识变更。可在导入记录或主题历史中查看处理状态。
+            </p>
           )}
           {run.diagnostics && (
             <details>
@@ -297,6 +333,11 @@ function SourcePage({
       {source ? (
         <>
           <h1>{source.title}</h1>
+          <a
+            href={`/?sourceVersion=${source.version}&project=${source.projectId ?? ""}`}
+          >
+            围绕此文档提问或更新
+          </a>
           <p>原文版本：{source.version}</p>
           {source.passages ? (
             <>
@@ -370,7 +411,7 @@ const maintenanceId = window.location.pathname.match(
 const version = window.location.pathname.match(/^\/sources\/([^/]+)$/)?.[1];
 createRoot(document.getElementById("root")!).render(
   <AccessShell>
-    {({ actor, projectId }) =>
+    {({ actor, projectId, selectProject }) =>
       maintenanceId ? (
         <WikiMaintenance id={maintenanceId} />
       ) : wikiMatch ? (
@@ -385,7 +426,7 @@ createRoot(document.getElementById("root")!).render(
           canCorrect={actor.grants.includes("correct")}
         />
       ) : (
-        <App projectId={projectId} />
+        <App projectId={projectId} selectProject={selectProject} />
       )
     }
   </AccessShell>,

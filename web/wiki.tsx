@@ -63,6 +63,11 @@ export function WikiBrowser({
         page ? (
           <>
             <h1>{page.title}</h1>
+            <a
+              href={`/?pageId=${page.id}&pageVersion=${page.version}&project=${page.projectId ?? ""}`}
+            >
+              围绕此主题提问或整理
+            </a>
             {page.lifecycle === "retired" && page.retirement && (
               <p role="status">
                 此主题已退休：当前来源不再提供支持（

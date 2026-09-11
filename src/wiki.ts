@@ -152,13 +152,14 @@ export class WikiService {
   async page(token: string, id: string, version?: string): Promise<WikiPage> {
     const context = await this.access.authorize(token, "read");
     const [row] = await this.operations
-      .sql`SELECT p.id,p.current_version_id,p.lifecycle,p.retirement,v.*,e.eligible FROM wiki_pages p JOIN wiki_versions v ON v.page_id=p.id AND v.id=COALESCE(${version ?? null}::uuid,p.current_version_id) JOIN wiki_version_eligibility e ON e.id=v.id WHERE p.id=${id} AND p.organization_id=${context.organizationId}`;
+      .sql`SELECT p.id,p.project_id,p.current_version_id,p.lifecycle,p.retirement,v.*,e.eligible FROM wiki_pages p JOIN wiki_versions v ON v.page_id=p.id AND v.id=COALESCE(${version ?? null}::uuid,p.current_version_id) JOIN wiki_version_eligibility e ON e.id=v.id WHERE p.id=${id} AND p.organization_id=${context.organizationId}`;
     if (!row) throw new Error("not_found");
     const successors = await this.operations
       .sql`SELECT p.id,v.title FROM wiki_page_routes r JOIN wiki_pages p ON p.id=r.successor_id JOIN wiki_versions v ON v.id=p.current_version_id WHERE r.page_id=${id} ORDER BY p.id`;
     const [editSet] = await this.operations
       .sql`SELECT edit_set_id FROM wiki_edit_pages WHERE page_id=${id} AND after_state->>'version'=${String(row.id)} ORDER BY edit_set_id LIMIT 1`;
     return {
+      ...(row.project_id ? { projectId: String(row.project_id) } : {}),
       successors: successors.map((item) => ({
         pageId: String(item.id),
         title: String(item.title),
@@ -166,6 +167,7 @@ export class WikiService {
       ...(editSet ? { editSetId: String(editSet.edit_set_id) } : {}),
       id,
       version: String(row.id),
+      currentVersion: String(row.current_version_id),
       title: String(row.title),
       text: String(row.body),
       fresh:

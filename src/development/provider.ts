@@ -1,3 +1,9 @@
+import {
+  sourceIntent,
+  sourceChoice,
+  wikiIntent,
+  restoreIntent,
+} from "../conversation-intent.ts";
 import { scriptedDraft, scriptedReview } from "./evidence-model.ts";
 import type { EvidencePack } from "../evidence.ts";
 import type { Draft } from "../answer-validation.ts";
@@ -83,17 +89,17 @@ export function startScriptedProvider(options: ScriptedOptions = {}) {
       // Only explicitly supported affirmative commands may trigger a real write.
       const importing = Boolean(
         attachment &&
-        /^(?:(?:请)?(?:把|将)?附件导入(?:到)?知识库[。！!]?|(?:please )?import (?:the )?attachment[.!]?)$/i.test(
-          instruction,
-        ),
+        (sourceIntent(instruction) || sourceChoice(instruction) !== undefined),
       );
-      const correction = instruction.match(/^请纠正「([^」]+)」[：:]\s*(.+)$/s);
-      const preference = instruction.match(/^请记住整理偏好[：:]\s*(.+)$/s);
-      const contribution = correction
-        ? { kind: "fact", target: correction[1], text: correction[2] }
-        : preference
-          ? { kind: "guidance", text: preference[1] }
-          : undefined;
+      const intent = wikiIntent(instruction);
+      const contribution = intent
+        ? {
+            kind: intent.kind,
+            text: intent.text,
+            ...(intent.target ? { target: intent.target } : {}),
+          }
+        : undefined;
+      const restoring = restoreIntent(instruction);
       const tool =
         !summary &&
         (!attachment || importing) &&
@@ -122,11 +128,13 @@ export function startScriptedProvider(options: ScriptedOptions = {}) {
             ? {
                 type: "tool_use",
                 id: `call-${count}`,
-                name: importing
-                  ? "import_markdown"
-                  : contribution
-                    ? "contribute_knowledge"
-                    : "search_evidence",
+                name: restoring
+                  ? "restore_wiki"
+                  : importing
+                    ? "import_markdown"
+                    : contribution
+                      ? "contribute_knowledge"
+                      : "search_evidence",
                 input: {},
               }
             : {

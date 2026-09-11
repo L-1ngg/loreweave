@@ -109,6 +109,31 @@ export class SourceService {
       ...(projectId ? { projectId } : {}),
     });
   }
+  /** The host resolves target scope from a selected database document, not model authority. */
+  async updateAttachment(
+    token: string,
+    input: {
+      attachmentId: string;
+      attachmentProjectId?: string | undefined;
+      projectId?: string | undefined;
+      documentId: string;
+      expectedPrior: string;
+      key: string;
+    },
+  ) {
+    const attachment = await this.attachment(
+      token,
+      input.attachmentId,
+      input.attachmentProjectId,
+    );
+    return this.submit(token, {
+      ...attachment,
+      key: input.key,
+      documentId: input.documentId,
+      expectedPrior: input.expectedPrior,
+      ...(input.projectId ? { projectId: input.projectId } : {}),
+    });
+  }
   async submit(token: string, input: ImportInput): Promise<SourceOperation> {
     const context = await this.access.authorize(
       token,
@@ -196,6 +221,31 @@ export class SourceService {
     await this.operations.enqueue(tx, operationId, "source.prepare", {
       versionId,
     });
+  }
+  async operationByKey(token: string, key: string) {
+    const context = await this.access.authorize(token, "read");
+    const [row] = await this.operations
+      .sql`SELECT id FROM knowledge_operations WHERE organization_id=${context.organizationId} AND actor_id=${context.actorId} AND operation_key=${key}`;
+    return row ? { id: String(row.id) } : undefined;
+  }
+  async targets(
+    token: string,
+    input: {
+      projectId?: string | undefined;
+      title?: string | undefined;
+      version?: string | undefined;
+    },
+  ) {
+    const context = await this.access.authorize(token, "read", input.projectId);
+    const rows = await this.operations
+      .sql`SELECT d.id,d.active_version_id,d.project_id,v.filename,p.name AS project FROM source_documents d JOIN source_versions v ON v.id=d.active_version_id LEFT JOIN projects p ON p.id=d.project_id WHERE d.organization_id=${context.organizationId} AND (${input.projectId ?? null}::uuid IS NULL OR d.project_id=${input.projectId ?? null}) AND (${input.title ?? null}::text IS NULL OR v.filename=${input.title ?? null}) AND (${input.version ?? null}::uuid IS NULL OR d.id IN (SELECT document_id FROM source_versions WHERE id=${input.version ?? null})) ORDER BY d.id LIMIT 21`;
+    return rows.map((row) => ({
+      documentId: String(row.id),
+      versionId: String(row.active_version_id),
+      title: String(row.filename),
+      projectId: row.project_id as string | null,
+      project: row.project ? String(row.project) : "组织共享",
+    }));
   }
   async inspect(token: string, id: string): Promise<SourceOperation> {
     const context = await this.access.authorize(token, "read");

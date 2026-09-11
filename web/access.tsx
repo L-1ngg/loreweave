@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { Actor, Grant } from "../src/access.ts";
 
 type Project = { id: string; name: string };
@@ -26,7 +26,11 @@ async function request<T>(path: string, body?: object): Promise<T> {
 export function AccessShell({
   children,
 }: {
-  children: (state: { actor: Actor; projectId: string }) => React.ReactNode;
+  children: (state: {
+    actor: Actor;
+    projectId: string;
+    selectProject: (id: string) => void;
+  }) => React.ReactNode;
 }) {
   const [actor, setActor] = useState<Actor>();
   const [checking, setChecking] = useState(true);
@@ -39,6 +43,16 @@ export function AccessShell({
   const [projectId, setProjectId] = useState(
     new URLSearchParams(location.search).get("project") ?? "",
   );
+  // Async run callbacks may synchronize scope only until the next user selection.
+  const selectionRevision = useRef(0);
+  const observedRevision = selectionRevision.current;
+  function selectProject(id: string) {
+    setProjectId(id);
+    const url = new URL(location.href);
+    if (id) url.searchParams.set("project", id);
+    else url.searchParams.delete("project");
+    history.replaceState(null, "", url);
+  }
   useEffect(() => {
     const controller = new AbortController();
     void fetch("/api/auth/me", { signal: controller.signal })
@@ -153,12 +167,8 @@ export function AccessShell({
             <select
               value={projectId}
               onChange={(event) => {
-                setProjectId(event.target.value);
-                const url = new URL(location.href);
-                if (event.target.value)
-                  url.searchParams.set("project", event.target.value);
-                else url.searchParams.delete("project");
-                history.replaceState(null, "", url);
+                selectionRevision.current++;
+                selectProject(event.target.value);
               }}
             >
               <option value="">共享知识</option>
@@ -180,7 +190,14 @@ export function AccessShell({
         {error && <p role="alert">{error}</p>}
       </div>
       {actor.grants.includes("read") ? (
-        children({ actor, projectId })
+        children({
+          actor,
+          projectId,
+          selectProject: (id) => {
+            if (selectionRevision.current === observedRevision)
+              selectProject(id);
+          },
+        })
       ) : (
         <main>
           <p>当前账户尚未获得查阅知识的权限，请联系管理员。</p>

@@ -1,4 +1,11 @@
 import {
+  sourceIntent,
+  sourceChoice,
+  wikiIntent,
+  restoreIntent,
+  type ConversationContext,
+} from "./conversation-intent.ts";
+import {
   EvidenceService,
   type EvidencePack,
   type GroundedAnswer,
@@ -35,6 +42,8 @@ export interface RunSnapshot {
   conversationId: string;
   status: RunStatus;
   counts: Record<Phase | "retrieval", number>;
+  intentContext?: ConversationContext;
+  operationKeys?: string[];
   attachmentIds?: string[];
   operations?: string[];
   clarification?: string;
@@ -66,6 +75,7 @@ export interface RunEvent {
   message?: string;
 }
 interface Run {
+  explicitContext: boolean;
   startedAt: number;
   complex: boolean;
   snapshot: RunSnapshot;
@@ -89,9 +99,12 @@ interface Run {
   timer?: ReturnType<typeof setTimeout>;
 }
 export interface StartTurn {
+  sourceVersion?: string;
+  pageId?: string;
+  pageVersion?: string;
   attachmentIds?: string[];
   credential?: string;
-  projectId?: string;
+  projectId?: string | null;
   question: string;
   complex?: boolean;
   conversationId?: string;
@@ -176,29 +189,74 @@ export class KnowledgeHost {
   private async startRun(input: StartTurn): Promise<RunSnapshot> {
     if (this.closed) throw new Error("unavailable");
     const startedAt = Date.now();
-    const context = await this.options.access?.authorize(
+    let context = await this.options.access?.authorize(
       input.credential ?? "",
       "read",
-      input.projectId,
     );
-    if (input.attachmentIds?.length) {
-      if (!this.options.imports || !context || input.attachmentIds.length > 5)
+    if (context && !this.options.conversations) throw new Error("unavailable");
+    let previous: RunSnapshot | undefined;
+    if (input.conversationId && this.options.conversations) {
+      const conversation = await this.options.conversations.read(
+        input.conversationId,
+      );
+      if (context && conversation.organizationId !== context.organizationId)
+        throw new Error("unauthorized");
+      const history = await this.options.conversations.runs(
+        input.conversationId,
+      );
+      previous = history.at(-1);
+    }
+    const projectId =
+      input.projectId === undefined
+        ? previous?.scope?.projectId
+        : (input.projectId ?? undefined);
+    context = await this.options.access?.authorize(
+      input.credential ?? "",
+      "read",
+      projectId,
+    );
+    const sameScope = previous?.scope?.projectId === projectId;
+    const intentContext: ConversationContext = sameScope
+      ? structuredClone(previous?.intentContext ?? {})
+      : {};
+    if (input.sourceVersion) {
+      const source = await this.options.imports?.version(
+        input.credential ?? "",
+        input.sourceVersion,
+      );
+      if (!source || source.projectId !== projectId)
         throw new Error("invalid_input");
-      for (const id of input.attachmentIds)
+      intentContext.sourceVersion = source.version;
+      delete intentContext.pending;
+    }
+    if (input.pageId) {
+      const page = await this.options.wiki?.page(
+        input.credential ?? "",
+        input.pageId,
+        input.pageVersion,
+      );
+      if (!page || page.projectId !== projectId)
+        throw new Error("invalid_input");
+      intentContext.pageId = page.id;
+      intentContext.pageVersion = page.version;
+      intentContext.pageCurrentVersion = page.currentVersion ?? page.version;
+    }
+    const choice = sourceChoice(input.question);
+    const attachmentIds =
+      input.attachmentIds ??
+      (choice !== undefined && intentContext.pending
+        ? [intentContext.pending.attachmentId]
+        : []);
+    if (attachmentIds.length) {
+      if (!this.options.imports || !context || attachmentIds.length > 5)
+        throw new Error("invalid_input");
+      for (const id of attachmentIds)
         await this.options.imports.attachment(
           input.credential ?? "",
           id,
-          input.projectId,
+          projectId,
         );
     }
-    if (context && !this.options.conversations) throw new Error("unavailable");
-    if (
-      context &&
-      input.conversationId &&
-      (await this.options.conversations!.read(input.conversationId))
-        .organizationId !== context.organizationId
-    )
-      throw new Error("unauthorized");
     if (
       [...this.runs.values()].filter((run) => !run.snapshot.settledAt).length +
         this.admitting >=
@@ -210,8 +268,9 @@ export class KnowledgeHost {
       const snapshot: RunSnapshot = {
         id: crypto.randomUUID(),
         deadline: 0,
-        ...(input.attachmentIds?.length
-          ? { attachmentIds: [...new Set(input.attachmentIds)] }
+        intentContext,
+        ...(attachmentIds.length
+          ? { attachmentIds: [...new Set(attachmentIds)] }
           : {}),
         ...(context ? { scope: context.scope } : {}),
         conversationId:
@@ -235,6 +294,7 @@ export class KnowledgeHost {
         finish = resolve;
       });
       const run: Run = {
+        explicitContext: Boolean(input.sourceVersion || input.pageId),
         startedAt,
         complex: input.complex === true,
         snapshot,
@@ -282,7 +342,8 @@ export class KnowledgeHost {
   }
   async get(id: string, token?: string): Promise<RunSnapshot> {
     await this.authorizeRun(id, token);
-    if (this.options.conversations) return this.options.conversations.run(id);
+    if (this.options.conversations)
+      return this.receipts(await this.options.conversations.run(id), token);
     return structuredClone(this.run(id).snapshot);
   }
   async conversation(id: string, token?: string) {
@@ -296,13 +357,51 @@ export class KnowledgeHost {
       throw new Error("unauthorized");
     return {
       ...conversation,
-      runs: await this.options.conversations.runs(id),
+      runs: await Promise.all(
+        (await this.options.conversations.runs(id)).map((run) =>
+          this.receipts(run, token),
+        ),
+      ),
+    };
+  }
+  private async receipts(snapshot: RunSnapshot, token?: string) {
+    if (!this.options.imports || !token) return snapshot;
+    const operations = new Set(snapshot.operations ?? []);
+    for (const key of snapshot.operationKeys ?? []) {
+      const receipt = await this.options.imports.operationByKey(token, key);
+      if (receipt) operations.add(receipt.id);
+    }
+    return {
+      ...snapshot,
+      ...(operations.size ? { operations: [...operations] } : {}),
     };
   }
   async events(id: string, after = 0, token?: string): Promise<RunEvent[]> {
     await this.authorizeRun(id, token);
-    if (this.options.conversations)
-      return this.options.conversations.events(id, after);
+    if (this.options.conversations) {
+      const current = await this.receipts(
+        await this.options.conversations.run(id),
+        token,
+      );
+      return (await this.options.conversations.events(id, after)).map(
+        (event) => ({
+          ...event,
+          run: {
+            ...event.run,
+            ...(current.operations?.length
+              ? {
+                  operations: [
+                    ...new Set([
+                      ...(event.run.operations ?? []),
+                      ...current.operations,
+                    ]),
+                  ],
+                }
+              : {}),
+          },
+        }),
+      );
+    }
     return structuredClone(
       this.run(id).events.filter((event) => event.sequence > after),
     );
@@ -489,6 +588,39 @@ export class KnowledgeHost {
     try {
       await run.persistence;
       run.controller.signal.throwIfAborted();
+      if (this.options.conversations && !run.explicitContext) {
+        const history = await this.options.conversations.runs(
+          run.snapshot.conversationId,
+        );
+        const index = history.findIndex((item) => item.id === run.snapshot.id);
+        const previous = history[index - 1];
+        if (previous?.scope?.projectId === run.context?.scope.projectId) {
+          run.snapshot.intentContext = structuredClone(
+            previous?.intentContext ?? {},
+          );
+          if (
+            sourceChoice(question) !== undefined &&
+            run.snapshot.intentContext.pending &&
+            !run.snapshot.attachmentIds?.length
+          )
+            run.snapshot.attachmentIds = [
+              run.snapshot.intentContext.pending.attachmentId,
+            ];
+          this.publish(run, "progress");
+          await run.persistence;
+        }
+      }
+      if (sourceIntent(question) && !run.snapshot.attachmentIds?.length) {
+        run.snapshot.clarification = "请先上传要导入或更新的 Markdown 附件。";
+        run.snapshot.answer = {
+          text: run.snapshot.clarification,
+          citations: [],
+          validatedAt: new Date().toISOString(),
+        };
+        run.snapshot.status = "answered";
+        this.publish(run, "result");
+        return;
+      }
       if (run.writer) assertReconciled(await run.writer.storage.load());
       run.agent = await createAgent({
         ...(run.writer
@@ -521,12 +653,104 @@ export class KnowledgeHost {
             { tool: "search_evidence", argsPattern: "*", effect: "allow" },
             { tool: "import_markdown", argsPattern: "*", effect: "allow" },
             { tool: "contribute_knowledge", argsPattern: "*", effect: "allow" },
+            { tool: "restore_wiki", argsPattern: "*", effect: "allow" },
           ],
         },
         beforeModelRequest: () => this.admit(run, "exploration"),
         tools: [
           ...(this.options.wiki
             ? [
+                {
+                  name: "restore_wiki",
+                  label: "恢复主题版本",
+                  description:
+                    "Restore explicitly selected Wiki history with the user's stated reason.",
+                  parameters: {
+                    type: "object" as const,
+                    properties: {},
+                    required: [],
+                    additionalProperties: false as const,
+                  },
+                  execute: async () => {
+                    await this.authorizeTool(run);
+                    run.controller.signal.throwIfAborted();
+                    if (Date.now() >= run.explorationDeadline)
+                      throw new Error("budget_exhausted");
+                    const intent = restoreIntent(question),
+                      selected = run.snapshot.intentContext;
+                    if (!intent) throw new Error("invalid_input");
+                    const history = selected?.pageId
+                      ? await this.options.wiki!.history(
+                          run.credential ?? "",
+                          selected.pageId,
+                        )
+                      : undefined;
+                    const version = intent.previous
+                      ? history?.items.find((item) => !item.current)?.version
+                      : selected?.pageVersion;
+                    const current = history?.items.find(
+                      (item) => item.current,
+                    )?.version;
+                    if (
+                      !selected?.pageId ||
+                      !version ||
+                      !current ||
+                      version === current ||
+                      current !== selected.pageCurrentVersion
+                    ) {
+                      run.snapshot.clarification =
+                        "请选择需要恢复的主题历史版本，并说明恢复原因。";
+                      this.publish(run, "progress");
+                      await run.persistence;
+                      return {
+                        content: [
+                          {
+                            type: "text" as const,
+                            text: run.snapshot.clarification,
+                          },
+                        ],
+                        details: { status: "clarification" },
+                      };
+                    }
+                    const key = `run:${run.snapshot.id}:restore`;
+                    run.snapshot.operationKeys = [
+                      ...new Set([...(run.snapshot.operationKeys ?? []), key]),
+                    ];
+                    this.publish(run, "progress");
+                    await run.persistence;
+                    run.controller.signal.throwIfAborted();
+                    if (Date.now() >= run.explorationDeadline)
+                      throw new Error("budget_exhausted");
+                    const result = await this.options.wiki!.restore(
+                      run.credential ?? "",
+                      {
+                        key,
+                        pageId: selected.pageId,
+                        versionId: version,
+                        expectedVersion: current,
+                        reason: intent.reason,
+                      },
+                    );
+                    if (result.status === "accepted")
+                      run.snapshot.operations = [
+                        ...new Set([
+                          ...(run.snapshot.operations ?? []),
+                          result.operationId,
+                        ]),
+                      ];
+                    else
+                      run.snapshot.clarification =
+                        "主题结构或版本已变化，请查看历史后选择恢复对象。";
+                    this.publish(run, "progress");
+                    await run.persistence;
+                    return {
+                      content: [
+                        { type: "text" as const, text: JSON.stringify(result) },
+                      ],
+                      details: result,
+                    };
+                  },
+                },
                 {
                   name: "contribute_knowledge",
                   label: "补充或整理知识",
@@ -555,10 +779,49 @@ export class KnowledgeHost {
                         typeof args.target !== "string")
                     )
                       throw new Error("invalid_input");
+                    const intent = wikiIntent(question);
+                    if (
+                      !intent ||
+                      intent.kind !== args.kind ||
+                      intent.text !== args.text ||
+                      intent.target !== args.target
+                    )
+                      throw new Error("invalid_input");
+                    if (
+                      intent.selected &&
+                      !run.snapshot.intentContext?.pageId
+                    ) {
+                      run.snapshot.clarification =
+                        "请先选择要纠正或整理的 Wiki 主题。";
+                      this.publish(run, "progress");
+                      await run.persistence;
+                      return {
+                        content: [
+                          {
+                            type: "text" as const,
+                            text: run.snapshot.clarification,
+                          },
+                        ],
+                        details: { status: "clarification" },
+                      };
+                    }
+                    const key = `run:${run.snapshot.id}:contribution`;
+                    run.snapshot.operationKeys = [
+                      ...new Set([...(run.snapshot.operationKeys ?? []), key]),
+                    ];
+                    this.publish(run, "progress");
+                    await run.persistence;
+                    run.controller.signal.throwIfAborted();
+                    if (Date.now() >= run.explorationDeadline)
+                      throw new Error("budget_exhausted");
                     const result = await this.options.wiki!.contribute(
                       run.credential ?? "",
                       {
-                        key: `run:${run.snapshot.id}:contribution`,
+                        key,
+                        ...(intent.selected &&
+                        run.snapshot.intentContext?.pageId
+                          ? { pageId: run.snapshot.intentContext.pageId }
+                          : {}),
                         kind: args.kind as "fact" | "guidance",
                         text: args.text,
                         ...(typeof args.target === "string"
@@ -625,13 +888,133 @@ export class KnowledgeHost {
                     const id = String(args.attachmentId);
                     if (!run.snapshot.attachmentIds!.includes(id))
                       throw new Error("invalid_input");
-                    const operation =
-                      await this.options.imports!.importAttachment(
+                    const choice = sourceChoice(question);
+                    const pending = run.snapshot.intentContext?.pending;
+                    const intent =
+                      sourceIntent(question) ??
+                      (choice !== undefined ? pending?.intent : undefined);
+                    if (!intent) throw new Error("invalid_input");
+                    let target:
+                      | {
+                          documentId: string;
+                          expectedPrior: string;
+                          projectId?: string | undefined;
+                        }
+                      | undefined;
+                    if (choice !== undefined && !pending?.candidates[choice])
+                      throw new Error("invalid_input");
+                    if (intent.kind === "update") {
+                      const candidates =
+                        !intent.target &&
+                        choice === undefined &&
+                        !run.snapshot.intentContext?.sourceVersion &&
+                        !run.context?.scope.projectId
+                          ? []
+                          : await this.options.imports!.targets(
+                              run.credential ?? "",
+                              {
+                                projectId: run.context?.scope.projectId,
+                                title: intent.target,
+                                version:
+                                  choice !== undefined
+                                    ? pending?.candidates[choice]?.versionId
+                                    : intent.target
+                                      ? undefined
+                                      : run.snapshot.intentContext
+                                          ?.sourceVersion,
+                              },
+                            );
+                      if (
+                        candidates.length !== 1 ||
+                        (choice !== undefined &&
+                          candidates[0]?.versionId !==
+                            pending?.candidates[choice]?.versionId) ||
+                        (!intent.target &&
+                          choice === undefined &&
+                          run.snapshot.intentContext?.sourceVersion &&
+                          candidates[0]?.versionId !==
+                            run.snapshot.intentContext.sourceVersion)
+                      ) {
+                        run.snapshot.intentContext = {
+                          ...run.snapshot.intentContext,
+                          pending: { intent, attachmentId: id, candidates },
+                        };
+                        run.snapshot.clarification = candidates.length
+                          ? "请选择要更新的文档：" +
+                            candidates
+                              .map(
+                                (c, i) => `${i + 1}. ${c.project} / ${c.title}`,
+                              )
+                              .join("；")
+                          : "请先选择要更新的来源文档。";
+                        this.publish(
+                          run,
+                          "progress",
+                          run.snapshot.clarification,
+                        );
+                        await run.persistence;
+                        return {
+                          details: { status: "clarification" },
+                          content: [
+                            {
+                              type: "text" as const,
+                              text: run.snapshot.clarification,
+                            },
+                          ],
+                        };
+                      }
+                      target = {
+                        projectId: candidates[0]!.projectId ?? undefined,
+                        documentId: candidates[0]!.documentId,
+                        expectedPrior: candidates[0]!.versionId,
+                      };
+                    }
+                    const operationKey = `run:${run.snapshot.id}:attachment:${id}`;
+                    run.snapshot.operationKeys = [
+                      ...new Set([
+                        ...(run.snapshot.operationKeys ?? []),
+                        operationKey,
+                      ]),
+                    ];
+                    this.publish(run, "progress");
+                    await run.persistence;
+                    run.controller.signal.throwIfAborted();
+                    if (Date.now() >= run.explorationDeadline)
+                      throw new Error("budget_exhausted");
+                    const attachmentProjectId = run.context?.scope.projectId;
+                    const operation = target
+                      ? await this.options.imports!.updateAttachment(
+                          run.credential ?? "",
+                          {
+                            attachmentId: id,
+                            attachmentProjectId,
+                            projectId: target.projectId,
+                            documentId: target.documentId,
+                            expectedPrior: target.expectedPrior,
+                            key: operationKey,
+                          },
+                        )
+                      : await this.options.imports!.importAttachment(
+                          run.credential ?? "",
+                          id,
+                          operationKey,
+                          attachmentProjectId,
+                        );
+                    if (target && this.options.access) {
+                      run.context = await this.options.access.authorize(
                         run.credential ?? "",
-                        id,
-                        `run:${run.snapshot.id}:attachment:${id}`,
-                        run.context?.scope.projectId,
+                        "read",
+                        target.projectId,
                       );
+                      run.snapshot.scope = run.context.scope;
+                      if (target.projectId !== attachmentProjectId)
+                        run.snapshot.intentContext = {};
+                    }
+                    run.snapshot.intentContext = {
+                      ...run.snapshot.intentContext,
+                      sourceVersion: operation.versionId,
+                    };
+                    delete run.snapshot.intentContext.pending;
                     run.snapshot.operations = [
                       ...new Set([
                         ...(run.snapshot.operations ?? []),
