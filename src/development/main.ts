@@ -97,7 +97,7 @@ try {
     providerUrl: provider.url,
     sources,
     conversations,
-    evidence: new EvidenceService(imports, wiki),
+    evidence: new EvidenceService(imports, wiki, graph),
     imports,
     access,
   });

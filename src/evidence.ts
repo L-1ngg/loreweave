@@ -10,6 +10,7 @@ import {
   type Review,
 } from "./answer-validation.ts";
 import { SourceService, type SourceCandidate } from "./sources.ts";
+import type { GraphService } from "./graph.ts";
 export interface EvidenceItem extends SourceCandidate {
   handle: string;
 }
@@ -79,6 +80,7 @@ export class EvidenceService {
   constructor(
     private readonly sources: SourceService,
     private readonly wiki?: Pick<WikiService, "search">,
+    private readonly graph?: Pick<GraphService, "search">,
   ) {}
   async retrieve(
     token: string,
@@ -104,6 +106,8 @@ export class EvidenceService {
     const gaps: string[] = [];
     let wikiCandidates = 0,
       wikiOriginals: SourceCandidate[] = [];
+    let graphCandidates = 0;
+    let graphOriginals: SourceCandidate[] = [];
     if (this.wiki) {
       try {
         const result = await this.wiki.search(token, input);
@@ -115,6 +119,64 @@ export class EvidenceService {
         gaps.push("wiki_unavailable");
       }
     } else gaps.push("wiki_unavailable");
+    if (
+      /依赖|关系|项目|数据库|负责|属于|连接|dependency|relationship/i.test(
+        input.question,
+      ) &&
+      this.graph
+    ) {
+      try {
+        const result = await this.graph.search(
+          token,
+          input.question,
+          input.projectId,
+          input.signal,
+        );
+        graphCandidates = result.claims.length;
+        if (result.truncated) gaps.push("graph_claim_limit");
+        if (result.pending) gaps.push("graph_pending");
+        const refs = [
+          ...new Map(
+            result.claims
+              .flatMap((claim) => claim.support)
+              .map((support) => [
+                `${support.version}:${support.passageId}`,
+                support,
+              ]),
+          ).values(),
+        ];
+        const resolved = await this.sources.resolveMany(
+          token,
+          refs,
+          input.signal,
+        );
+        for (const claim of result.claims) {
+          for (const support of claim.support) {
+            try {
+              const passage = resolved.get(
+                `${support.version}:${support.passageId}`,
+              );
+              if (!passage) throw new Error("not_found");
+              graphOriginals.push({
+                documentId: "",
+                version: support.version,
+                passageId: support.passageId,
+                title: passage.headingPath.join(" / "),
+                text: passage.text,
+                headingPath: passage.headingPath,
+                start: passage.start,
+                end: passage.end,
+              });
+            } catch {
+              gaps.push("graph_support_unavailable");
+            }
+          }
+        }
+      } catch {
+        input.signal.throwIfAborted();
+        gaps.push("graph_unavailable");
+      }
+    }
     const ranked = new Map<
       string,
       { candidate: SourceCandidate; score: number }
@@ -123,6 +185,7 @@ export class EvidenceService {
       candidates.lexical,
       candidates.vector,
       wikiOriginals,
+      graphOriginals,
     ]) {
       const seen = new Set<string>();
       let rank = 0;

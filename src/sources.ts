@@ -490,6 +490,42 @@ export class SourceService {
     if (!passage) throw new Error("not_found");
     return passage;
   }
+  async resolveMany(
+    token: string,
+    refs: Array<{ version: string; passageId: string }>,
+    signal?: AbortSignal,
+  ) {
+    const context = await this.access.authorize(token, "read");
+    if (!refs.length) return new Map<string, ParsedPassage & { id: string }>();
+    const query = this.operations.sql`
+      SELECT p.id,p.version_id,p.kind,p.heading_path,p.start_offset,p.end_offset,p.original_text
+      FROM source_passages p JOIN source_versions v ON v.id=p.version_id
+      JOIN source_documents d ON d.id=v.document_id
+      JOIN jsonb_to_recordset(${this.operations.sql.json(refs)}::jsonb) ref(version uuid, passage_id uuid)
+        ON ref.version=p.version_id AND ref.passage_id=p.id
+      WHERE d.organization_id=${context.organizationId}`;
+    const cancel = () => query.cancel();
+    signal?.addEventListener("abort", cancel, { once: true });
+    try {
+      const rows = await query;
+      signal?.throwIfAborted();
+      return new Map(
+        rows.map((row) => [
+          `${row.version_id}:${row.id}`,
+          {
+            id: String(row.id),
+            kind: row.kind,
+            headingPath: row.heading_path as string[],
+            start: Number(row.start_offset),
+            end: Number(row.end_offset),
+            text: String(row.original_text),
+          },
+        ]),
+      );
+    } finally {
+      signal?.removeEventListener("abort", cancel);
+    }
+  }
   async current(token: string, versionId: string): Promise<boolean> {
     const context = await this.access.authorize(token, "read");
     const rows = await this.operations

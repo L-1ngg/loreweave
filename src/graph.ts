@@ -404,6 +404,57 @@ export class GraphService {
       pending: await this.pending(context.organizationId),
     };
   }
+  async search(
+    token: string,
+    question: string,
+    projectId?: string,
+    signal?: AbortSignal,
+  ) {
+    signal?.throwIfAborted();
+    const context = await this.access.authorize(token, "read", projectId);
+    const terms = question
+      .split(/\s+/)
+      .map((term) => term.replace(/[%'_]/g, "").trim())
+      .filter((term) => term.length >= 2)
+      .slice(0, 8);
+    const pattern = terms.length ? `%${terms.join("%")}%` : "%";
+    const query = this.operations.sql`
+      SELECT DISTINCT ON (c.id) c.id,c.subject_id,c.object_id,c.predicate,c.direction,c.qualifiers,c.relation_text,
+        s.source_version_id,s.locators
+      FROM graph_claims c JOIN graph_supports s ON s.claim_id=c.id
+      JOIN graph_generations g ON g.id=s.generation_id AND g.state='active'
+      JOIN source_versions v ON v.id=s.source_version_id AND v.state='active'
+      JOIN source_documents d ON d.id=v.document_id
+      WHERE c.organization_id=${context.organizationId} AND c.status='active'
+        AND (${context.scope.projectId ?? null}::uuid IS NULL OR d.project_id IS NULL OR d.project_id=${context.scope.projectId ?? null}::uuid)
+        AND c.relation_text ILIKE ${pattern}
+      LIMIT 100`;
+    const cancel = () => query.cancel();
+    signal?.addEventListener("abort", cancel, { once: true });
+    let rows;
+    try {
+      rows = await query;
+    } finally {
+      signal?.removeEventListener("abort", cancel);
+    }
+    signal?.throwIfAborted();
+    return {
+      claims: rows.map((row) => ({
+        id: String(row.id),
+        predicate: String(row.predicate),
+        direction: String(row.direction),
+        qualifiers: row.qualifiers,
+        relationText: String(row.relation_text),
+        sourceVersion: String(row.source_version_id),
+        support: (row.locators as string[]).map((passageId) => ({
+          version: String(row.source_version_id),
+          passageId,
+        })),
+      })),
+      truncated: rows.length >= 100,
+      pending: await this.pending(context.organizationId),
+    };
+  }
   async pending(organizationId: string) {
     const [row] = await this.operations
       .sql`SELECT count(*) AS count FROM graph_generations WHERE organization_id=${organizationId} AND state='staged'`;
