@@ -130,6 +130,9 @@ test("administrator creates a member and project, then revokes the member's acti
       .getByTestId(`member-${username}`)
       .getByRole("button", { name: "撤销登录" })
       .click();
+    await expect(
+      page.getByText(`已撤销 ${username} 的现有登录。`, { exact: true }),
+    ).toBeVisible();
     await member.reload();
     await expect(
       member.getByRole("button", { name: "登录", exact: true }),
