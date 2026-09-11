@@ -45,10 +45,25 @@ export class PublicAnswers {
   source(version: string, signal: AbortSignal) {
     return this.read<SourceVersion>(`/api/sources/${version}`, signal);
   }
-  inventory(signal: AbortSignal) {
-    return this.read<{
-      operations: Array<{ versionId: string; source: string }>;
-    }>("/api/imports", signal);
+  async inventory(signal: AbortSignal) {
+    const operations: Array<{
+      documentId: string;
+      versionId: string;
+      source: string;
+    }> = [];
+    let after: string | null = null;
+    do {
+      const page: { operations: typeof operations; next: string | null } =
+        await this.read(
+          `/api/sources/inventory${after ? `?after=${after}` : ""}`,
+          signal,
+        );
+      if (page.next && after && page.next <= after)
+        throw new Error("inventory_cursor_not_progressing");
+      operations.push(...page.operations);
+      after = page.next;
+    } while (after);
+    return { operations };
   }
   async answer(
     item: Pick<EvaluationCase, "question" | "complexity" | "projectId">,

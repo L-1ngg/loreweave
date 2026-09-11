@@ -12,7 +12,10 @@ import { EvidenceService } from "../evidence.ts";
 import { KnowledgeHost } from "../host.ts";
 import { ControlledEmbeddings } from "../development/embeddings.ts";
 import { FixtureSources } from "../development/sources.ts";
-import { startScriptedProvider } from "../development/provider.ts";
+import {
+  startScriptedProvider,
+  type ScriptedOptions,
+} from "../development/provider.ts";
 import { createApp } from "../http.ts";
 import { PublicAnswers } from "./client.ts";
 import { digest, sourceManifestSchema, developmentSchema } from "./schema.ts";
@@ -22,7 +25,11 @@ export async function evaluationFixture(
   corruptDraft = false,
   profile: Profile = "source",
   derived = false,
-  models: { wiki?: WikiModel; graph?: WikiModel } = {},
+  models: {
+    wiki?: WikiModel;
+    graph?: WikiModel;
+    answer?: ScriptedOptions;
+  } = {},
 ) {
   const access = new AccessService(url),
     conversations = new PostgresConversations(url);
@@ -87,7 +94,7 @@ export async function evaluationFixture(
       },
     ],
   });
-  const provider = startScriptedProvider();
+  const provider = startScriptedProvider(models.answer);
   const faulty = corruptDraft
     ? Bun.serve({
         hostname: "127.0.0.1",
@@ -157,6 +164,7 @@ export async function evaluationFixture(
     fetch: (request) => app.fetch(request),
   });
   return {
+    endpoint: String(server.url),
     manifest,
     dataset,
     sources,

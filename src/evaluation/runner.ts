@@ -125,6 +125,17 @@ export async function verifySnapshot(
         throw new Error("reference_passage_missing");
   }
 }
+/** Shared QA/capacity contract: an expected gap must actually be delivered. */
+export function expectedGap(run: RunSnapshot, item: EvaluationCase) {
+  return (
+    item.category === "missing" &&
+    run.status === "partial" &&
+    item.expectedGaps.length > 0 &&
+    item.expectedGaps.every(
+      (gap) => run.diagnostics?.gaps.includes(gap) || run.reason === gap,
+    )
+  );
+}
 export async function evaluateCase(
   client: PublicAnswers,
   item: EvaluationCase,
@@ -193,13 +204,7 @@ export async function evaluateCase(
     ).length;
     const validCitations = result.citationChecks.every((check) => check.valid);
     const delivered = ["answered", "partial"].includes(run.status);
-    const genuineGap =
-      item.category === "missing" &&
-      run.status === "partial" &&
-      item.expectedGaps.length > 0 &&
-      item.expectedGaps.every(
-        (gap) => run.diagnostics?.gaps.includes(gap) || run.reason === gap,
-      );
+    const genuineGap = expectedGap(run, item);
     if (
       !delivered ||
       !run.answer?.text.trim() ||

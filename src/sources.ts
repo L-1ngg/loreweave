@@ -264,6 +264,20 @@ export class SourceService {
       .sql`SELECT v.id,v.operation_id,v.document_id,v.state,v.reason FROM source_versions v JOIN source_documents d ON d.id=v.document_id WHERE d.organization_id=${context.organizationId} AND (${projectId ?? null}::uuid IS NULL OR d.project_id IS NULL OR d.project_id=${projectId ?? null}) ORDER BY v.created_at DESC LIMIT 100`;
     return this.outcomes(rows);
   }
+  async inventory(token: string, after = "") {
+    const context = await this.access.authorize(token, "read");
+    const rows = await this.operations
+      .sql`SELECT d.id,d.active_version_id FROM source_documents d WHERE d.organization_id=${context.organizationId} AND d.active_version_id IS NOT NULL AND d.id::text>${after} ORDER BY d.id LIMIT 101`;
+    const page = rows.slice(0, 100);
+    return {
+      operations: page.map((row) => ({
+        documentId: String(row.id),
+        versionId: String(row.active_version_id),
+        source: "searchable" as const,
+      })),
+      next: rows.length > 100 ? String(page.at(-1)!.id) : null,
+    };
+  }
   private async outcomes(
     rows: Record<string, unknown>[],
   ): Promise<SourceOperation[]> {

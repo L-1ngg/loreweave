@@ -9,6 +9,28 @@ export class MaintenanceService {
   ) {
     this.operations = new Operations(url);
   }
+  async activity(token: string) {
+    const context = await this.access.authorize(token, "read");
+    const [operations] = await this.operations
+      .sql`SELECT count(*)::int AS count FROM knowledge_operations WHERE organization_id=${context.organizationId}`;
+    const rows = await this.operations
+      .sql`SELECT j.kind,j.state,count(*)::int AS count FROM knowledge_jobs j JOIN knowledge_operations o ON o.id=j.operation_id WHERE o.organization_id=${context.organizationId} AND j.state NOT IN ('succeeded','superseded') GROUP BY j.kind,j.state ORDER BY j.kind,j.state`;
+    return {
+      sampledAt: new Date().toISOString(),
+      acceptedOperations: Number(operations!.count),
+      pending: rows
+        .filter((row) => row.state !== "failed")
+        .reduce((sum, row) => sum + Number(row.count), 0),
+      failed: rows
+        .filter((row) => row.state === "failed")
+        .reduce((sum, row) => sum + Number(row.count), 0),
+      jobs: rows.map((row) => ({
+        kind: String(row.kind),
+        state: String(row.state),
+        count: Number(row.count),
+      })),
+    };
+  }
   async inspect(token: string, operationId: string) {
     const context = await this.access.authorize(token, "read");
     const [operation] = await this.operations

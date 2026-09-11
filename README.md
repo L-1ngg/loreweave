@@ -201,3 +201,8 @@ Evaluation tooling and dataset preparation are described in
 [the evaluation harness guide](docs/development/evaluation.md). Use root
 `test:evaluation`, `eval:fixture`, `eval:run` and `eval:grade`; real quality and
 capacity acceptance remain separate from controlled fixture verification.
+
+[Capacity tooling and acceptance preparation](docs/development/capacity.md)
+provide `test:capacity`, `eval:capacity-fixture`, `eval:capacity` and `eval:prepare`.
+The last command records missing prerequisites and compares supplied independent
+question grades; it does not certify release acceptance.

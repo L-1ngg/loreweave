@@ -4,6 +4,9 @@ import { isUuid } from "./source-http.ts";
 import type { MaintenanceService } from "./maintenance.ts";
 export function maintenanceRoutes(service: MaintenanceService) {
   const app = new Hono();
+  app.get("/maintenance/activity", async (context) =>
+    context.json(await service.activity(credential(context))),
+  );
   app.get("/operations/:id", async (context) => {
     const id = context.req.param("id");
     if (!isUuid(id)) throw new Error("invalid_input");

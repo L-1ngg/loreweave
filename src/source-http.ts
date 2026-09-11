@@ -7,6 +7,11 @@ export const isUuid = (value: unknown): value is string =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 export function sourceRoutes(sources: SourceService) {
   const app = new Hono();
+  app.get("/sources/inventory", async (c) => {
+    const after = c.req.query("after");
+    if (after && !isUuid(after)) throw new Error("invalid_input");
+    return c.json(await sources.inventory(credential(c), after));
+  });
   app.use(
     "*",
     bodyLimit({
