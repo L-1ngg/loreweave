@@ -201,6 +201,10 @@ export class GraphService {
       const [completed] = await this.operations
         .sql`SELECT state,identity_dependencies,exclusions FROM graph_packets WHERE generation_id=${generationId} AND packet_key=${packet.key}`;
       if (completed?.state === "reviewed") continue;
+      const mentions = await this.identities.maintenanceMentions(
+        job.operationId,
+        [...new Set(packet.items.map((item) => item.passageId))],
+      );
       const raw = await this.runtime.request(
         job,
         packet.key,
@@ -221,6 +225,7 @@ export class GraphService {
             },
           },
           vocabulary: [...predicates],
+          mentions,
         },
         (value) => validatePacket(value, packet.items),
       );
@@ -308,7 +313,7 @@ export class GraphService {
         packet.key,
         "graph_review",
         2,
-        { packet: raw, pack: packet.items, sourceVersion: versionId },
+        { packet: raw, pack: packet.items, mentions, sourceVersion: versionId },
         (value) => validateReview(value, raw),
       );
       await this.operations.checkpoint(job, async (tx) => {

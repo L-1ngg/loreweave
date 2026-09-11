@@ -11,8 +11,96 @@ import { IdentityService } from "../src/identity.ts";
 import { GraphService } from "../src/graph.ts";
 import { ControlledEmbeddings } from "../src/development/embeddings.ts";
 import { ScriptedWikiModel } from "../src/development/wiki-model.ts";
+import { record, hash } from "../src/answer-validation.ts";
 const url = process.env.TEST_DATABASE_URL;
 if (!url) throw new Error("TEST_DATABASE_URL required");
+
+for (const swapped of [false, true])
+  test(`graph review validates mention bindings (swapped=${swapped})`, async () => {
+    class MentionModel extends ScriptedWikiModel {
+      override async request(
+        ...args: Parameters<ScriptedWikiModel["request"]>
+      ): Promise<unknown> {
+        const [phase, input] = args;
+        if (phase !== "graph_extraction" && phase !== "graph_review")
+          return super.request(...args);
+        const mentions = Array.isArray(input.mentions) ? input.mentions : [];
+        const a = mentions.find(
+          (item) => record(item) && item.text === "Alpha",
+        );
+        const b = mentions.find((item) => record(item) && item.text === "Beta");
+        if (!record(a) || !record(b))
+          return { relations: [], exclusions: [], complete: true };
+        if (phase === "graph_review") {
+          const packet = input.packet;
+          const relations =
+            record(packet) && Array.isArray(packet.relations)
+              ? packet.relations
+              : [];
+          return {
+            evidenceHash: hash(relations),
+            complete: true,
+            relations: relations.map((relation) => ({
+              verdict:
+                record(relation) &&
+                relation.subjectMention === a.id &&
+                relation.objectMention === b.id
+                  ? "supported"
+                  : "contradicted",
+              qualifiersChecked: true,
+            })),
+          };
+        }
+        return {
+          relations: [
+            {
+              subjectMention: swapped ? b.id : a.id,
+              objectMention: swapped ? a.id : b.id,
+              predicate: "dependency",
+              direction: "forward",
+              relationText: "Alpha 依赖 Beta。",
+              scope: "source",
+              qualifiers: {},
+              locators: [a.passageId],
+            },
+          ],
+          exclusions: [],
+          complete: true,
+        };
+      }
+    }
+    const f = await fixture(new MentionModel());
+    try {
+      const operation = await f.source("Alpha 依赖 Beta。");
+      const source = await f.sources.version(f.token, operation.versionId);
+      const passage = source.passages[0]!;
+      const a = await f.identities.record(f.token, {
+        version: source.version,
+        passageId: passage.id,
+        label: "Alpha",
+      });
+      await f.identities.record(f.token, {
+        version: source.version,
+        passageId: passage.id,
+        label: "Beta",
+      });
+      while (await f.graph.workOne(f.token)) {}
+      const result = await f.graph.neighborhood(f.token, {
+        entityId: a.canonicalId,
+      });
+      expect(result.claims).toHaveLength(swapped ? 0 : 1);
+      if (!swapped)
+        expect(result.claims[0]?.support).toEqual([
+          { version: source.version, passageId: passage.id },
+        ]);
+      else
+        expect(
+          (await f.graph.inspect(f.token, operation.id)).generations[0]?.state,
+        ).toBe("failed");
+    } finally {
+      await f.close();
+    }
+  }, 30000);
 async function fixture(model = new ScriptedWikiModel()) {
   const access = new AccessService(url!),
     embeddings = new ControlledEmbeddings();

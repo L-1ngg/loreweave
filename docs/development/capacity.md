@@ -4,8 +4,9 @@ Issue #18 remains an execution task requiring actual corpus access, independent
 reviewers and an authorized real-provider runtime. The commands below make the
 preparation and load protocol executable. Controlled runs do not establish the
 1,000-document capacity baseline or any real-model quality/latency target.
-The current application bootstrap uses scripted providers; changing only a
-configuration label cannot turn it into a real-provider deployment.
+The default application bootstrap uses scripted providers. Explicit real-model
+adapters and setup are documented in [provider integration](providers.md); changing
+only a report provenance label does not establish real-provider execution.
 
 Run the software checks and small controlled load against disposable PostgreSQL:
 

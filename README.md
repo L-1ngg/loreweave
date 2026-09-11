@@ -15,6 +15,12 @@ fixtures. It verifies the execution and validation contracts; it does not measur
 semantic model quality, independent factual truth or production capacity. Wiki and graph maintenance use scripted models; their scheduling, provenance and
 recovery are checked separately from real-model quality.
 
+An explicit **real-provider mode** is available through `bun run dev:real`, using
+the existing `RAG_CHAT_*` and `RAG_EMBEDDING_*` settings. See
+[provider setup and verification boundaries](docs/development/providers.md).
+Default `dev` still uses the fixtures described below; real integration smoke
+results do not establish final quality or capacity acceptance.
+
 ## Run locally
 
 Use Bun 1.3.12 and Node.js 24 (Vite runs through its Node CLI):

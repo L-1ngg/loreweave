@@ -1,0 +1,52 @@
+{
+  "kind": "real-provider-integration-smoke",
+  "qualityAcceptance": false,
+  "passed": true,
+  "models": {
+    "chat": "openai-chat:deepseek-ai/DeepSeek-V4-Flash:knowledge-v1",
+    "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+  },
+  "operation": {
+    "graph": "ready",
+    "wiki": "ready",
+    "id": "db2a70bd-feaf-4733-a39f-ebf648ef245d",
+    "documentId": "d388ebd1-b24e-4ccc-a3b3-96309edc5481",
+    "versionId": "e2c68efe-4a0f-4375-95bd-1d0c09b76d33",
+    "source": "searchable",
+    "maintenance": [
+      {
+        "id": "1c3e91bd-1f81-45e3-b10e-66306bee3f59",
+        "kind": "graph.refresh",
+        "state": "succeeded"
+      },
+      {
+        "id": "91d24973-01ca-4e4c-beae-a465497a99bb",
+        "kind": "identity.revalidate",
+        "state": "succeeded"
+      },
+      {
+        "id": "e0fd0ccd-4514-437f-9575-e6f11e8e4755",
+        "kind": "wiki.refresh",
+        "state": "succeeded"
+      }
+    ]
+  },
+  "graphClaims": 1,
+  "answer": {
+    "status": "answered",
+    "text": "生产环境的应用日志保留 30 天。",
+    "citations": [
+      {
+        "version": "e2c68efe-4a0f-4375-95bd-1d0c09b76d33",
+        "passageId": "9bcde35e-08c8-4821-83d4-578faf289480"
+      }
+    ],
+    "counts": {
+      "review": 2,
+      "retrieval": 1,
+      "generation": 1,
+      "exploration": 2
+    },
+    "elapsedMs": 13726
+  }
+}

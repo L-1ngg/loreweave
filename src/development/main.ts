@@ -13,6 +13,20 @@ import { createApp } from "../http.ts";
 import { startScriptedProvider } from "./provider.ts";
 import { FixtureSources } from "./sources.ts";
 import { GraphService } from "../graph.ts";
+import { providerConfig } from "../providers/config.ts";
+import { OpenAIEmbeddings } from "../providers/embeddings.ts";
+import { OpenAIKnowledgeModel } from "../providers/chat.ts";
+
+const mode = process.env.LOREWEAVE_PROVIDER_MODE ?? "scripted";
+if (mode !== "scripted" && mode !== "real")
+  throw new Error("invalid_provider_mode");
+const real = mode === "real" ? providerConfig(process.env) : undefined;
+const embeddings = real
+  ? new OpenAIEmbeddings(real.embedding)
+  : new ControlledEmbeddings();
+const knowledgeModel = real
+  ? new OpenAIKnowledgeModel(real.chat)
+  : new ScriptedWikiModel();
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl)
@@ -26,26 +40,22 @@ let host: KnowledgeHost | undefined;
 let provider: ReturnType<typeof startScriptedProvider> | undefined;
 let server: ReturnType<typeof Bun.serve> | undefined;
 let closing = false;
-const imports = new SourceService(
-  databaseUrl,
-  access,
-  new ControlledEmbeddings(),
-);
+const imports = new SourceService(databaseUrl, access, embeddings);
 const identities = new IdentityService(databaseUrl, access, imports);
 const wiki = new WikiService(
   databaseUrl,
   access,
   imports,
   identities,
-  new ControlledEmbeddings(),
-  new ScriptedWikiModel(),
+  embeddings,
+  knowledgeModel,
 );
 const graph = new GraphService(
   databaseUrl,
   access,
   imports,
   identities,
-  new ScriptedWikiModel(),
+  knowledgeModel,
 );
 let worker: Promise<void> | undefined;
 async function prepareSources() {
@@ -95,7 +105,7 @@ try {
   const sources = new FixtureSources({
     organizationId: await access.organization(organization),
   });
-  provider = startScriptedProvider({ delayMs: 120 });
+  if (!real) provider = startScriptedProvider({ delayMs: 120 });
   const profile = process.env.LOREWEAVE_RETRIEVAL_PROFILE;
   if (profile && !["source", "wiki", "graph", "combined"].includes(profile))
     throw new Error("invalid retrieval profile");
@@ -107,7 +117,16 @@ try {
   );
   host = new KnowledgeHost({
     wiki,
-    providerUrl: provider.url,
+    providerUrl: real?.chat.baseUrl ?? provider!.url,
+    ...(real
+      ? {
+          model: {
+            profile: knowledgeModel.profile,
+            exploration: real.exploration,
+            request: knowledgeModel.request.bind(knowledgeModel),
+          },
+        }
+      : {}),
     sources,
     conversations,
     evidence,
@@ -132,7 +151,7 @@ try {
     fetch: (request) => app.fetch(request),
   });
   worker = prepareSources();
-  console.log("LoreWeave authenticated fixture API: http://127.0.0.1:41736");
+  console.log(`LoreWeave authenticated API (${mode}): http://127.0.0.1:41736`);
   for (const signal of ["SIGINT", "SIGTERM"] as const)
     process.on(signal, () => {
       void close().then(() => process.exit(0));

@@ -228,6 +228,22 @@ export class IdentityService {
       throw new Error("identity_changed");
     return [...new Set(rows.map((row) => String(row.canonical_id)))];
   }
+  async maintenanceMentions(operationId: string, passageIds: string[]) {
+    if (!passageIds.length) return [];
+    const rows = await this.operations
+      .sql`SELECT m.id,m.original_text,m.passage_id,m.start_offset,m.end_offset
+      FROM identity_mentions m JOIN knowledge_operations o ON o.organization_id=m.organization_id
+      WHERE o.id=${operationId} AND m.passage_id IN ${this.operations.sql(passageIds)} ORDER BY m.id LIMIT 81`;
+    if (rows.length > 80)
+      throw new Error("needs_attention:mention_input_limit");
+    return rows.map((row) => ({
+      id: String(row.id),
+      text: String(row.original_text),
+      passageId: String(row.passage_id),
+      start: Number(row.start_offset),
+      end: Number(row.end_offset),
+    }));
+  }
   async maintenanceDependencies(operationId: string, mentionIds: string[]) {
     if (!mentionIds.length) return [];
     if (mentionIds.length > 100)

@@ -37,8 +37,9 @@ Add `--wiki`, `--graph`, `--combined` with independently configured HTTP endpoin
 for the same frozen corpus. Runtime metadata is checked through `/api/runtime`;
 model, policy, retrieval, context and common budget identifiers must match. Profile
 mismatch or missing services yields unavailable cases with intact denominators.
-The repository runtime currently uses controlled models; these endpoints do not
-supply a real-provider deployment. Reports never contain session credentials.
+The default runtime uses controlled models. Set up the explicit
+[real-provider runtime](providers.md) before using these endpoints for real-model
+acceptance; report provenance alone does not configure a provider. Reports never contain session credentials.
 
 Schemas are versioned in `src/evaluation/schema.ts`: the source manifest records
 immutable version IDs, SHA256 of exact decoded text, project scope, parser and

@@ -42,7 +42,10 @@
     "test:capacity": "bun --no-env-file test tests/capacity.test.ts",
     "eval:capacity": "bun --no-env-file scripts/evaluate-capacity.ts",
     "eval:capacity-fixture": "bun --no-env-file scripts/evaluate-capacity-fixture.ts",
-    "eval:prepare": "bun --no-env-file scripts/evaluate-prepare.ts"
+    "eval:prepare": "bun --no-env-file scripts/evaluate-prepare.ts",
+    "test:providers": "bun --no-env-file test tests/providers.test.ts",
+    "dev:real": "bun --env-file=.env scripts/dev-real.mjs",
+    "smoke:providers": "bun --env-file=.env scripts/provider-smoke.ts"
   },
   "dependencies": {
     "@earendil-works/pi-ai": "0.85.1",

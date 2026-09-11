@@ -35,6 +35,7 @@ jobs:
       - run: bun run check:docs
       - run: bun run check:vendor
       - run: bun run test
+      - run: bun run test:providers
       - run: bun run test:persistence
       - run: bun run test:access
       - run: bun run test:sources
