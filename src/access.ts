@@ -104,7 +104,59 @@ export class AccessService {
       VALUES (${digest(token)}, ${String(row.id)}, now() + interval '7 days')`);
     return { token, actor: actor(row) };
   }
+  async issueCredential(
+    token: string,
+    input: { name: string; grants: Grant[] },
+  ) {
+    await this.authorize(token, "admin");
+    const member = await this.identity(token);
+    if (
+      !input.name.trim() ||
+      input.name.length > 100 ||
+      input.grants.length !== 1 ||
+      input.grants[0] !== "read" ||
+      !member.grants.includes("read")
+    )
+      throw new Error("invalid_input");
+    const id = crypto.randomUUID();
+    const credential = `lw_${randomBytes(32).toString("hex")}`;
+    const expiresAt = new Date(
+      Date.now() + 30 * 24 * 60 * 60 * 1000,
+    ).toISOString();
+    await this.db
+      .execute(sql`INSERT INTO external_credentials(id,token_hash,member_id,name,grants,expires_at)
+      VALUES(${id},${digest(credential)},${member.id},${input.name.trim()},${JSON.stringify(input.grants)}::jsonb,${expiresAt}::timestamptz)`);
+    return {
+      id,
+      token: credential,
+      name: input.name.trim(),
+      grants: input.grants,
+      expiresAt,
+    };
+  }
+  async revokeCredential(token: string, id: string): Promise<void> {
+    const context = await this.authorize(token, "admin");
+    const rows = await this.db
+      .execute(sql`UPDATE external_credentials c SET revoked_at=now()
+      FROM members m WHERE c.id=${id} AND c.member_id=m.id AND m.organization_id=${context.organizationId} RETURNING c.id`);
+    if (!rows.length) throw new Error("not_found");
+  }
+  async externalIdentity(token: string): Promise<Actor> {
+    if (!/^lw_[0-9a-f]{64}$/.test(token)) throw new Error("unauthorized");
+    const rows = await this.db
+      .execute(sql`SELECT m.*,c.grants AS credential_grants FROM external_credentials c
+      JOIN members m ON m.id=c.member_id WHERE c.token_hash=${digest(token)} AND c.revoked_at IS NULL AND c.expires_at>now() AND m.enabled`);
+    if (!rows[0]) throw new Error("unauthorized");
+    const member = actor(rows[0]);
+    return {
+      ...member,
+      grants: member.grants.filter((grant) =>
+        (rows[0]!.credential_grants as Grant[]).includes(grant),
+      ),
+    };
+  }
   async identity(token: string): Promise<Actor> {
+    if (token.startsWith("lw_")) return this.externalIdentity(token);
     if (!/^[0-9a-f]{64}$/.test(token)) throw new Error("unauthorized");
     const rows = await this.db
       .execute(sql`SELECT m.* FROM login_sessions s JOIN members m ON m.id = s.member_id

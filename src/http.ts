@@ -1,3 +1,5 @@
+import { mcpHandler } from "./mcp.ts";
+import type { ExternalKnowledge } from "./external-knowledge.ts";
 import { wikiRoutes } from "./wiki-http.ts";
 import type { WikiService } from "./wiki.ts";
 import { IdentityService } from "./identity.ts";
@@ -18,6 +20,7 @@ export function createApp(
   host: KnowledgeHost,
   sources: FixtureSources,
   options: {
+    external?: ExternalKnowledge;
     browserOrigin?: string;
     access?: AccessService;
     imports?: SourceService;
@@ -28,6 +31,10 @@ export function createApp(
 ) {
   const app = new Hono();
   app.onError((error, context) => accessError(context, error));
+  if (options.access && options.external) {
+    const mcp = mcpHandler(options.access, options.external);
+    app.all("/mcp", (context) => mcp(context.req.raw));
+  }
   app.use("/api/*", async (context, next) => {
     const url = new URL(context.req.url);
     const origin = context.req.header("origin");

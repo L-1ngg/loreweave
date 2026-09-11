@@ -93,6 +93,28 @@ export function accessRoutes(access: AccessService) {
     await access.revokeMemberSessions(credential(context), id);
     return context.json({ ok: true });
   });
+  app.post("/admin/credentials", async (context) => {
+    const input = await inputRecord(context);
+    if (
+      !Array.isArray(input.grants) ||
+      input.grants.length !== 1 ||
+      input.grants[0] !== "read"
+    )
+      throw new Error("invalid_input");
+    return context.json(
+      await access.issueCredential(credential(context), {
+        name: stringField(input, "name"),
+        grants: ["read"],
+      }),
+      201,
+    );
+  });
+  app.post("/admin/credentials/:id/revoke", async (context) => {
+    const id = context.req.param("id");
+    if (!/^[0-9a-f-]{36}$/i.test(id)) throw new Error("invalid_input");
+    await access.revokeCredential(credential(context), id);
+    return context.json({ ok: true });
+  });
   app.get("/projects", async (context) =>
     context.json({ projects: await access.projects(credential(context)) }),
   );

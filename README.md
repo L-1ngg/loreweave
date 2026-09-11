@@ -177,3 +177,14 @@ record the current boundary and deployment limits.
 - [Pinned Forge source and local patch](vendor/forge-agent/README.md)
 - [Retired Python baseline and behavior inventory](docs/history/retirement.md)
 - [LLM Wiki](docs/research/llm-wiki.zh-CN.md) and [GraphRAG](docs/research/graphrag.zh-CN.md) learning material
+
+
+## External Agents (MCP)
+
+The local application exposes authenticated Streamable HTTP MCP at
+`http://127.0.0.1:41736/mcp`. It provides read-only `evidence_search`,
+`question_answer` and immutable original-passage resources. Requests use separate
+revocable API credentials, explicit project scope and the same evidence/answer
+services as browser requests. See [MCP usage and response contract](docs/development/mcp.md)
+for credential issuance, client configuration, scope, gaps and historical reads.
+Run `bun run test:mcp` with `TEST_DATABASE_URL` set to a disposable database.

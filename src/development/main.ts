@@ -1,3 +1,4 @@
+import { ExternalKnowledge } from "../external-knowledge.ts";
 import { WikiService } from "../wiki.ts";
 import { ScriptedWikiModel } from "./wiki-model.ts";
 import { IdentityService } from "../identity.ts";
@@ -92,16 +93,19 @@ try {
     organizationId: await access.organization(organization),
   });
   provider = startScriptedProvider({ delayMs: 120 });
+  const evidence = new EvidenceService(imports, wiki, graph);
   host = new KnowledgeHost({
     wiki,
     providerUrl: provider.url,
     sources,
     conversations,
-    evidence: new EvidenceService(imports, wiki, graph),
+    evidence,
     imports,
     access,
   });
+  const external = new ExternalKnowledge(access, imports, evidence, host);
   const app = createApp(host, sources, {
+    external,
     identities,
     wiki,
     imports,
