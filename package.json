@@ -35,7 +35,10 @@
     "test:evaluation": "bun --no-env-file test tests/evaluation.test.ts",
     "eval:run": "bun --no-env-file scripts/evaluate.ts",
     "eval:fixture": "bun --no-env-file scripts/evaluate-fixture.ts",
-    "eval:grade": "bun --no-env-file scripts/evaluate-grade.ts"
+    "eval:grade": "bun --no-env-file scripts/evaluate-grade.ts",
+    "test:maintenance-evaluation": "bun --no-env-file test tests/maintenance-evaluation.test.ts",
+    "eval:maintenance": "bun --no-env-file scripts/evaluate-maintenance.ts",
+    "eval:maintenance-fixture": "bun --no-env-file scripts/evaluate-maintenance-fixture.ts"
   },
   "dependencies": {
     "@earendil-works/pi-ai": "0.85.1",

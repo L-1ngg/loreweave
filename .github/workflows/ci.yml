@@ -41,6 +41,7 @@ jobs:
       - run: bun run test:evidence
       - run: bun run test:updates
       - run: bun run test:evaluation
+      - run: bun run test:maintenance-evaluation
       - run: bun run test:operations
       - run: bun run test:graph
       - run: bun run test:mcp

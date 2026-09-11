@@ -60,7 +60,7 @@ export class WikiModelRuntime {
           throw new Error("maintenance_review_budget_exhausted");
       }
       const attempt = attempts.length + 1;
-      await tx`INSERT INTO wiki_model_attempts(job_id,unit_key,phase,attempt,input_hash) VALUES(${job.id},${unitKey},${phase},${attempt},${inputHash})`;
+      await tx`INSERT INTO wiki_model_attempts(job_id,unit_key,phase,attempt,input_hash,model_profile,prompt_profile) VALUES(${job.id},${unitKey},${phase},${attempt},${inputHash},${this.model.profile},'wiki-request-v1')`;
       return { deadline, attempt };
     });
     if ("cached" in admitted) return validate(structuredClone(admitted.cached));
@@ -68,9 +68,15 @@ export class WikiModelRuntime {
       Math.max(1, Math.min(45000, admitted.deadline - Date.now())),
     );
     try {
-      const raw = await this.admission.run(signal, () =>
-        this.model.request(phase, input, signal),
-      );
+      const raw = await this.admission.run(signal, async () => {
+        signal.throwIfAborted();
+        // This durable intent precedes the external call; crash gaps stay uncertain.
+        await this.operations.checkpoint(job, async (tx) => {
+          await tx`UPDATE wiki_model_attempts SET dispatched_at=clock_timestamp() WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase=${phase} AND attempt=${admitted.attempt}`;
+        });
+        signal.throwIfAborted();
+        return this.model.request(phase, input, signal);
+      });
       signal.throwIfAborted();
       const maxBytes =
         phase === "generation" || phase === "review"
@@ -82,12 +88,12 @@ export class WikiModelRuntime {
         throw new Error("model_output_limit");
       const result = validate(structuredClone(raw));
       await this.operations.checkpoint(job, async (tx) => {
-        await tx`UPDATE wiki_model_attempts SET state='completed',response=${tx.json(JSON.parse(JSON.stringify(raw)))} WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase=${phase} AND attempt=${admitted.attempt}`;
+        await tx`UPDATE wiki_model_attempts SET state='completed',completed_at=clock_timestamp(),response=${tx.json(JSON.parse(JSON.stringify(raw)))} WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase=${phase} AND attempt=${admitted.attempt}`;
       });
       return result;
     } catch (error) {
       await this.operations.checkpoint(job, async (tx) => {
-        await tx`UPDATE wiki_model_attempts SET state='failed',error=${error instanceof Error ? error.message : "model_failure"} WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase=${phase} AND attempt=${admitted.attempt}`;
+        await tx`UPDATE wiki_model_attempts SET state='failed',completed_at=clock_timestamp(),error=${error instanceof Error ? error.message : "model_failure"} WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase=${phase} AND attempt=${admitted.attempt}`;
       });
       if (error instanceof Error && error.message === "stale_worker")
         throw error;

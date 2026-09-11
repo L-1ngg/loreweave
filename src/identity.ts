@@ -671,6 +671,39 @@ export class IdentityService {
     }
     return { operationId: job.operationId, processed: batch.length, complete };
   }
+  async inspectOperation(token: string, operationId: string) {
+    const context = await this.access.authorize(token, "read");
+    const [owner] = await this.operations
+      .sql`SELECT id FROM knowledge_operations WHERE id=${operationId} AND organization_id=${context.organizationId}`;
+    if (!owner) throw new Error("not_found");
+    const batches = await this.operations
+      .sql`SELECT b.*,j.state AS job_state,j.payload FROM identity_revalidation_batches b JOIN knowledge_jobs j ON j.id=b.job_id WHERE j.operation_id=${operationId} ORDER BY b.job_id,b.cursor`;
+    const revisions = await this.operations
+      .sql`SELECT r.id,r.mention_id,r.revision,r.outcome,m.current_revision_id,
+      EXISTS(SELECT 1 FROM identity_proof_eligibility p WHERE p.revision_id=r.id AND p.valid) AS valid
+      FROM identity_revisions r JOIN identity_mentions m ON m.id=r.mention_id WHERE r.operation_id=${operationId} ORDER BY r.mention_id,r.revision`;
+    return {
+      policy: "identity-exact-proof-v1",
+      batches: batches.map((row) => ({
+        jobId: String(row.job_id),
+        cursor: String(row.cursor),
+        mentions: row.mention_ids as string[],
+        state: String(row.state),
+        jobState: String(row.job_state),
+        proposalAdmissions: Number(row.proposal_count),
+        reviewAdmissions: Number(row.review_count),
+        deadline: new Date(row.deadline).toISOString(),
+      })),
+      revisions: revisions.map((row) => ({
+        mentionId: String(row.mention_id),
+        revisionId: String(row.id),
+        revision: Number(row.revision),
+        outcome: String(row.outcome),
+        valid: Boolean(row.valid),
+        current: row.current_revision_id === row.id,
+      })),
+    };
+  }
   async close() {
     await this.operations.close();
   }

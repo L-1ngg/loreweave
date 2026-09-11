@@ -19,7 +19,28 @@ export class MaintenanceService {
       (SELECT count(*)::int FROM wiki_model_attempts a WHERE a.job_id=j.id) AS requests,
       (SELECT jsonb_build_object('outcome',c.outcome,'committedAt',c.committed_at) FROM knowledge_job_commits c WHERE c.job_id=j.id ORDER BY c.fence DESC LIMIT 1) AS receipt
       FROM knowledge_jobs j LEFT JOIN wiki_work w ON w.job_id=j.id WHERE j.operation_id=${operationId} ORDER BY j.kind,j.id`;
+    const requests = await this.operations
+      .sql`SELECT a.* FROM wiki_model_attempts a JOIN knowledge_jobs j ON j.id=a.job_id WHERE j.operation_id=${operationId} ORDER BY a.started_at,a.job_id,a.unit_key,a.phase,a.attempt`;
     return {
+      modelRequests: requests.map((row) => ({
+        jobId: String(row.job_id),
+        unit: String(row.unit_key),
+        phase: String(row.phase),
+        attempt: Number(row.attempt),
+        state: String(row.state),
+        model: String(row.model_profile),
+        prompt: String(row.prompt_profile),
+        inputHash: String(row.input_hash),
+        startedAt: new Date(row.started_at).toISOString(),
+        dispatchedAt: row.dispatched_at
+          ? new Date(row.dispatched_at).toISOString()
+          : null,
+        completedAt: row.completed_at
+          ? new Date(row.completed_at).toISOString()
+          : null,
+        response: row.response,
+        error: row.error,
+      })),
       id: operationId,
       createdAt: new Date(operation.created_at).toISOString(),
       jobs: jobs.map((job) => ({

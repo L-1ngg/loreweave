@@ -457,6 +457,11 @@ export class WikiService {
       const organizationId = String(owner!.organization_id),
         scope = source.projectId ?? "shared";
       const pack = makePack(job.id, source.title, [source]);
+      // Record the entire obligation before the first external extraction request.
+      await this.operations.checkpoint(job, async (tx) => {
+        await tx`INSERT INTO wiki_work(job_id) VALUES(${job.id}) ON CONFLICT DO NOTHING`;
+        await tx`UPDATE wiki_work SET state=state||${tx.json(jsonValue({ coverage: [], remaining: pack.items.map((item) => ({ handle: item.handle, version: item.version, passageId: item.passageId, start: item.start, end: item.end })) }))}::jsonb WHERE job_id=${job.id} AND NOT (state ? 'remaining')`;
+      });
       const extraction: TopicExtraction = { topics: [], coverage: [] };
       for (const [packetIndex, packet] of packetPacks(pack, 4000).entries()) {
         const extracted: TopicExtraction = { topics: [], coverage: [] };
@@ -701,7 +706,7 @@ export class WikiService {
       }
     }
     await this.operations.checkpoint(job, async (tx) => {
-      await tx`UPDATE wiki_work SET state=state||${tx.json(jsonValue({ [`topic:${index}`]: { pool: pool.cards.map((card) => card.id), ranks: pool.ranks, inspected: cards.map((card) => card.id), unavailable: pool.unavailable, routeTotals: pool.routeTotals, truncated: pool.truncated, decision } }))}::jsonb WHERE job_id=${job.id}`;
+      await tx`UPDATE wiki_work SET state=state||${tx.json(jsonValue({ [`topic:${index}`]: { pool: pool.cards.map((card) => card.id), ranks: pool.ranks, catalogueRevisions: pool.scopeRevisions, indexProfile: this.embeddings.profile, modelProfile: this.model.profile, policyProfile: "wiki-topic-maintenance-P01-P08-v1", inspected: cards.map((card) => card.id), unavailable: pool.unavailable, routeTotals: pool.routeTotals, truncated: pool.truncated, decision } }))}::jsonb WHERE job_id=${job.id}`;
     });
     await this.operations.checkpoint(job, async (tx) => {
       const [work] =
@@ -967,7 +972,7 @@ export class WikiService {
     const proposals = await this.operations
       .sql`SELECT id,kind,page_ids,reason,status,edit_set_id,input_manifest FROM wiki_structure_proposals WHERE operation_id=${operationId} ORDER BY id`;
     const stages = await this.operations
-      .sql`SELECT kind,state FROM knowledge_jobs WHERE operation_id=${operationId}`;
+      .sql`SELECT id,kind,state,reason FROM knowledge_jobs WHERE operation_id=${operationId}`;
     const results = await this.operations
       .sql`SELECT DISTINCT ON(r.page_id) r.* FROM wiki_refresh_results r JOIN knowledge_jobs j ON j.id=r.job_id WHERE j.operation_id=${operationId} ORDER BY r.page_id,(r.disposition='coalesced'),r.created_at DESC`;
     const edits = await this.operations
@@ -976,7 +981,16 @@ export class WikiService {
       .sql`SELECT DISTINCT ON(v.page_id) v.page_id,v.id,p.lifecycle FROM wiki_versions v JOIN wiki_pages p ON p.id=v.page_id WHERE v.operation_id=${operationId} ORDER BY v.page_id,v.created_at DESC,v.id`;
     const walks = await this.operations
       .sql`SELECT w.* FROM wiki_dependency_walks w JOIN knowledge_jobs j ON j.id=w.job_id WHERE j.operation_id=${operationId} ORDER BY w.job_id`;
+    const transitions = await this.operations
+      .sql`SELECT page_id,operation_id,version_id,from_state,to_state,created_at FROM wiki_lifecycle_events WHERE operation_id=${operationId} ORDER BY created_at,id`;
     return {
+      lifecycleEvents: transitions.map((row) => ({
+        pageId: String(row.page_id),
+        version: String(row.version_id),
+        from: String(row.from_state),
+        to: String(row.to_state),
+        at: new Date(row.created_at).toISOString(),
+      })),
       status: wikiReadiness(
         stages.map((row) => ({
           kind: String(row.kind),
@@ -1005,6 +1019,16 @@ export class WikiService {
           disposition: String(row.disposition),
         })),
       ],
+      dependencyJobs: stages
+        .filter((row) =>
+          ["wiki.dependencies", "wiki.identity"].includes(String(row.kind)),
+        )
+        .map((row) => ({
+          id: String(row.id),
+          kind: String(row.kind),
+          state: String(row.state),
+          reason: row.reason,
+        })),
       walks: walks.map((row) => ({
         jobId: String(row.job_id),
         cursor: String(row.cursor),

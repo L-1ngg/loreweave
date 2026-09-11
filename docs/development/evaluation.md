@@ -81,3 +81,70 @@ Human grading may accept equivalent valid original evidence beyond the suggested
 reference locators. It cannot turn broken citations, failed requests or unavailable
 routes into passes. Record disagreements and resolution in review notes. Reports
 and grades are artifacts outside the knowledge corpus; output paths must be new.
+
+## Maintenance capture
+
+Issue #20 connects seven diagnostic adapters to actual authenticated operation,
+Wiki, identity and graph HTTP reads. Run the bounded integration fixture on a
+disposable database, or capture an existing operation without changing knowledge:
+
+```sh
+TEST_DATABASE_URL=postgres://... bun run eval:maintenance-fixture /tmp/new-maintenance.json
+TEST_DATABASE_URL=postgres://... bun run test:maintenance-evaluation
+LOREWEAVE_EVAL_PROVENANCE=controlled-provider bun run eval:maintenance \
+  http://127.0.0.1:41736 OPERATION_ID new-maintenance.json routing-targets.json
+```
+
+The last command also requires `LOREWEAVE_EVAL_TOKEN` with only the `read` grant;
+use `real-provider` provenance only for a runtime that actually uses real models.
+Routing targets are optional and never become model or ingestion input. Human
+runs require human-reviewed targets. Use `jobId:topic:0` to identify a decision
+unambiguously; `topic:0` alone is accepted only when exactly one job matches.
+Missing/ambiguous decisions remain in the target coverage and recall denominators.
+False-creation and missed-reuse rates cover matched decisions only, so inspect
+target coverage with those rates. A zero denominator means no observations.
+
+Each capture retains the actual candidate pool, per-route ranks, exclusions,
+catalogue revisions and pinned policy/index/model profiles. Recall@8/@16 counts
+reference page hits over all reviewed reference pages. Mandatory coverage counts
+completed dependency walks over all registered required walks, including those
+not yet started. Discovery uses the full root source obligation, including ranges
+without a child ledger; absent root manifests remain unavailable. Source-packet
+ledgers retain intermediate progress and exact unresolved obligations. Detail inspection counts completed versioned ranges per
+logical decision, with remaining ranges and terminal job reasons retained. These
+are coverage records, not proof of model routing quality.
+
+Lifecycle events are written in the publication transaction and attributed to
+that operation. Retirement/reactivation, failed refresh and historical page state
+are separate fields. Events before this migration are not reconstructed. Identity
+records expose actual proof validity, current/historical revisions and durable
+reconciliation batches. Graph records retain packet review/exclusion outcomes,
+generation profiles, source versions and replacement membership. The API adapter
+can additionally inspect specified mention and entity IDs for current proof and
+neighborhood support; operation-only captures do not claim that wider inspection.
+
+Work records distinguish budget admission, dispatch intent and completed validated
+responses. A durable dispatch timestamp precedes the external request; a crash or
+abort in that gap cannot prove the provider received it. Exact provider requests
+are therefore unavailable when dispatches have uncertain outcomes or historical
+telemetry is absent. Completed responses provide a lower bound; dispatch intents
+provide an upper bound for recorded attempts. Repeated requests with the same
+job/unit/phase/input hash are retries; different inspection windows are separate
+work. Generation/review phase and outcome remain available per request. Tokens
+and price are unavailable until the provider adapter supplies that telemetry.
+
+Source-searchable/Wiki-ready/graph-ready durations run from operation acceptance
+to the latest required successful receipt, including queue time. Failed, pending,
+outcome-unknown or superseded work cannot establish readiness. Retirement can
+successfully finish maintenance while producing no active prose; consult the
+separate lifecycle disposition. Later source changes may invalidate old readiness;
+the times describe completion of that operation, not present evidence eligibility.
+
+The controlled fixture imports its own originals and executes real maintenance:
+source replacement, retirement and revival of one stable topic, alternate graph
+support and empty replacement, immediate identity-proof invalidation followed by
+reconciliation, failed partial graph extraction, and six-window inspection
+termination with unresolved ranges, and source-extraction failure after the first
+packet. Pending dependency walks remain in the denominator. Reports contain public diagnostics and exact
+fixture inputs, not manually authored expected diagnostic records. This verifies
+reporting and finite scheduling; #18 still owns human/real-provider acceptance.

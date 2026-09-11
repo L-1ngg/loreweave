@@ -99,6 +99,7 @@ export class Operations {
     try {
       await this.sql.begin(async (tx) => {
         await assertLease(tx, job);
+        await tx`SELECT set_config('loreweave.operation_id',${job.operationId},true)`;
         const outcome = (await effect(tx)) ?? state;
         const [completed] =
           await tx`UPDATE knowledge_jobs SET state=${outcome},lease_until=NULL WHERE id=${job.id} AND fence=${job.fence} AND state='running' AND lease_until>clock_timestamp() RETURNING id`;

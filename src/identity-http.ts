@@ -103,5 +103,10 @@ export function identityRoutes(identities: IdentityService) {
       }),
     );
   });
+  app.get("/identity-operations/:id", async (c) => {
+    const id = c.req.param("id");
+    if (!isUuid(id)) throw new Error("invalid_input");
+    return c.json(await identities.inspectOperation(credential(c), id));
+  });
   return app;
 }

@@ -1,3 +1,5 @@
+import { MaintenanceService } from "../maintenance.ts";
+import type { WikiModel } from "../wiki-types.ts";
 import { IdentityService } from "../identity.ts";
 import { WikiService } from "../wiki.ts";
 import { GraphService } from "../graph.ts";
@@ -20,6 +22,7 @@ export async function evaluationFixture(
   corruptDraft = false,
   profile: Profile = "source",
   derived = false,
+  models: { wiki?: WikiModel; graph?: WikiModel } = {},
 ) {
   const access = new AccessService(url),
     conversations = new PostgresConversations(url);
@@ -118,7 +121,7 @@ export async function evaluationFixture(
         sources,
         identities,
         new ControlledEmbeddings(),
-        new ScriptedWikiModel(),
+        models.wiki ?? new ScriptedWikiModel(),
       )
     : undefined;
   const graph = identities
@@ -127,9 +130,10 @@ export async function evaluationFixture(
         access,
         sources,
         identities,
-        new ScriptedWikiModel(),
+        models.graph ?? new ScriptedWikiModel(),
       )
     : undefined;
+  const maintenance = new MaintenanceService(url, access);
   const fixtureSources = new FixtureSources();
   const host = new KnowledgeHost({
     access,
@@ -139,7 +143,14 @@ export async function evaluationFixture(
     evidence: new EvidenceService(sources, wiki, graph, profile),
     providerUrl: faulty ? String(faulty.url) : provider.url,
   });
-  const app = createApp(host, fixtureSources, { access, imports: sources });
+  const app = createApp(host, fixtureSources, {
+    access,
+    imports: sources,
+    maintenance,
+    ...(identities ? { identities } : {}),
+    ...(wiki ? { wiki } : {}),
+    ...(graph ? { graph } : {}),
+  });
   const server = Bun.serve({
     hostname: "127.0.0.1",
     port: 0,
@@ -154,6 +165,7 @@ export async function evaluationFixture(
     host,
     client: new PublicAnswers(String(server.url), readerToken),
     provider,
+    maintenance,
     identities,
     wiki,
     graph,
@@ -165,6 +177,7 @@ export async function evaluationFixture(
       await wiki?.close();
       await graph?.close();
       await identities?.close();
+      await maintenance.close();
       await conversations.close();
       await sources.close();
       await access.close();

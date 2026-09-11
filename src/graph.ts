@@ -444,7 +444,7 @@ export class GraphService {
   async inspect(token: string, operationId: string) {
     const context = await this.access.authorize(token, "read");
     const rows = await this.operations
-      .sql`SELECT g.id,g.state,g.coverage,g.trigger_job_id,COUNT(p.*)::int AS packets,COUNT(p.*) FILTER(WHERE p.state='reviewed')::int AS reviewed,
+      .sql`SELECT g.id,g.state,g.profile,g.source_version_id,g.document_id,g.created_at,g.coverage,g.trigger_job_id,COUNT(p.*)::int AS packets,COUNT(p.*) FILTER(WHERE p.state='reviewed')::int AS reviewed,
         (SELECT count(*)::int FROM graph_supports s WHERE s.generation_id=g.id) AS memberships,
         (SELECT jsonb_agg(jsonb_build_object('key',detail.packet_key,'state',detail.state,'locators',detail.source_locators,'exclusions',detail.exclusions,'error',detail.error) ORDER BY detail.packet_key) FROM graph_packets detail WHERE detail.generation_id=g.id) AS details,
         (SELECT jsonb_agg(jsonb_build_object('unit',a.unit_key,'phase',a.phase,'attempt',a.attempt,'state',a.state) ORDER BY a.unit_key,a.phase,a.attempt) FROM wiki_model_attempts a WHERE a.job_id=g.trigger_job_id) AS requests,
@@ -452,6 +452,10 @@ export class GraphService {
     return {
       generations: rows.map((row) => ({
         id: String(row.id),
+        profile: String(row.profile),
+        sourceVersion: String(row.source_version_id),
+        documentId: String(row.document_id),
+        createdAt: new Date(row.created_at).toISOString(),
         state: String(row.state),
         coverage: row.coverage,
         packets: Number(row.packets),
