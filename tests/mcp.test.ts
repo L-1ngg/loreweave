@@ -17,6 +17,7 @@ if (!database) throw new Error("TEST_DATABASE_URL required");
 async function fixture(
   options: {
     beforeRelease?: () => Promise<void>;
+    acquireDelayMs?: number;
     beforeAuthenticate?: () => Promise<void>;
     timing?: import("../src/host.ts").HostOptions["timing"];
   } = {},
@@ -45,6 +46,7 @@ async function fixture(
     override async acquire(id: string, runId?: string) {
       const writer = await super.acquire(id, runId);
       if (!writer) return writer;
+      if (options.acquireDelayMs) await Bun.sleep(options.acquireDelayMs);
       return {
         ...writer,
         release: async () => {
@@ -445,7 +447,8 @@ test("MCP preserves timed-out user outcome while cleanup is still settling", asy
   });
   const f = await fixture({
     beforeRelease: () => gate,
-    timing: { ordinaryMs: 30, ordinaryReserveMs: 5 },
+    acquireDelayMs: 100,
+    timing: { ordinaryMs: 50, ordinaryReserveMs: 5 },
   });
   try {
     await f.source("生产日志保留 30 天。");
