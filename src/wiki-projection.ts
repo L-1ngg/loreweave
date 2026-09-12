@@ -13,7 +13,7 @@ export class WikiProjection {
       throw new Error("source_changed");
     const vectors = await this.embeddings.embed(
       [descriptorText(page.descriptor)],
-      AbortSignal.timeout(45000),
+      this.operations.signal(job, AbortSignal.timeout(45000)),
     );
     validateEmbeddings(vectors, 1, this.embeddings.dimensions);
     await this.operations.commit(job, async (tx) => {

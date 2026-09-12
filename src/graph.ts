@@ -64,6 +64,7 @@ export class GraphService {
     private readonly sources: SourceService,
     private readonly identities: IdentityService,
     private readonly model: GraphModel,
+    private readonly execution: { leaseMs?: number } = {},
   ) {
     this.operations = new Operations(url);
     this.runtime = new WikiModelRuntime(
@@ -79,40 +80,35 @@ export class GraphService {
     const context = token
       ? await this.access.authorize(token, "import")
       : undefined;
-    const job = await this.operations.claim(
-      ["graph.refresh", "graph.identity"],
-      120000,
-      context?.organizationId,
-    );
-    if (!job) return false;
-    try {
-      await this.run(job);
-      return true;
-    } catch (error) {
-      const reason = error instanceof Error ? error.message : "graph_failed";
-      await this.operations.commit(
-        job,
-        async (tx) => {
-          await tx`UPDATE knowledge_jobs SET reason=${reason} WHERE id=${job.id}`;
-          if (reason === "identity_changed" && !job.payload.identityRetry) {
-            await this.operations.enqueue(
-              tx,
-              job.operationId,
-              "graph.refresh",
-              { ...job.payload, identityRetry: true },
-              `${job.id}:identity-retry`,
-            );
-          }
-          await tx`UPDATE graph_generations SET state=${reason.startsWith("source_changed") || reason.startsWith("identity_changed") ? "superseded" : "failed"},coverage=coverage||${tx.json({ failure: reason })}::jsonb WHERE trigger_job_id=${job.id} AND state='staged'`;
-          await tx`UPDATE graph_packets SET state='failed',error=${reason} WHERE generation_id IN(SELECT id FROM graph_generations WHERE trigger_job_id=${job.id}) AND state='pending'`;
-        },
-        reason.startsWith("source_changed") ||
+    return this.operations.execute(
+      {
+        kinds: ["graph.refresh", "graph.identity"],
+        leaseMs: this.execution.leaseMs ?? 120000,
+        organizationId: context?.organizationId,
+      },
+      (job) => this.run(job),
+      async (tx, job, error) => {
+        const reason = error instanceof Error ? error.message : "graph_failed";
+        await tx`UPDATE knowledge_jobs SET reason=${reason} WHERE id=${job.id}`;
+        if (reason === "identity_changed" && !job.payload.identityRetry) {
+          await this.operations.enqueue(
+            tx,
+            job.operationId,
+            "graph.refresh",
+            { ...job.payload, identityRetry: true },
+            `${job.id}:identity-retry`,
+          );
+        }
+        const state =
+          reason.startsWith("source_changed") ||
           reason.startsWith("identity_changed")
-          ? "superseded"
-          : "failed",
-      );
-      return true;
-    }
+            ? "superseded"
+            : "failed";
+        await tx`UPDATE graph_generations SET state=${state},coverage=coverage||${tx.json({ failure: reason })}::jsonb WHERE trigger_job_id=${job.id} AND state='staged'`;
+        await tx`UPDATE graph_packets SET state='failed',error=${reason} WHERE generation_id IN(SELECT id FROM graph_generations WHERE trigger_job_id=${job.id}) AND state='pending'`;
+        return state;
+      },
+    );
   }
   private async sourcePack(job: Job, versionId: string) {
     const source = await this.sources.maintenanceVersion(

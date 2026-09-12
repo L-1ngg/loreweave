@@ -158,7 +158,7 @@ export class WikiPublication {
     try {
       const vectors = await this.embeddings.embed(
         [descriptorText(topic)],
-        AbortSignal.timeout(45000),
+        this.operations.signal(job, AbortSignal.timeout(45000)),
       );
       validateEmbeddings(vectors, 1, this.embeddings.dimensions);
       vector = vectors[0];

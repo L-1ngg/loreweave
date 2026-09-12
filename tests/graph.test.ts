@@ -101,7 +101,7 @@ for (const swapped of [false, true])
       await f.close();
     }
   }, 30000);
-async function fixture(model = new ScriptedWikiModel()) {
+async function fixture(model = new ScriptedWikiModel(), leaseMs = 120000) {
   const access = new AccessService(url!),
     embeddings = new ControlledEmbeddings();
   await access.migrate();
@@ -114,7 +114,9 @@ async function fixture(model = new ScriptedWikiModel()) {
   const { token } = await access.login(account);
   const sources = new SourceService(url!, access, embeddings),
     identities = new IdentityService(url!, access, sources),
-    graph = new GraphService(url!, access, sources, identities, model);
+    graph = new GraphService(url!, access, sources, identities, model, {
+      leaseMs,
+    });
   return {
     access,
     token,
@@ -144,6 +146,245 @@ async function fixture(model = new ScriptedWikiModel()) {
     },
   };
 }
+test("healthy Graph work crosses its original lease, keeps its generation and publishes reviewed coverage", async () => {
+  const model = new ScriptedWikiModel();
+  const request = model.request.bind(model);
+  const entered = Promise.withResolvers<void>();
+  const release = Promise.withResolvers<void>();
+  model.request = async (phase, input, signal) => {
+    if (phase === "graph_extraction") {
+      entered.resolve();
+      await release.promise;
+    }
+    return request(phase, input, signal);
+  };
+  const f = await fixture(model, 300);
+  const operations = new Operations(url!);
+  let work: Promise<boolean> | undefined;
+  try {
+    const operation = await f.source("No relationships are stated.");
+    const context = await f.access.authorize(f.token, "import");
+    work = f.graph.workOne(f.token);
+    await entered.promise;
+    const before = await f.graph.inspect(f.token, operation.id);
+    await Bun.sleep(750);
+    expect(
+      await operations.claim(["graph.refresh"], 300, context.organizationId),
+    ).toBeUndefined();
+    release.resolve();
+    expect(await work).toBe(true);
+    const after = await f.graph.inspect(f.token, operation.id);
+    expect(after.generations[0]?.id).toBe(before.generations[0]?.id);
+    expect(after.generations[0]?.deadlines).toEqual(
+      before.generations[0]?.deadlines,
+    );
+    expect(after.generations[0]?.state).toBe("active");
+    expect(after.generations[0]?.reviewed).toBe(after.generations[0]?.packets);
+    const maintenance = new MaintenanceService(url!, f.access);
+    try {
+      const status = await maintenance.inspect(f.token, operation.id);
+      expect(
+        status.jobs.find((job) => job.kind === "graph.refresh")?.attempts,
+      ).toBe(1);
+    } finally {
+      await maintenance.close();
+    }
+  } finally {
+    release.resolve();
+    await work;
+    await operations.close();
+    await f.close();
+  }
+}, 10000);
+
+test("lost Graph ownership cancels started work and waits for its termination before settling", async () => {
+  const model = new ScriptedWikiModel();
+  const entered = Promise.withResolvers<void>();
+  const aborted = Promise.withResolvers<void>();
+  const finish = Promise.withResolvers<void>();
+  let dispatches = 0;
+  model.request = async (_phase, _input, signal) => {
+    dispatches++;
+    signal.addEventListener("abort", () => aborted.resolve(), { once: true });
+    entered.resolve();
+    await finish.promise;
+    throw new Error("provider_stopped");
+  };
+  const f = await fixture(model, 300);
+  const operations = new Operations(url!);
+  let work: Promise<boolean> | undefined;
+  try {
+    const operation = await f.source("A depends on B.");
+    const context = await f.access.authorize(f.token, "import");
+    let settled = false;
+    work = f.graph.workOne(f.token).finally(() => {
+      settled = true;
+    });
+    await entered.promise;
+    await operations.sql`UPDATE knowledge_jobs SET lease_until=clock_timestamp()-interval '1 second' WHERE operation_id=${operation.id} AND kind='graph.refresh'`;
+    const replacement = (await operations.claim(
+      ["graph.refresh"],
+      60000,
+      context.organizationId,
+    ))!;
+    await aborted.promise;
+    expect(settled).toBe(false);
+    expect(dispatches).toBe(1);
+    await operations.commit(replacement, async () => {});
+    finish.resolve();
+    expect(await work).toBe(true);
+    expect((await operations.committed(replacement))?.outcome).toBe(
+      "succeeded",
+    );
+    expect(
+      (await f.graph.inspect(f.token, operation.id)).generations[0]?.state,
+    ).toBe("staged");
+    expect(dispatches).toBe(1);
+  } finally {
+    finish.resolve();
+    await work;
+    await operations.close();
+    await f.close();
+  }
+}, 10000);
+
+for (const waiting of [true, false])
+  test(`renewal failure stops Graph admission and preserves recovery budgets (waiting=${waiting})`, async () => {
+    const model = new ScriptedWikiModel();
+    const request = model.request.bind(model);
+    const entered = Promise.withResolvers<void>();
+    const f = await fixture(model, 900);
+    const maintenance = new MaintenanceService(url!, f.access);
+    const sql = postgres(url!, { max: 1, onnotice: () => {} });
+    const faultName = `renewal_failure_${crypto.randomUUID().replaceAll("-", "")}`;
+    let fail = true;
+    let dispatches = 0;
+    let work: Promise<boolean> | undefined;
+    model.request = async (phase, input, signal) => {
+      dispatches++;
+      entered.resolve();
+      if (fail) {
+        await new Promise<void>((resolve) =>
+          signal.addEventListener("abort", () => resolve(), { once: true }),
+        );
+        signal.throwIfAborted();
+      }
+      return request(phase, input, signal);
+    };
+    try {
+      const operation = await f.source("No relationships are stated.");
+      if (waiting)
+        await sql`SELECT pg_advisory_lock(hashtextextended('loreweave:background-model',0))`;
+      // A real database error on this operation's renewal, without breaking claim,
+      // inspection, checkpoints or a replacement worker's fence increment.
+      await sql.unsafe(
+        `CREATE FUNCTION ${faultName}() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'renewal unavailable'; END $$`,
+      );
+      await sql.unsafe(
+        `CREATE TRIGGER ${faultName} BEFORE UPDATE ON knowledge_jobs FOR EACH ROW WHEN (OLD.operation_id='${operation.id}'::uuid AND NEW.fence=OLD.fence AND NEW.lease_until IS DISTINCT FROM OLD.lease_until AND NEW.lease_until IS NOT NULL) EXECUTE FUNCTION ${faultName}()`,
+      );
+      work = f.graph.workOne(f.token);
+      let before = await maintenance.inspect(f.token, operation.id);
+      for (let i = 0; i < 100 && before.modelRequests.length === 0; i++) {
+        await Bun.sleep(5);
+        before = await maintenance.inspect(f.token, operation.id);
+      }
+      expect(before.modelRequests).toHaveLength(1);
+      if (!waiting) await entered.promise;
+      const generation = (await f.graph.inspect(f.token, operation.id))
+        .generations[0]!;
+      expect(await work).toBe(true);
+      await sql`SELECT pg_advisory_unlock_all()`;
+      expect(dispatches).toBe(waiting ? 0 : 1);
+      const failed = await maintenance.inspect(f.token, operation.id);
+      expect(failed.modelRequests).toHaveLength(1);
+      expect(failed.modelRequests[0]?.completedAt).toBeNull();
+      expect(
+        failed.jobs.find((job) => job.kind === "graph.refresh")?.receipt,
+      ).toBeNull();
+      await sql.unsafe(`DROP TRIGGER ${faultName} ON knowledge_jobs`);
+      fail = false;
+      // Expiry after settlement permits recovery; no abandoned heartbeat retains it.
+      await Bun.sleep(1000);
+      expect(await f.graph.workOne(f.token)).toBe(true);
+      const recovered = await f.graph.inspect(f.token, operation.id);
+      expect(recovered.generations[0]?.id).toBe(generation.id);
+      expect(recovered.generations[0]?.deadlines).toEqual(generation.deadlines);
+      expect(recovered.generations[0]?.state).toBe("active");
+      const after = await maintenance.inspect(f.token, operation.id);
+      expect(after.modelRequests).toHaveLength(3);
+      expect(
+        after.jobs.find((job) => job.kind === "graph.refresh")?.attempts,
+      ).toBe(2);
+      expect(
+        after.jobs.find((job) => job.kind === "graph.refresh")?.deadline,
+      ).toBe(before.jobs.find((job) => job.kind === "graph.refresh")?.deadline);
+    } finally {
+      await sql`SELECT pg_advisory_unlock_all()`;
+      await work;
+      await sql.unsafe(`DROP TRIGGER IF EXISTS ${faultName} ON knowledge_jobs`);
+      await sql.unsafe(`DROP FUNCTION IF EXISTS ${faultName}()`);
+      await sql.end();
+      await maintenance.close();
+      await f.close();
+    }
+  }, 10000);
+
+test("Graph takeover preserves reviewed packets instead of dispatching them again", async () => {
+  const model = new ScriptedWikiModel();
+  const request = model.request.bind(model);
+  const second = Promise.withResolvers<void>();
+  const dispatches = new Map<string, number>();
+  let interrupt = true;
+  model.request = async (phase, input, signal) => {
+    if (phase === "graph_extraction") {
+      const key = hash(input);
+      dispatches.set(key, (dispatches.get(key) ?? 0) + 1);
+      if (interrupt && dispatches.size === 2) {
+        second.resolve();
+        await new Promise<void>((resolve) =>
+          signal.addEventListener("abort", () => resolve(), { once: true }),
+        );
+        signal.throwIfAborted();
+      }
+    }
+    return request(phase, input, signal);
+  };
+  const f = await fixture(model, 300);
+  const operations = new Operations(url!);
+  let work: Promise<boolean> | undefined;
+  try {
+    const operation = await f.source(
+      Array.from(
+        { length: 6 },
+        (_, index) =>
+          `Section ${index}: ${"Ordinary source text. ".repeat(200)}`,
+      ).join("\n\n"),
+    );
+    work = f.graph.workOne(f.token);
+    await second.promise;
+    const before = (await f.graph.inspect(f.token, operation.id))
+      .generations[0]!;
+    expect(before.reviewed).toBe(1);
+    await operations.sql`UPDATE knowledge_jobs SET lease_until=clock_timestamp()-interval '1 second' WHERE operation_id=${operation.id} AND kind='graph.refresh'`;
+    await work;
+    interrupt = false;
+    expect(await f.graph.workOne(f.token)).toBe(true);
+    const after = (await f.graph.inspect(f.token, operation.id))
+      .generations[0]!;
+    expect(after.id).toBe(before.id);
+    expect(after.state).toBe("active");
+    expect(after.reviewed).toBe(after.packets);
+    expect([...dispatches.values()][0]).toBe(1);
+    expect([...dispatches.values()][1]).toBe(2);
+    for (const deadline of before.deadlines)
+      expect(after.deadlines).toContainEqual(deadline);
+  } finally {
+    await work;
+    await operations.close();
+    await f.close();
+  }
+}, 10000);
 test("graph extraction publishes a complete empty generation without inventing edges", async () => {
   const f = await fixture();
   try {

@@ -4,8 +4,133 @@ import { accessError } from "../src/access-http.ts";
 import { test, expect } from "bun:test";
 import { AccessService } from "../src/access.ts";
 import { Operations } from "../src/operations.ts";
+import postgres from "postgres";
 const url = process.env.TEST_DATABASE_URL;
 if (!url) throw new Error("TEST_DATABASE_URL required");
+
+test("healthy execution retains ownership beyond its initial lease and settles one outcome", async () => {
+  const f = await fixture();
+  let completed;
+  try {
+    expect(
+      await f.operations.execute(
+        {
+          kinds: ["fixture.effect"],
+          organizationId: f.context.organizationId,
+          leaseMs: 300,
+        },
+        async (job) => {
+          await Bun.sleep(750);
+          expect(
+            await f.operations.claim(
+              ["fixture.effect"],
+              300,
+              f.context.organizationId,
+            ),
+          ).toBeUndefined();
+          expect(job.attempt).toBe(1);
+          await f.operations.commit(job, async () => {});
+          completed = job;
+        },
+      ),
+    ).toBe(true);
+    await Bun.sleep(400);
+    expect((await f.operations.committed(completed!))?.outcome).toBe(
+      "succeeded",
+    );
+    expect(
+      await f.operations.claim(
+        ["fixture.effect"],
+        300,
+        f.context.organizationId,
+      ),
+    ).toBeUndefined();
+  } finally {
+    await f.close();
+  }
+}, 30000);
+test("a renewal blocked past expiry cancels execution and cannot resurrect its lease", async () => {
+  const f = await fixture();
+  const locker = postgres(url!, { max: 1, onnotice: () => {} });
+  const locked = Promise.withResolvers<void>();
+  const release = Promise.withResolvers<void>();
+  let lock: Promise<unknown> | undefined;
+  let original;
+  try {
+    await f.operations.execute(
+      {
+        kinds: ["fixture.effect"],
+        organizationId: f.context.organizationId,
+        leaseMs: 300,
+      },
+      async (job) => {
+        original = job;
+        const signal = f.operations.signal(job, AbortSignal.timeout(5000));
+        lock = locker.begin(async (tx) => {
+          await tx`SELECT id FROM knowledge_jobs WHERE id=${job.id} FOR UPDATE`;
+          locked.resolve();
+          await release.promise;
+        });
+        await locked.promise;
+        await new Promise<void>((resolve) =>
+          signal.addEventListener("abort", () => resolve(), { once: true }),
+        );
+        expect(signal.reason.message).toBe("stale_worker");
+        await expect(
+          f.operations.checkpoint(job, async () => {}),
+        ).rejects.toThrow("stale_worker");
+        // Ensure the database lease also expires before unblocking the pending renewal.
+        await Bun.sleep(100);
+        release.resolve();
+        await lock;
+        throw signal.reason;
+      },
+    );
+    const replacement = (await f.operations.claim(
+      ["fixture.effect"],
+      60000,
+      f.context.organizationId,
+    ))!;
+    expect(replacement?.id).toBe(original!.id);
+    expect(replacement?.attempt).toBe(2);
+    await f.operations.commit(replacement, async () => {});
+  } finally {
+    release.resolve();
+    await lock;
+    await locker.end();
+    await f.close();
+  }
+}, 10000);
+
+test("settled execution without a committed outcome stops retaining the job", async () => {
+  const f = await fixture();
+  let original;
+  try {
+    await f.operations.execute(
+      {
+        kinds: ["fixture.effect"],
+        organizationId: f.context.organizationId,
+        leaseMs: 300,
+      },
+      async (job) => {
+        original = job;
+        await Bun.sleep(450);
+      },
+    );
+    await Bun.sleep(400);
+    const replacement = (await f.operations.claim(
+      ["fixture.effect"],
+      60000,
+      f.context.organizationId,
+    ))!;
+    expect(replacement?.id).toBe(original!.id);
+    expect(replacement?.attempt).toBe(2);
+    expect(await f.operations.committed(original!)).toBeUndefined();
+    await f.operations.commit(replacement, async () => {});
+  } finally {
+    await f.close();
+  }
+}, 10000);
 async function fixture() {
   const access = new AccessService(url!);
   await access.migrate();

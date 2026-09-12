@@ -20,8 +20,115 @@ export type JobState =
 /** Shared transaction boundary for operation receipts and domain effects. */
 export class Operations {
   readonly sql;
+  private readonly executions = new WeakMap<Job, AbortSignal>();
   constructor(url: string) {
     this.sql = postgres(url, { max: 5, onnotice: () => {} });
+  }
+  /** The returned promise settles only after the handler and its awaited work end. */
+  async execute(
+    options: {
+      kinds: string[];
+      leaseMs?: number;
+      organizationId?: string | undefined;
+      eligibleIds?: string[];
+    },
+    run: (job: Job) => Promise<unknown>,
+    failure?: (tx: Transaction, job: Job, error: unknown) => Promise<JobState>,
+  ): Promise<boolean> {
+    const leaseMs = options.leaseMs ?? 60000;
+    if (!Number.isFinite(leaseMs) || leaseMs < 30)
+      throw new Error("invalid_lease");
+    let confirmedAt = performance.now();
+    const job = await this.claim(
+      options.kinds,
+      leaseMs,
+      options.organizationId,
+      options.eligibleIds,
+    );
+    if (!job) return false;
+    const controller = new AbortController();
+    this.executions.set(job, controller.signal);
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let expiry: ReturnType<typeof setTimeout> | undefined;
+    let pending: Promise<void> | undefined;
+    const lose = () => controller.abort(new Error("stale_worker"));
+    const guardExpiry = () => {
+      clearTimeout(expiry);
+      const remaining = leaseMs - (performance.now() - confirmedAt);
+      if (remaining <= 0) lose();
+      else expiry = setTimeout(lose, remaining);
+    };
+    const schedule = () => {
+      if (stopped || controller.signal.aborted) return;
+      timer = setTimeout(() => {
+        pending = renew();
+      }, leaseMs / 3);
+    };
+    const renew = async () => {
+      if (stopped || controller.signal.aborted) return;
+      const started = performance.now();
+      try {
+        const [renewed] = await this
+          .sql`UPDATE knowledge_jobs SET lease_until=clock_timestamp()+${leaseMs}*interval '1 millisecond' WHERE id=${job.id} AND fence=${job.fence} AND state='running' AND lease_until>clock_timestamp() RETURNING id`;
+        if (!renewed) {
+          // Completion can race a heartbeat; its durable receipt resolves that race.
+          if (!(await this.committed(job))) lose();
+          return;
+        }
+        confirmedAt = started;
+        if (!stopped && !controller.signal.aborted) {
+          guardExpiry();
+          schedule();
+        }
+      } catch {
+        lose();
+      }
+    };
+    guardExpiry();
+    schedule();
+    try {
+      controller.signal.throwIfAborted();
+      await run(job);
+    } catch (error) {
+      if (
+        controller.signal.aborted ||
+        (error instanceof Error && error.message === "stale_worker")
+      )
+        return true;
+      try {
+        await this.commit(job, async (tx) => {
+          if (failure) return failure(tx, job, error);
+          await tx`UPDATE knowledge_jobs SET reason='execution_failed' WHERE id=${job.id}`;
+          return "failed";
+        });
+      } catch (settlementError) {
+        if (
+          !controller.signal.aborted &&
+          !(
+            settlementError instanceof Error &&
+            settlementError.message === "stale_worker"
+          )
+        )
+          throw settlementError;
+      }
+    } finally {
+      stopped = true;
+      clearTimeout(timer);
+      clearTimeout(expiry);
+      await pending;
+      controller.abort(new Error("execution_settled"));
+    }
+    return true;
+  }
+  /** Combine ownership cancellation with the caller's existing logical deadline. */
+  signal(job: Job, deadline: AbortSignal): AbortSignal {
+    const ownership = this.executions.get(job);
+    const signal = ownership
+      ? AbortSignal.any([ownership, deadline])
+      : deadline;
+    signal.throwIfAborted();
+    return signal;
   }
   async lookup(
     context: TrustedContext,
@@ -96,11 +203,13 @@ export class Operations {
     state: JobState = "succeeded",
   ): Promise<void> {
     if (await this.committed(job)) return;
+    this.executions.get(job)?.throwIfAborted();
     try {
       await this.sql.begin(async (tx) => {
         await assertLease(tx, job);
         await tx`SELECT set_config('loreweave.operation_id',${job.operationId},true)`;
         const outcome = (await effect(tx)) ?? state;
+        this.executions.get(job)?.throwIfAborted();
         const [completed] =
           await tx`UPDATE knowledge_jobs SET state=${outcome},lease_until=NULL WHERE id=${job.id} AND fence=${job.fence} AND state='running' AND lease_until>clock_timestamp() RETURNING id`;
         if (!completed) throw new Error("stale_worker");
@@ -149,9 +258,11 @@ export class Operations {
     job: Job,
     effect: (tx: Transaction) => Promise<T>,
   ): Promise<T> {
+    this.executions.get(job)?.throwIfAborted();
     return this.sql.begin(async (tx) => {
       await assertLease(tx, job);
       const result = await effect(tx);
+      this.executions.get(job)?.throwIfAborted();
       await assertLease(tx, job);
       return result;
     }) as Promise<T>;

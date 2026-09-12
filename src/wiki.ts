@@ -372,71 +372,228 @@ export class WikiService {
     await this.structure().queueRecorded(context?.organizationId);
     await dependencies.supersede(context?.organizationId);
     await projection.wake(context?.organizationId);
-    const job = await this.operations.claim(
-      [
-        "wiki.structure",
-        "wiki.restore",
-        "wiki.refresh",
-        "wiki.project",
-        "wiki.dependencies",
-        "wiki.revalidate",
-        "wiki.identity",
-      ],
-      600000,
-      context?.organizationId,
-      await dependencies.readyJobs(context?.organizationId),
-    );
-    if (!job) return false;
-    try {
-      if (job.kind === "wiki.structure") {
-        await this.structure().run(job);
-        return true;
-      }
-      if (job.kind === "wiki.restore") {
-        await new WikiHistory(this.operations, this.access).run(job);
-        return true;
-      }
-      if (job.kind === "wiki.dependencies" || job.kind === "wiki.identity") {
-        await new WikiDependencies(this.operations).run(job);
-        return true;
-      }
-      if (job.kind === "wiki.project") {
-        await projection.run(job);
-        return true;
-      }
-      if (job.kind === "wiki.revalidate") {
-        const targets = await this.operations
-          .sql`SELECT page_id FROM wiki_route_targets WHERE entry_id=${String(job.payload.pageId)} ORDER BY page_id`;
-        if (
-          targets.length &&
-          !targets.some((row) => row.page_id === job.payload.pageId)
-        ) {
-          await this.operations.commit(job, async (tx) => {
-            const contributions = (job.payload.contributions ?? []) as Array<{
-              versionId: string;
-              topic: TopicDescriptor;
-            }>;
-            if (contributions.length)
-              for (const contribution of contributions)
-                await queuePageRefresh(
-                  tx,
-                  job,
-                  String(job.payload.pageId),
-                  contribution,
-                );
-            else await queuePageRefresh(tx, job, String(job.payload.pageId));
-          });
+    return this.operations.execute(
+      {
+        kinds: [
+          "wiki.structure",
+          "wiki.restore",
+          "wiki.refresh",
+          "wiki.project",
+          "wiki.dependencies",
+          "wiki.revalidate",
+          "wiki.identity",
+        ],
+        leaseMs: 600000,
+        organizationId: context?.organizationId,
+        eligibleIds: await dependencies.readyJobs(context?.organizationId),
+      },
+      async (job) => {
+        if (job.kind === "wiki.structure") {
+          await this.structure().run(job);
           return true;
         }
-
-        for (let attempt = 0; attempt < 3; attempt++)
-          try {
-            const edit = await this.prepareRefresh(job);
+        if (job.kind === "wiki.restore") {
+          await new WikiHistory(this.operations, this.access).run(job);
+          return true;
+        }
+        if (job.kind === "wiki.dependencies" || job.kind === "wiki.identity") {
+          await new WikiDependencies(this.operations).run(job);
+          return true;
+        }
+        if (job.kind === "wiki.project") {
+          await projection.run(job);
+          return true;
+        }
+        if (job.kind === "wiki.revalidate") {
+          const targets = await this.operations
+            .sql`SELECT page_id FROM wiki_route_targets WHERE entry_id=${String(job.payload.pageId)} ORDER BY page_id`;
+          if (
+            targets.length &&
+            !targets.some((row) => row.page_id === job.payload.pageId)
+          ) {
             await this.operations.commit(job, async (tx) => {
-              await edit.check(tx);
-              await edit.apply(tx);
+              const contributions = (job.payload.contributions ?? []) as Array<{
+                versionId: string;
+                topic: TopicDescriptor;
+              }>;
+              if (contributions.length)
+                for (const contribution of contributions)
+                  await queuePageRefresh(
+                    tx,
+                    job,
+                    String(job.payload.pageId),
+                    contribution,
+                  );
+              else await queuePageRefresh(tx, job, String(job.payload.pageId));
             });
             return true;
+          }
+
+          for (let attempt = 0; attempt < 3; attempt++)
+            try {
+              const edit = await this.prepareRefresh(job);
+              await this.operations.commit(job, async (tx) => {
+                await edit.check(tx);
+                await edit.apply(tx);
+              });
+              return true;
+            } catch (error) {
+              if (
+                !(error instanceof Error) ||
+                error.message !== "version_conflict"
+              )
+                throw error;
+            }
+          throw new Error("needs_attention:page_conflict");
+        }
+        const source = await this.sources.maintenanceVersion(
+          job.operationId,
+          String(job.payload.versionId),
+        );
+        if (source.version !== source.currentVersionId)
+          throw new Error("source_changed");
+        const [owner] = await this.operations
+          .sql`SELECT organization_id FROM knowledge_operations WHERE id=${job.operationId}`;
+        const organizationId = String(owner!.organization_id),
+          scope = source.projectId ?? "shared";
+        const pack = makePack(job.id, source.title, [source]);
+        // Record the entire obligation before the first external extraction request.
+        await this.operations.checkpoint(job, async (tx) => {
+          await tx`INSERT INTO wiki_work(job_id) VALUES(${job.id}) ON CONFLICT DO NOTHING`;
+          await tx`UPDATE wiki_work SET state=state||${tx.json(jsonValue({ coverage: [], remaining: pack.items.map((item) => ({ handle: item.handle, version: item.version, passageId: item.passageId, start: item.start, end: item.end })) }))}::jsonb WHERE job_id=${job.id} AND NOT (state ? 'remaining')`;
+        });
+        const extraction: TopicExtraction = { topics: [], coverage: [] };
+        for (const [packetIndex, packet] of packetPacks(pack, 4000).entries()) {
+          const extracted: TopicExtraction = { topics: [], coverage: [] };
+          let remaining = packet;
+          for (let child = 0; child < 4; child++) {
+            const part = await this.runtime.request(
+              job,
+              `packet:${packetIndex}:child:${child}`,
+              "extraction",
+              2,
+              { pack: remaining },
+              (raw) => validateExtraction(raw, remaining),
+            );
+            const offset = extracted.topics.length;
+            extracted.topics.push(...part.topics);
+            const resolved = part.coverage.filter(
+              (entry) => entry.outcome !== "unresolved",
+            );
+            extracted.coverage.push(
+              ...resolved.map((entry) => ({
+                ...entry,
+                topicIndexes: entry.topicIndexes.map((i) => i + offset),
+              })),
+            );
+            const pending = part.coverage.filter(
+              (entry) => entry.outcome === "unresolved",
+            );
+            const items = remaining.items.filter((item) =>
+              pending.some((entry) => entry.handle === item.handle),
+            );
+            await this.operations.checkpoint(job, async (tx) => {
+              await tx`UPDATE wiki_work SET state=state||${tx.json(jsonValue({ [`packet:${packetIndex}`]: { children: child + 1, coverage: extracted.coverage, remaining: items.map((item) => ({ handle: item.handle, version: item.version, passageId: item.passageId, start: item.start, end: item.end })) } }))}::jsonb WHERE job_id=${job.id}`;
+            });
+            if (!items.length) break;
+            if (items.length === remaining.items.length || child === 3) {
+              extracted.coverage.push(
+                ...pending.map((entry) => ({
+                  ...entry,
+                  topicIndexes: entry.topicIndexes.map((i) => i + offset),
+                })),
+              );
+              break;
+            }
+            remaining = { ...packet, items, hash: hash(items) };
+          }
+          const remap = extracted.topics.map((topic) => {
+            const previous = extraction.topics.findIndex(
+              (other) =>
+                other.subjectKey === topic.subjectKey &&
+                other.aspectKey === topic.aspectKey &&
+                hash(other.identities) === hash(topic.identities),
+            );
+            if (previous < 0) {
+              extraction.topics.push(topic);
+              return extraction.topics.length - 1;
+            }
+            extraction.topics[previous]!.handles = [
+              ...new Set([
+                ...extraction.topics[previous]!.handles,
+                ...topic.handles,
+              ]),
+            ];
+            return previous;
+          });
+          extraction.coverage.push(
+            ...extracted.coverage.map((entry) => ({
+              ...entry,
+              topicIndexes: entry.topicIndexes.map((i) => remap[i]!),
+            })),
+          );
+          await this.operations.checkpoint(job, async (tx) => {
+            await tx`UPDATE wiki_work SET state=state||${tx.json(jsonValue({ coverage: extraction.coverage, remaining: pack.items.filter((item) => !extraction.coverage.some((entry) => entry.handle === item.handle)).map((item) => ({ handle: item.handle, version: item.version, passageId: item.passageId, start: item.start, end: item.end })) }))}::jsonb WHERE job_id=${job.id}`;
+          });
+        }
+        if (extraction.coverage.some((item) => item.outcome === "unresolved"))
+          throw new Error("needs_attention:source_coverage");
+        let published = false;
+        for (let attempt = 0; attempt < 3 && !published; attempt++) {
+          const edits: PreparedEdit[] = [];
+          for (const [index, topic] of extraction.topics.entries()) {
+            const edit = await this.planAndPublish(
+              job,
+              organizationId,
+              scope,
+              source,
+              topic,
+              index,
+            );
+            if (edit) edits.push(edit);
+          }
+          const grouped = new Map<
+            string,
+            Array<{ versionId: string; topic: TopicDescriptor }>
+          >();
+          for (const edit of edits)
+            if (edit.refresh)
+              grouped.set(edit.refresh.pageId, [
+                ...(grouped.get(edit.refresh.pageId) ?? []),
+                edit.refresh.contribution,
+              ]);
+          for (const [pageId, contributions] of grouped)
+            edits.push(
+              await this.prepareRefresh(
+                { ...job, payload: { ...job.payload, pageId, contributions } },
+                `refresh:${pageId}`,
+                edits.find((edit) => edit.refresh?.pageId === pageId)!.refresh!
+                  .inspection,
+              ),
+            );
+          try {
+            await this.operations.commit(job, async (tx) => {
+              await tx`SELECT pg_advisory_xact_lock(hashtextextended(${`wiki:${organizationId}`},0))`;
+              const revisions =
+                await tx`SELECT scope,revision FROM wiki_catalogue_scopes WHERE organization_id=${organizationId}`;
+              for (const edit of edits)
+                if (
+                  Object.entries(edit.revisions).some(
+                    ([key, value]) =>
+                      Number(
+                        revisions.find((row) => row.scope === key)?.revision ??
+                          0,
+                      ) !== Number(value),
+                  )
+                )
+                  throw new Error("version_conflict");
+              for (const edit of edits) await edit.check(tx);
+              for (const edit of edits) await edit.apply(tx);
+              await tx`INSERT INTO knowledge_jobs(id,operation_id,kind,job_key,payload) SELECT gen_random_uuid(),operation_id,'wiki.structure',id::text,jsonb_build_object('proposalId',id) FROM wiki_structure_proposals WHERE operation_id=${job.operationId} AND status='pending' ON CONFLICT(operation_id,kind,job_key) DO NOTHING`;
+
+              await tx`UPDATE wiki_work SET state=state||${tx.json(jsonValue({ coverage: extraction.coverage }))}::jsonb WHERE job_id=${job.id}`;
+            });
+            published = true;
           } catch (error) {
             if (
               !(error instanceof Error) ||
@@ -444,180 +601,22 @@ export class WikiService {
             )
               throw error;
           }
-        throw new Error("needs_attention:page_conflict");
-      }
-      const source = await this.sources.maintenanceVersion(
-        job.operationId,
-        String(job.payload.versionId),
-      );
-      if (source.version !== source.currentVersionId)
-        throw new Error("source_changed");
-      const [owner] = await this.operations
-        .sql`SELECT organization_id FROM knowledge_operations WHERE id=${job.operationId}`;
-      const organizationId = String(owner!.organization_id),
-        scope = source.projectId ?? "shared";
-      const pack = makePack(job.id, source.title, [source]);
-      // Record the entire obligation before the first external extraction request.
-      await this.operations.checkpoint(job, async (tx) => {
-        await tx`INSERT INTO wiki_work(job_id) VALUES(${job.id}) ON CONFLICT DO NOTHING`;
-        await tx`UPDATE wiki_work SET state=state||${tx.json(jsonValue({ coverage: [], remaining: pack.items.map((item) => ({ handle: item.handle, version: item.version, passageId: item.passageId, start: item.start, end: item.end })) }))}::jsonb WHERE job_id=${job.id} AND NOT (state ? 'remaining')`;
-      });
-      const extraction: TopicExtraction = { topics: [], coverage: [] };
-      for (const [packetIndex, packet] of packetPacks(pack, 4000).entries()) {
-        const extracted: TopicExtraction = { topics: [], coverage: [] };
-        let remaining = packet;
-        for (let child = 0; child < 4; child++) {
-          const part = await this.runtime.request(
-            job,
-            `packet:${packetIndex}:child:${child}`,
-            "extraction",
-            2,
-            { pack: remaining },
-            (raw) => validateExtraction(raw, remaining),
-          );
-          const offset = extracted.topics.length;
-          extracted.topics.push(...part.topics);
-          const resolved = part.coverage.filter(
-            (entry) => entry.outcome !== "unresolved",
-          );
-          extracted.coverage.push(
-            ...resolved.map((entry) => ({
-              ...entry,
-              topicIndexes: entry.topicIndexes.map((i) => i + offset),
-            })),
-          );
-          const pending = part.coverage.filter(
-            (entry) => entry.outcome === "unresolved",
-          );
-          const items = remaining.items.filter((item) =>
-            pending.some((entry) => entry.handle === item.handle),
-          );
-          await this.operations.checkpoint(job, async (tx) => {
-            await tx`UPDATE wiki_work SET state=state||${tx.json(jsonValue({ [`packet:${packetIndex}`]: { children: child + 1, coverage: extracted.coverage, remaining: items.map((item) => ({ handle: item.handle, version: item.version, passageId: item.passageId, start: item.start, end: item.end })) } }))}::jsonb WHERE job_id=${job.id}`;
-          });
-          if (!items.length) break;
-          if (items.length === remaining.items.length || child === 3) {
-            extracted.coverage.push(
-              ...pending.map((entry) => ({
-                ...entry,
-                topicIndexes: entry.topicIndexes.map((i) => i + offset),
-              })),
-            );
-            break;
-          }
-          remaining = { ...packet, items, hash: hash(items) };
         }
-        const remap = extracted.topics.map((topic) => {
-          const previous = extraction.topics.findIndex(
-            (other) =>
-              other.subjectKey === topic.subjectKey &&
-              other.aspectKey === topic.aspectKey &&
-              hash(other.identities) === hash(topic.identities),
-          );
-          if (previous < 0) {
-            extraction.topics.push(topic);
-            return extraction.topics.length - 1;
-          }
-          extraction.topics[previous]!.handles = [
-            ...new Set([
-              ...extraction.topics[previous]!.handles,
-              ...topic.handles,
-            ]),
-          ];
-          return previous;
-        });
-        extraction.coverage.push(
-          ...extracted.coverage.map((entry) => ({
-            ...entry,
-            topicIndexes: entry.topicIndexes.map((i) => remap[i]!),
-          })),
-        );
-        await this.operations.checkpoint(job, async (tx) => {
-          await tx`UPDATE wiki_work SET state=state||${tx.json(jsonValue({ coverage: extraction.coverage, remaining: pack.items.filter((item) => !extraction.coverage.some((entry) => entry.handle === item.handle)).map((item) => ({ handle: item.handle, version: item.version, passageId: item.passageId, start: item.start, end: item.end })) }))}::jsonb WHERE job_id=${job.id}`;
-        });
-      }
-      if (extraction.coverage.some((item) => item.outcome === "unresolved"))
-        throw new Error("needs_attention:source_coverage");
-      let published = false;
-      for (let attempt = 0; attempt < 3 && !published; attempt++) {
-        const edits: PreparedEdit[] = [];
-        for (const [index, topic] of extraction.topics.entries()) {
-          const edit = await this.planAndPublish(
-            job,
-            organizationId,
-            scope,
-            source,
-            topic,
-            index,
-          );
-          if (edit) edits.push(edit);
-        }
-        const grouped = new Map<
-          string,
-          Array<{ versionId: string; topic: TopicDescriptor }>
-        >();
-        for (const edit of edits)
-          if (edit.refresh)
-            grouped.set(edit.refresh.pageId, [
-              ...(grouped.get(edit.refresh.pageId) ?? []),
-              edit.refresh.contribution,
-            ]);
-        for (const [pageId, contributions] of grouped)
-          edits.push(
-            await this.prepareRefresh(
-              { ...job, payload: { ...job.payload, pageId, contributions } },
-              `refresh:${pageId}`,
-              edits.find((edit) => edit.refresh?.pageId === pageId)!.refresh!
-                .inspection,
-            ),
-          );
-        try {
-          await this.operations.commit(job, async (tx) => {
-            await tx`SELECT pg_advisory_xact_lock(hashtextextended(${`wiki:${organizationId}`},0))`;
-            const revisions =
-              await tx`SELECT scope,revision FROM wiki_catalogue_scopes WHERE organization_id=${organizationId}`;
-            for (const edit of edits)
-              if (
-                Object.entries(edit.revisions).some(
-                  ([key, value]) =>
-                    Number(
-                      revisions.find((row) => row.scope === key)?.revision ?? 0,
-                    ) !== Number(value),
-                )
-              )
-                throw new Error("version_conflict");
-            for (const edit of edits) await edit.check(tx);
-            for (const edit of edits) await edit.apply(tx);
-            await tx`INSERT INTO knowledge_jobs(id,operation_id,kind,job_key,payload) SELECT gen_random_uuid(),operation_id,'wiki.structure',id::text,jsonb_build_object('proposalId',id) FROM wiki_structure_proposals WHERE operation_id=${job.operationId} AND status='pending' ON CONFLICT(operation_id,kind,job_key) DO NOTHING`;
-
-            await tx`UPDATE wiki_work SET state=state||${tx.json(jsonValue({ coverage: extraction.coverage }))}::jsonb WHERE job_id=${job.id}`;
-          });
-          published = true;
-        } catch (error) {
-          if (!(error instanceof Error) || error.message !== "version_conflict")
-            throw error;
-        }
-      }
-      if (!published) throw new Error("needs_attention:catalogue_conflict");
-    } catch (error) {
-      const reason =
-        error instanceof Error ? error.message : "maintenance_failed";
-      if (reason === "stale_worker") throw error;
-      await this.operations.commit(
-        job,
-        async (tx) => {
-          await tx`UPDATE knowledge_jobs SET reason=${reason} WHERE id=${job.id}`;
-          if (job.kind === "wiki.structure")
-            await tx`UPDATE wiki_structure_proposals SET status='rejected' WHERE id=${String(job.payload.proposalId)} AND status='pending'`;
-        },
-        reason === "source_changed" || reason === "identity_changed"
+        if (!published) throw new Error("needs_attention:catalogue_conflict");
+      },
+      async (tx, job, error) => {
+        const reason =
+          error instanceof Error ? error.message : "maintenance_failed";
+        await tx`UPDATE knowledge_jobs SET reason=${reason} WHERE id=${job.id}`;
+        if (job.kind === "wiki.structure")
+          await tx`UPDATE wiki_structure_proposals SET status='rejected' WHERE id=${String(job.payload.proposalId)} AND status='pending'`;
+        return reason === "source_changed" || reason === "identity_changed"
           ? "superseded"
           : reason === "needs_attention:catalogue_unavailable"
             ? "retry_wait"
-            : "failed",
-      );
-    }
-    return true;
+            : "failed";
+      },
+    );
   }
   private async planAndPublish(
     job: Job,
@@ -651,7 +650,7 @@ export class WikiService {
       organizationId,
       scope,
       topic,
-      AbortSignal.timeout(45000),
+      this.operations.signal(job, AbortSignal.timeout(45000)),
       entities,
     );
     const candidates = pool.cards;

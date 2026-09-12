@@ -64,8 +64,11 @@ export class WikiModelRuntime {
       return { deadline, attempt };
     });
     if ("cached" in admitted) return validate(structuredClone(admitted.cached));
-    const signal = AbortSignal.timeout(
-      Math.max(1, Math.min(45000, admitted.deadline - Date.now())),
+    const signal = this.operations.signal(
+      job,
+      AbortSignal.timeout(
+        Math.max(1, Math.min(45000, admitted.deadline - Date.now())),
+      ),
     );
     try {
       const raw = await this.admission.run(signal, async () => {
@@ -92,6 +95,7 @@ export class WikiModelRuntime {
       });
       return result;
     } catch (error) {
+      // Ownership loss must not record failure or retry under a replacement owner.
       await this.operations.checkpoint(job, async (tx) => {
         await tx`UPDATE wiki_model_attempts SET state='failed',completed_at=clock_timestamp(),error=${error instanceof Error ? error.message : "model_failure"} WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase=${phase} AND attempt=${admitted.attempt}`;
       });

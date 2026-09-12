@@ -318,111 +318,114 @@ export class SourceService {
     }));
   }
   async workOne(): Promise<boolean> {
-    const job = await this.operations.claim(["source.prepare"]);
-    if (!job) return false;
-    try {
-      if (job.attempt > 3) throw new Error("preparation_attempts_exhausted");
-      const [version] = await this.operations
-        .sql`SELECT * FROM source_versions WHERE id=${String(job.payload.versionId)}`;
-      if (!version) throw new Error("not_found");
-      const parsed = parseMarkdown(version.original);
-      const records = parsed.passages.flatMap((passage) => {
-        // Chunk the derived index only; stable original block locators remain whole.
-        const points = Array.from(passage.text),
-          chunks = [];
-        for (let offset = 0; offset < points.length; offset += 2000)
-          chunks.push({
-            passage,
-            ordinal: chunks.length,
-            text: points.slice(offset, offset + 2000).join(""),
-          });
-        return chunks;
-      });
-      const signal = AbortSignal.timeout(45000);
-      const vectors: number[][] = [];
-      for (let index = 0; index < records.length; index += 32) {
-        const batch = records.slice(index, index + 32);
-        const embedded = await this.embeddings.embed(
-          batch.map((record) => record.text),
-          signal,
-        );
-        validateEmbeddings(embedded, batch.length, this.embeddings.dimensions);
-        vectors.push(...embedded);
-      }
-      signal.throwIfAborted();
-      await this.operations.commit(job, async (tx) => {
-        const [document] =
-          await tx`SELECT active_version_id FROM source_documents WHERE id=${String(version.document_id)} FOR UPDATE`;
-        if (!document || document.active_version_id !== version.expected_prior)
-          throw new Error("version_conflict");
-        const passageIds = new Map<number, string>();
-        for (const passage of parsed.passages) {
-          const id = crypto.randomUUID();
-          passageIds.set(passage.ordinal, id);
-          await tx`INSERT INTO source_passages(id,version_id,ordinal,kind,heading_path,start_offset,end_offset,original_text) VALUES(${id},${String(version.id)},${passage.ordinal},${passage.kind},${tx.json(passage.headingPath)},${passage.start},${passage.end},${passage.text})`;
+    return this.operations.execute(
+      { kinds: ["source.prepare"] },
+      async (job) => {
+        if (job.attempt > 3) throw new Error("preparation_attempts_exhausted");
+        const [version] = await this.operations
+          .sql`SELECT * FROM source_versions WHERE id=${String(job.payload.versionId)}`;
+        if (!version) throw new Error("not_found");
+        const parsed = parseMarkdown(version.original);
+        const records = parsed.passages.flatMap((passage) => {
+          // Chunk the derived index only; stable original block locators remain whole.
+          const points = Array.from(passage.text),
+            chunks = [];
+          for (let offset = 0; offset < points.length; offset += 2000)
+            chunks.push({
+              passage,
+              ordinal: chunks.length,
+              text: points.slice(offset, offset + 2000).join(""),
+            });
+          return chunks;
+        });
+        const signal = this.operations.signal(job, AbortSignal.timeout(45000));
+        const vectors: number[][] = [];
+        for (let index = 0; index < records.length; index += 32) {
+          signal.throwIfAborted();
+          const batch = records.slice(index, index + 32);
+          const embedded = await this.embeddings.embed(
+            batch.map((record) => record.text),
+            signal,
+          );
+          validateEmbeddings(
+            embedded,
+            batch.length,
+            this.embeddings.dimensions,
+          );
+          vectors.push(...embedded);
         }
-        for (const [index, record] of records.entries())
-          await tx`INSERT INTO source_search_records(id,passage_id,ordinal,chunk_text,lexical_text,embedding) VALUES(${crypto.randomUUID()},${passageIds.get(record.passage.ordinal)!},${record.ordinal},${record.text},${lexicalText(record.text)},${JSON.stringify(vectors[index])}::vector)`;
-        await tx`UPDATE source_versions SET state='superseded' WHERE id=${version.expected_prior}`;
-        await tx`UPDATE source_versions SET decoded=${parsed.decoded},parser_profile=${parserProfile},embedding_profile=${this.embeddings.profile},dimensions=${this.embeddings.dimensions},state='active' WHERE id=${String(version.id)}`;
-        await tx`UPDATE source_documents SET active_version_id=${String(version.id)} WHERE id=${String(version.document_id)}`;
-        if (version.expected_prior)
-          await this.operations.enqueue(
-            tx,
-            job.operationId,
-            "wiki.dependencies",
-            {
+        signal.throwIfAborted();
+        await this.operations.commit(job, async (tx) => {
+          const [document] =
+            await tx`SELECT active_version_id FROM source_documents WHERE id=${String(version.document_id)} FOR UPDATE`;
+          if (
+            !document ||
+            document.active_version_id !== version.expected_prior
+          )
+            throw new Error("version_conflict");
+          const passageIds = new Map<number, string>();
+          for (const passage of parsed.passages) {
+            const id = crypto.randomUUID();
+            passageIds.set(passage.ordinal, id);
+            await tx`INSERT INTO source_passages(id,version_id,ordinal,kind,heading_path,start_offset,end_offset,original_text) VALUES(${id},${String(version.id)},${passage.ordinal},${passage.kind},${tx.json(passage.headingPath)},${passage.start},${passage.end},${passage.text})`;
+          }
+          for (const [index, record] of records.entries())
+            await tx`INSERT INTO source_search_records(id,passage_id,ordinal,chunk_text,lexical_text,embedding) VALUES(${crypto.randomUUID()},${passageIds.get(record.passage.ordinal)!},${record.ordinal},${record.text},${lexicalText(record.text)},${JSON.stringify(vectors[index])}::vector)`;
+          await tx`UPDATE source_versions SET state='superseded' WHERE id=${version.expected_prior}`;
+          await tx`UPDATE source_versions SET decoded=${parsed.decoded},parser_profile=${parserProfile},embedding_profile=${this.embeddings.profile},dimensions=${this.embeddings.dimensions},state='active' WHERE id=${String(version.id)}`;
+          await tx`UPDATE source_documents SET active_version_id=${String(version.id)} WHERE id=${String(version.document_id)}`;
+          if (version.expected_prior)
+            await this.operations.enqueue(
+              tx,
+              job.operationId,
+              "wiki.dependencies",
+              {
+                documentId: String(version.document_id),
+                versionId: String(version.id),
+              },
+            );
+          const [note] =
+            await tx`SELECT page_id FROM source_notes WHERE version_id=${String(version.id)}`;
+          if (note?.page_id)
+            await this.operations.enqueue(
+              tx,
+              job.operationId,
+              "wiki.revalidate",
+              {
+                documentId: String(version.document_id),
+                versionId: String(version.id),
+                pageId: String(note.page_id),
+              },
+              String(note.page_id),
+            );
+          for (const kind of [
+            "identity.revalidate",
+            "wiki.refresh",
+            "graph.refresh",
+          ])
+            await this.operations.enqueue(tx, job.operationId, kind, {
               documentId: String(version.document_id),
               versionId: String(version.id),
-            },
-          );
-        const [note] =
-          await tx`SELECT page_id FROM source_notes WHERE version_id=${String(version.id)}`;
-        if (note?.page_id)
-          await this.operations.enqueue(
-            tx,
-            job.operationId,
-            "wiki.revalidate",
-            {
-              documentId: String(version.document_id),
-              versionId: String(version.id),
-              pageId: String(note.page_id),
-            },
-            String(note.page_id),
-          );
-        for (const kind of [
-          "identity.revalidate",
-          "wiki.refresh",
-          "graph.refresh",
-        ])
-          await this.operations.enqueue(tx, job.operationId, kind, {
-            documentId: String(version.document_id),
-            versionId: String(version.id),
-            previousVersionId: version.expected_prior ?? null,
-          });
-      });
-    } catch (error) {
-      const reason = error instanceof Error ? error.message : "unavailable";
-      if (reason === "stale_worker") return true;
-      const safe = [
-        "invalid_encoding",
-        "invalid_markdown",
-        "invalid_embedding",
-        "version_conflict",
-        "preparation_attempts_exhausted",
-      ].includes(reason)
-        ? reason
-        : "unavailable";
-      await this.operations.commit(
-        job,
-        async (tx) => {
-          await tx`UPDATE source_versions SET state='failed',reason=${safe} WHERE id=${String(job.payload.versionId)} AND state='preparing'`;
-          await tx`UPDATE knowledge_jobs SET reason=${safe} WHERE id=${job.id}`;
-        },
-        "failed",
-      );
-    }
-    return true;
+              previousVersionId: version.expected_prior ?? null,
+            });
+        });
+      },
+      async (tx, job, error) => {
+        const reason = error instanceof Error ? error.message : "unavailable";
+        const safe = [
+          "invalid_encoding",
+          "invalid_markdown",
+          "invalid_embedding",
+          "version_conflict",
+          "preparation_attempts_exhausted",
+        ].includes(reason)
+          ? reason
+          : "unavailable";
+        await tx`UPDATE source_versions SET state='failed',reason=${safe} WHERE id=${String(job.payload.versionId)} AND state='preparing'`;
+        await tx`UPDATE knowledge_jobs SET reason=${safe} WHERE id=${job.id}`;
+        return "failed";
+      },
+    );
   }
   async version(token: string, id: string): Promise<SourceVersion> {
     const context = await this.access.authorize(token, "read");
