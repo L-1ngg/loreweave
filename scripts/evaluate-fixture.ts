@@ -11,7 +11,7 @@ for (const [name, corrupt] of [
   ["good", false],
   ["bad", true],
 ] as const) {
-    const fixture = await evaluationFixture(database, corrupt, "source", true);
+  const fixture = await evaluationFixture(database, corrupt, "source", true);
   try {
     const report = await evaluate({
       manifest: fixture.manifest,
