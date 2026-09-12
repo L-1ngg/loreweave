@@ -1,0 +1,11 @@
+{
+  "kind": "real-provider-connectivity-probe",
+  "httpStatus": 200,
+  "elapsedMs": 10310,
+  "hasChoices": true,
+  "model": "deepseek-ai/DeepSeek-V4-Flash",
+  "request": "Reply OK.",
+  "max_tokens": 8,
+  "timeoutMs": 15000,
+  "qualityAcceptance": false
+}

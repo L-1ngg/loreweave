@@ -149,3 +149,44 @@ termination with unresolved ranges, and source-extraction failure after the firs
 packet. Pending dependency walks remain in the denominator. Reports contain public diagnostics and exact
 fixture inputs, not manually authored expected diagnostic records. This verifies
 reporting and finite scheduling; #18 still owns human/real-provider acceptance.
+
+## Route comparison (#25)
+
+For #25 the maintainer authorized independent agent review of the question set
+and answers. `mode: agent` and `review.kind: agent` are explicit development-only
+provenance; they do not satisfy #18's frozen human acceptance requirements.
+Agent annotations use `kind: independent-agent` plus the same hash-bound review
+fields as human grades. `eval:grade` selects the corresponding validator and
+retains `agentGrades`, never `humanGrades`. Failed or unavailable deliveries
+cannot become passes through annotation.
+
+The portable reviewed set in `docs/evaluation/issue-25/reviewed-questions.json`
+binds exact original text, file names and verbatim reference quotes. Its runner
+imports only originals into a new organization/project, maps quotes to current
+passage IDs, performs bounded maintenance before any answer and queries all four
+public HTTP routes against that shared snapshot. Model, context, policy and
+budgets are checked by the existing evaluation runner. The provider is selected
+explicitly; credentials are read from the existing provider environment:
+
+```sh
+TEST_DATABASE_URL=postgres://... bun run eval:routes \
+  --provider controlled --output new-controlled-directory
+TEST_DATABASE_URL=postgres://... bun --env-file=.env scripts/evaluate-routes.ts \
+  --provider real --output new-real-directory
+```
+
+The default maintenance admission window is 300 seconds across identity, Wiki
+and graph; `--maintenance-seconds` records an explicit alternative. An already
+admitted bounded operation settles before answering. Remaining maintenance is
+reported as unfinished; endpoint availability is not proof of useful derived
+coverage. Source versions, normalized dataset, originals, maintenance diagnostics,
+raw answers and per-case checkpoints are retained. No background maintenance runs
+during the four sequential route queries. This sequential small development
+comparison is not the randomized five-concurrency capacity protocol.
+
+`summary.json` separates ordinary/complex results, pending independent review,
+partial answers and timeouts. P50/P95 use nearest-rank, include failed attempted
+requests, and exclude unattempted unavailable routes; each stage reports observed
+and missing sample counts. Citation locator checks and exact evidence recall are
+diagnostics, not semantic citation-support grades. Request counts are separate
+from monetary cost, which remains unavailable without usage and pricing.

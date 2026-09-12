@@ -1,0 +1,2135 @@
+{
+  "kind": "independent-agent",
+  "reviewer": "issue-25-independent-agent",
+  "reviewedAt": "2026-09-12T07:50:23.908Z",
+  "runtime": "controlled scripted-extractive-v1; no real-provider quality claim",
+  "method": "All 96 answer texts and citation arrays verified identical across profiles per question; semantic review per unique answer, every citation resolved to actual original version/passage. No certificate verdict used.",
+  "scoreTranslation": "Only score 3 maps to true. Missing-question justified uncertainty can pass quality despite partial runtime status; delivery outcome remains separately failed/partial. gaps requires appropriate abstention or sufficient conflict resolution; generic no-answer on answerable/conflicting cases fails gaps.",
+  "reviews": [
+    {
+      "id": "request-shape",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《02-002-request-bus-shape.md》记载：- **变容易**:换传输层(socket、web UI)只替换两条 iterable 的两端,`core` 不动。第二个客户端不需要重新设计 permission 语义。\n- **变难**:`core` 内部要自己维护 pending map + 超时,约多 50 行。调用点从 `await confirm()` 变成 `await bus.ask(...)` —— 形状仍是 await,可读性损失有限。\n- **不可回退面**:M1 定的五个 kind 一旦合入,后续只许加字段不许改形状。\n- **安全语义**:降级方向恒为 deny(abort → cancelled → deny;headless 默认 deny),不存在隐式 allow 路径。\n- **需要同步的文档**:[phases/phase-2.md](../phases/phase-2.md) M1(已含本决策);[plan.md](../plan.md) Phase 2 行动项「request 总线」条目引用本 ADR 即可,不复制理由。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 2,
+        "completeness": 1,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "引用讲两条 iterable 的传输替换与解耦，但未明确 request/response async iterable 和唯一不复用 ID；核心方向部分正确。",
+      "citationOriginalChecks": [
+        {
+          "filename": "02-002-request-bus-shape.md",
+          "version": "1d834b00-6e55-4846-ab4c-b3b55c19b2dd",
+          "passageId": "7c367fde-188e-4d0d-8970-c4fc072d97e9",
+          "quote": "- **变容易**:换传输层(socket、web UI)只替换两条 iterable 的两端,`core` 不动。第二个客户端不需要重新设计 permission 语义。\n- **变难**:`core` 内部要自己维护 pending map + 超时,约多 50 行。调用点从 `await confirm()` 变成 `await bus.ask(...)` —— 形状仍是 await,可读性损失有限。\n- **不可回退面**:M1 定的五个 kind 一旦合入,后续只许加字段不许改形状。\n- **安全语义**:降级方向恒为 deny(abort → cancelled → deny;headless 默认 deny),不存在隐式 allow 路径。\n- **需要同步的文档**:[phases/phase-2.md](../phases/phase-2.md) M1(已含本决策);[plan.md](../plan.md) Phase 2 行动项「request 总线」条目引用本 ADR 即可,不复制理由。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "headless",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《18-sdk.md》记载：默认未允许的工具调用需要授权。宿主可配置 `permission.rules`,或并行消费 `agent.requests`,通过 `agent.respond(response)` 答复。请求流应与执行流并行消费,不能等执行完成才处理授权。无答复默认 30 秒后拒绝,没有界面不等于自动放行。\n《18-sdk.md》记载：每实例默认有独立权限记忆和请求总线。CLI 为兼容现有 TUI 显式传入独占 RequestBus,交互模式允许无限等待;SDK dispose 会关闭该总线,不得跨实例共享。请求观察、授权与释放不依赖 pi 类型。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "引用 SDK 权限等待规则，未回答三类 headless 决策和退出码，不能把 SDK 的30秒超时当作 headless 规则。",
+      "citationOriginalChecks": [
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "9a0c66dc-cc50-41ed-aa20-54c43ea88dd5",
+          "quote": "默认未允许的工具调用需要授权。宿主可配置 `permission.rules`,或并行消费 `agent.requests`,通过 `agent.respond(response)` 答复。请求流应与执行流并行消费,不能等执行完成才处理授权。无答复默认 30 秒后拒绝,没有界面不等于自动放行。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "e2b02396-920f-4c8e-a1af-7eb1a9496353",
+          "quote": "每实例默认有独立权限记忆和请求总线。CLI 为兼容现有 TUI 显式传入独占 RequestBus,交互模式允许无限等待;SDK dispose 会关闭该总线,不得跨实例共享。请求观察、授权与释放不依赖 pi 类型。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "permission",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《20-session-management.md》记载：---\ndoc_kind: plan\ncreated: 2026-09-09\n---\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "仅抄录会话文档 frontmatter，无 permission 模式答案。",
+      "citationOriginalChecks": [
+        {
+          "filename": "20-session-management.md",
+          "version": "a77747ad-d82f-4897-b36a-6ce6c68df9d3",
+          "passageId": "39d43d73-7be4-4f0d-a949-6a927cd9208b",
+          "quote": "---\ndoc_kind: plan\ncreated: 2026-09-09\n---\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "dangerous",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《02-002-request-bus-shape.md》记载：| kind | payload | response result | headless exit code |\n|---|---|---|---:|\n| `permission` | `toolCall`, `reason?`, `rememberRule?` | `allow_once` / `allow_always(scope)` / `deny` | 20 |\n| `cancel_confirm` | `action`, `consequence?` | `cancel` / `keep_running` | 21 |\n| `question` | `prompt`, `choices?`, `allowFreeText?`, `multiple?` | `answer(answers[])` / `cancel` | 22 |\n| `plan_approval` | `plan` | `approve` / `reject(feedback?)` | 23 |\n| `oauth` | `provider`, `authorizationUrl`, `instructions?` | `completed` / `cancel` | 24 |\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "请求类型表不回答危险 git push 是否忽略已记住规则。",
+      "citationOriginalChecks": [
+        {
+          "filename": "02-002-request-bus-shape.md",
+          "version": "1d834b00-6e55-4846-ab4c-b3b55c19b2dd",
+          "passageId": "cc8c74cd-5eb0-4d27-bd4e-c19d348c05b5",
+          "quote": "| kind | payload | response result | headless exit code |\n|---|---|---|---:|\n| `permission` | `toolCall`, `reason?`, `rememberRule?` | `allow_once` / `allow_always(scope)` / `deny` | 20 |\n| `cancel_confirm` | `action`, `consequence?` | `cancel` / `keep_running` | 21 |\n| `question` | `prompt`, `choices?`, `allowFreeText?`, `multiple?` | `answer(answers[])` / `cancel` | 22 |\n| `plan_approval` | `plan` | `approve` / `reject(feedback?)` | 23 |\n| `oauth` | `provider`, `authorizationUrl`, `instructions?` | `completed` / `cancel` | 24 |\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "isolation",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《18-sdk.md》记载：跨 invocation 队列属于宿主。TUI 在等待期间持续接受输入,显示 FIFO,空输入框 Up 取回队尾编辑;Esc 停止续发并恢复草稿,Ctrl+Enter 仅在旧任务成功收尾后发送指定输入,其余待发原文恢复草稿。提交失败暂停队列,检查存储并重建实例后由宿主明确恢复。`agent_end` 仅表示执行终止,整个异步迭代正常完成才表示会话提交完成。\n《18-sdk.md》记载：> 范围:仓库内 Bun SDK,入口 `@forge-agent/core/sdk`。未承诺 npm 发布、Node.js 兼容或进程隔离。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 2,
+        "completeness": 1,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "引用不承诺进程隔离，可支持否定方向；未解释同进程故障/沙箱边界或宿主进程容器选择。",
+      "citationOriginalChecks": [
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "409b60e5-810c-4b27-b7f1-d9a2157da154",
+          "quote": "跨 invocation 队列属于宿主。TUI 在等待期间持续接受输入,显示 FIFO,空输入框 Up 取回队尾编辑;Esc 停止续发并恢复草稿,Ctrl+Enter 仅在旧任务成功收尾后发送指定输入,其余待发原文恢复草稿。提交失败暂停队列,检查存储并重建实例后由宿主明确恢复。`agent_end` 仅表示执行终止,整个异步迭代正常完成才表示会话提交完成。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "732248b4-9df3-40e2-9fb8-d098b800f9ed",
+          "quote": "> 范围:仓库内 Bun SDK,入口 `@forge-agent/core/sdk`。未承诺 npm 发布、Node.js 兼容或进程隔离。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "reference",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《06-006-tui-cell-parity.md》记载：# ADR-006: TUI 视觉出口升级为锁定环境内逐 cell 零差异\n《06-006-tui-cell-parity.md》记载：> 状态:已批准(2026-09-04)。reference 获取路径被 [ADR-007](./007-no-compile-grok-reference.md) 修订:不再编译 grok-build;cell 回归改为 in-repo golden。决策 2/3(自有 compositor、PNG 非硬门禁)仍有效。\n> 参与者:operator(发起与拍板)、Grok(起草)\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 3,
+        "completeness": 2,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "状态行已正确说明不再编译、改仓库 golden；未明确不能据此宣称与 grok 运行时逐 cell 相同。",
+      "citationOriginalChecks": [
+        {
+          "filename": "06-006-tui-cell-parity.md",
+          "version": "8ea5fb3d-80b2-412e-98cd-74eac5cc6a78",
+          "passageId": "174e1d23-c80e-4059-918f-8023d958f4fa",
+          "quote": "# ADR-006: TUI 视觉出口升级为锁定环境内逐 cell 零差异\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "06-006-tui-cell-parity.md",
+          "version": "8ea5fb3d-80b2-412e-98cd-74eac5cc6a78",
+          "passageId": "e5acb3ba-84bb-4938-b8f6-41b36f803960",
+          "quote": "> 状态:已批准(2026-09-04)。reference 获取路径被 [ADR-007](./007-no-compile-grok-reference.md) 修订:不再编译 grok-build;cell 回归改为 in-repo golden。决策 2/3(自有 compositor、PNG 非硬门禁)仍有效。\n> 参与者:operator(发起与拍板)、Grok(起草)\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "team",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "release",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "draft-release",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "clear",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "session-path",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "storage",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "manual-compact",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "markdown",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "sla-missing",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《04-004-single-process-protocol-isolation.md》记载：clowder-ai 用「服务端 + 网页界面 + Redis」的分布式架构实现了核心与界面的物理分离。代价:Redis 快照空档丢数据(28 秒,307→144 keys)、进程管理、Lua CAS 并发控制(单用户场景防的是不存在的并发)、Mission Hub 运维面板——每一层基础设施都在解决上一层制造的问题,而不是用户的问题。详见 [design-rationale.md](../design-rationale.md) C.4、[cat-cafe.md](https://github.com/L-1ngg/forge-agent/blob/24750eb3d22d23d72d3c17fa589b1df425d28940/docs/cat-cafe.md) F.1。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 1,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "引用 clowder Redis 事故无关；泛称部分覆盖未明确 SLA 前提及赔偿比例无依据，虽未编造比例也不能算充分拒答。",
+      "citationOriginalChecks": [
+        {
+          "filename": "04-004-single-process-protocol-isolation.md",
+          "version": "986bcad1-7814-43b6-a523-5eedfe94a592",
+          "passageId": "9dfa44be-c4db-4aa5-9596-04bc7ce748ad",
+          "quote": "clowder-ai 用「服务端 + 网页界面 + Redis」的分布式架构实现了核心与界面的物理分离。代价:Redis 快照空档丢数据(28 秒,307→144 keys)、进程管理、Lua CAS 并发控制(单用户场景防的是不存在的并发)、Mission Hub 运维面板——每一层基础设施都在解决上一层制造的问题,而不是用户的问题。详见 [design-rationale.md](../design-rationale.md) C.4、[cat-cafe.md](https://github.com/L-1ngg/forge-agent/blob/24750eb3d22d23d72d3c17fa589b1df425d28940/docs/cat-cafe.md) F.1。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "revenue-missing",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 3,
+        "completeness": 3,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "对指定财务问题明确本次依据不足、无法确定，未编造数值或把未知说成零。",
+      "citationOriginalChecks": [],
+      "qualityPass": true,
+      "deliveryPass": false
+    },
+    {
+      "id": "core-evolution",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《09-009-self-owned-agent-core.md》记载：> 状态:自行实现循环的方向由 operator 于 2026-09-08 批准的 [Spec #14](https://github.com/L-1ngg/forge-agent/issues/14) 取代，改为从固定源码建立本地维护的执行底座；输入归属与上下文合同不变。当前生产接入与回退见 [ADR-015](015-pi-core-source-migration.md) 和[施工图](../phases/pi-core-migration.md)。原决策已批准(2026-09-05)。自研内核已提交,施工、自动化证据与剩余验收统一见 [自研执行内核](../phases/owned-core.md);输入与取消边界由 [ADR-010](010-input-ownership-and-interruption.md) 补充。2026-09-06 核对。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 2,
+        "completeness": 1,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "引用状态正确指向后续源码基线，但未说明 Pi 来源、自有不等于原创及 CLI/TUI 保留；替代关系仅部分覆盖。",
+      "citationOriginalChecks": [
+        {
+          "filename": "09-009-self-owned-agent-core.md",
+          "version": "d78176e0-9088-4423-a092-d7273b78254a",
+          "passageId": "0a075543-a414-400f-93e3-b6973e99c14c",
+          "quote": "> 状态:自行实现循环的方向由 operator 于 2026-09-08 批准的 [Spec #14](https://github.com/L-1ngg/forge-agent/issues/14) 取代，改为从固定源码建立本地维护的执行底座；输入归属与上下文合同不变。当前生产接入与回退见 [ADR-015](015-pi-core-source-migration.md) 和[施工图](../phases/pi-core-migration.md)。原决策已批准(2026-09-05)。自研内核已提交,施工、自动化证据与剩余验收统一见 [自研执行内核](../phases/owned-core.md);输入与取消边界由 [ADR-010](010-input-ownership-and-interruption.md) 补充。2026-09-06 核对。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "context-evolution",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "cancel-persistence",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "render-evolution",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "clear-paraphrase",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《10-010-input-ownership-and-interruption.md》记载：> 状态:提交方向部分被 [ADR-013](013-incremental-session-persistence.md) 及 [ADR-014](014-pi-aligned-context-management.md) 取代(2026-09-07)，新方向已实现并完成本地验收，见[实现证据](../phases/context-management-acceptance.md)；下文保留 2026-09-05 历史规则与验收证据，输入归属等未替代部分继续有效。\n> 参与者:operator 提出体验问题并要求记录方案,Codex 调研与起草。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "引用取消/持久化 ADR 状态，不回答 /clear 是否改历史。",
+      "citationOriginalChecks": [
+        {
+          "filename": "10-010-input-ownership-and-interruption.md",
+          "version": "236d4a2b-5294-49e6-9c28-f26ce7db2439",
+          "passageId": "1c02107e-e19d-492e-a8d6-4193efd259f8",
+          "quote": "> 状态:提交方向部分被 [ADR-013](013-incremental-session-persistence.md) 及 [ADR-014](014-pi-aligned-context-management.md) 取代(2026-09-07)，新方向已实现并完成本地验收，见[实现证据](../phases/context-management-acceptance.md)；下文保留 2026-09-05 历史规则与验收证据，输入归属等未替代部分继续有效。\n> 参与者:operator 提出体验问题并要求记录方案,Codex 调研与起草。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "sla-missing-paraphrase",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 3,
+        "completeness": 3,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "明确本次依据不足、无法确定；未承认商业 SLA 前提或编造赔偿比例。",
+      "citationOriginalChecks": [],
+      "qualityPass": true,
+      "deliveryPass": false
+    },
+    {
+      "id": "core-evolution-paraphrase",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《14-014-pi-aligned-context-management.md》记载：基准为 `earendil-works/pi` 的 coding-agent，SHA `9767ba275f3e9a5ee0f5c5342249b629ab1b2282`；不是新的 AgentHarness，也不要求升级整个上游应用。Forge 当前 `pi-ai` 为 0.84.4，执行循环仍由自研 ExecutionCore 拥有。\n《14-014-pi-aligned-context-management.md》记载：# ADR-014: 对齐 Pi 的上下文管理\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "只引用 ADR-014 的旧 ExecutionCore 背景，没有 ADR-015 替代解释，未回答源码所有权与界面保留。",
+      "citationOriginalChecks": [
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "version": "e4929789-abf9-4fd6-9e4f-4aca51c0f464",
+          "passageId": "519c74d4-8154-4f74-84bc-45efa6ad5020",
+          "quote": "基准为 `earendil-works/pi` 的 coding-agent，SHA `9767ba275f3e9a5ee0f5c5342249b629ab1b2282`；不是新的 AgentHarness，也不要求升级整个上游应用。Forge 当前 `pi-ai` 为 0.84.4，执行循环仍由自研 ExecutionCore 拥有。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "version": "e4929789-abf9-4fd6-9e4f-4aca51c0f464",
+          "passageId": "924d077f-fae7-457d-8e51-d7099c6c6ca0",
+          "quote": "# ADR-014: 对齐 Pi 的上下文管理\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "context-evolution-paraphrase",
+      "profile": "source",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《18-sdk.md》记载：主动压缩失败保留旧视图并允许任务请求。overflow 与符合 Pi 条件的 length 共用连续失败链的一次压缩恢复，失败的部分输出保留在历史，恢复不重放工具。成功答案即使用量超窗也不重新生成。`enabled: false` 同时禁用自动压缩和自动恢复，手动压缩仍可用。\n《18-sdk.md》记载：[English](sdk.en.md) · [中文 README](../README.zh-CN.md)\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "压缩失败与 enabled=false 的引文不是 B/M、read_context、全文归档及替代关系的答案。",
+      "citationOriginalChecks": [
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "fe4d6bf7-47ad-49b2-b5c7-c79965fbc9c0",
+          "quote": "主动压缩失败保留旧视图并允许任务请求。overflow 与符合 Pi 条件的 length 共用连续失败链的一次压缩恢复，失败的部分输出保留在历史，恢复不重放工具。成功答案即使用量超窗也不重新生成。`enabled: false` 同时禁用自动压缩和自动恢复，手动压缩仍可用。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "7c0cd03c-1847-4c10-80fa-9051cf67adbe",
+          "quote": "[English](sdk.en.md) · [中文 README](../README.zh-CN.md)\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "request-shape",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《02-002-request-bus-shape.md》记载：- **变容易**:换传输层(socket、web UI)只替换两条 iterable 的两端,`core` 不动。第二个客户端不需要重新设计 permission 语义。\n- **变难**:`core` 内部要自己维护 pending map + 超时,约多 50 行。调用点从 `await confirm()` 变成 `await bus.ask(...)` —— 形状仍是 await,可读性损失有限。\n- **不可回退面**:M1 定的五个 kind 一旦合入,后续只许加字段不许改形状。\n- **安全语义**:降级方向恒为 deny(abort → cancelled → deny;headless 默认 deny),不存在隐式 allow 路径。\n- **需要同步的文档**:[phases/phase-2.md](../phases/phase-2.md) M1(已含本决策);[plan.md](../plan.md) Phase 2 行动项「request 总线」条目引用本 ADR 即可,不复制理由。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 2,
+        "completeness": 1,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "引用讲两条 iterable 的传输替换与解耦，但未明确 request/response async iterable 和唯一不复用 ID；核心方向部分正确。",
+      "citationOriginalChecks": [
+        {
+          "filename": "02-002-request-bus-shape.md",
+          "version": "1d834b00-6e55-4846-ab4c-b3b55c19b2dd",
+          "passageId": "7c367fde-188e-4d0d-8970-c4fc072d97e9",
+          "quote": "- **变容易**:换传输层(socket、web UI)只替换两条 iterable 的两端,`core` 不动。第二个客户端不需要重新设计 permission 语义。\n- **变难**:`core` 内部要自己维护 pending map + 超时,约多 50 行。调用点从 `await confirm()` 变成 `await bus.ask(...)` —— 形状仍是 await,可读性损失有限。\n- **不可回退面**:M1 定的五个 kind 一旦合入,后续只许加字段不许改形状。\n- **安全语义**:降级方向恒为 deny(abort → cancelled → deny;headless 默认 deny),不存在隐式 allow 路径。\n- **需要同步的文档**:[phases/phase-2.md](../phases/phase-2.md) M1(已含本决策);[plan.md](../plan.md) Phase 2 行动项「request 总线」条目引用本 ADR 即可,不复制理由。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "headless",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《18-sdk.md》记载：默认未允许的工具调用需要授权。宿主可配置 `permission.rules`,或并行消费 `agent.requests`,通过 `agent.respond(response)` 答复。请求流应与执行流并行消费,不能等执行完成才处理授权。无答复默认 30 秒后拒绝,没有界面不等于自动放行。\n《18-sdk.md》记载：每实例默认有独立权限记忆和请求总线。CLI 为兼容现有 TUI 显式传入独占 RequestBus,交互模式允许无限等待;SDK dispose 会关闭该总线,不得跨实例共享。请求观察、授权与释放不依赖 pi 类型。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "引用 SDK 权限等待规则，未回答三类 headless 决策和退出码，不能把 SDK 的30秒超时当作 headless 规则。",
+      "citationOriginalChecks": [
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "9a0c66dc-cc50-41ed-aa20-54c43ea88dd5",
+          "quote": "默认未允许的工具调用需要授权。宿主可配置 `permission.rules`,或并行消费 `agent.requests`,通过 `agent.respond(response)` 答复。请求流应与执行流并行消费,不能等执行完成才处理授权。无答复默认 30 秒后拒绝,没有界面不等于自动放行。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "e2b02396-920f-4c8e-a1af-7eb1a9496353",
+          "quote": "每实例默认有独立权限记忆和请求总线。CLI 为兼容现有 TUI 显式传入独占 RequestBus,交互模式允许无限等待;SDK dispose 会关闭该总线,不得跨实例共享。请求观察、授权与释放不依赖 pi 类型。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "permission",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《20-session-management.md》记载：---\ndoc_kind: plan\ncreated: 2026-09-09\n---\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "仅抄录会话文档 frontmatter，无 permission 模式答案。",
+      "citationOriginalChecks": [
+        {
+          "filename": "20-session-management.md",
+          "version": "a77747ad-d82f-4897-b36a-6ce6c68df9d3",
+          "passageId": "39d43d73-7be4-4f0d-a949-6a927cd9208b",
+          "quote": "---\ndoc_kind: plan\ncreated: 2026-09-09\n---\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "dangerous",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《02-002-request-bus-shape.md》记载：| kind | payload | response result | headless exit code |\n|---|---|---|---:|\n| `permission` | `toolCall`, `reason?`, `rememberRule?` | `allow_once` / `allow_always(scope)` / `deny` | 20 |\n| `cancel_confirm` | `action`, `consequence?` | `cancel` / `keep_running` | 21 |\n| `question` | `prompt`, `choices?`, `allowFreeText?`, `multiple?` | `answer(answers[])` / `cancel` | 22 |\n| `plan_approval` | `plan` | `approve` / `reject(feedback?)` | 23 |\n| `oauth` | `provider`, `authorizationUrl`, `instructions?` | `completed` / `cancel` | 24 |\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "请求类型表不回答危险 git push 是否忽略已记住规则。",
+      "citationOriginalChecks": [
+        {
+          "filename": "02-002-request-bus-shape.md",
+          "version": "1d834b00-6e55-4846-ab4c-b3b55c19b2dd",
+          "passageId": "cc8c74cd-5eb0-4d27-bd4e-c19d348c05b5",
+          "quote": "| kind | payload | response result | headless exit code |\n|---|---|---|---:|\n| `permission` | `toolCall`, `reason?`, `rememberRule?` | `allow_once` / `allow_always(scope)` / `deny` | 20 |\n| `cancel_confirm` | `action`, `consequence?` | `cancel` / `keep_running` | 21 |\n| `question` | `prompt`, `choices?`, `allowFreeText?`, `multiple?` | `answer(answers[])` / `cancel` | 22 |\n| `plan_approval` | `plan` | `approve` / `reject(feedback?)` | 23 |\n| `oauth` | `provider`, `authorizationUrl`, `instructions?` | `completed` / `cancel` | 24 |\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "isolation",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《18-sdk.md》记载：跨 invocation 队列属于宿主。TUI 在等待期间持续接受输入,显示 FIFO,空输入框 Up 取回队尾编辑;Esc 停止续发并恢复草稿,Ctrl+Enter 仅在旧任务成功收尾后发送指定输入,其余待发原文恢复草稿。提交失败暂停队列,检查存储并重建实例后由宿主明确恢复。`agent_end` 仅表示执行终止,整个异步迭代正常完成才表示会话提交完成。\n《18-sdk.md》记载：> 范围:仓库内 Bun SDK,入口 `@forge-agent/core/sdk`。未承诺 npm 发布、Node.js 兼容或进程隔离。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 2,
+        "completeness": 1,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "引用不承诺进程隔离，可支持否定方向；未解释同进程故障/沙箱边界或宿主进程容器选择。",
+      "citationOriginalChecks": [
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "409b60e5-810c-4b27-b7f1-d9a2157da154",
+          "quote": "跨 invocation 队列属于宿主。TUI 在等待期间持续接受输入,显示 FIFO,空输入框 Up 取回队尾编辑;Esc 停止续发并恢复草稿,Ctrl+Enter 仅在旧任务成功收尾后发送指定输入,其余待发原文恢复草稿。提交失败暂停队列,检查存储并重建实例后由宿主明确恢复。`agent_end` 仅表示执行终止,整个异步迭代正常完成才表示会话提交完成。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "732248b4-9df3-40e2-9fb8-d098b800f9ed",
+          "quote": "> 范围:仓库内 Bun SDK,入口 `@forge-agent/core/sdk`。未承诺 npm 发布、Node.js 兼容或进程隔离。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "reference",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《06-006-tui-cell-parity.md》记载：# ADR-006: TUI 视觉出口升级为锁定环境内逐 cell 零差异\n《06-006-tui-cell-parity.md》记载：> 状态:已批准(2026-09-04)。reference 获取路径被 [ADR-007](./007-no-compile-grok-reference.md) 修订:不再编译 grok-build;cell 回归改为 in-repo golden。决策 2/3(自有 compositor、PNG 非硬门禁)仍有效。\n> 参与者:operator(发起与拍板)、Grok(起草)\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 3,
+        "completeness": 2,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "状态行已正确说明不再编译、改仓库 golden；未明确不能据此宣称与 grok 运行时逐 cell 相同。",
+      "citationOriginalChecks": [
+        {
+          "filename": "06-006-tui-cell-parity.md",
+          "version": "8ea5fb3d-80b2-412e-98cd-74eac5cc6a78",
+          "passageId": "174e1d23-c80e-4059-918f-8023d958f4fa",
+          "quote": "# ADR-006: TUI 视觉出口升级为锁定环境内逐 cell 零差异\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "06-006-tui-cell-parity.md",
+          "version": "8ea5fb3d-80b2-412e-98cd-74eac5cc6a78",
+          "passageId": "e5acb3ba-84bb-4938-b8f6-41b36f803960",
+          "quote": "> 状态:已批准(2026-09-04)。reference 获取路径被 [ADR-007](./007-no-compile-grok-reference.md) 修订:不再编译 grok-build;cell 回归改为 in-repo golden。决策 2/3(自有 compositor、PNG 非硬门禁)仍有效。\n> 参与者:operator(发起与拍板)、Grok(起草)\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "team",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "release",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "draft-release",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "clear",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "session-path",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "storage",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "manual-compact",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "markdown",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "sla-missing",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《04-004-single-process-protocol-isolation.md》记载：clowder-ai 用「服务端 + 网页界面 + Redis」的分布式架构实现了核心与界面的物理分离。代价:Redis 快照空档丢数据(28 秒,307→144 keys)、进程管理、Lua CAS 并发控制(单用户场景防的是不存在的并发)、Mission Hub 运维面板——每一层基础设施都在解决上一层制造的问题,而不是用户的问题。详见 [design-rationale.md](../design-rationale.md) C.4、[cat-cafe.md](https://github.com/L-1ngg/forge-agent/blob/24750eb3d22d23d72d3c17fa589b1df425d28940/docs/cat-cafe.md) F.1。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 1,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "引用 clowder Redis 事故无关；泛称部分覆盖未明确 SLA 前提及赔偿比例无依据，虽未编造比例也不能算充分拒答。",
+      "citationOriginalChecks": [
+        {
+          "filename": "04-004-single-process-protocol-isolation.md",
+          "version": "986bcad1-7814-43b6-a523-5eedfe94a592",
+          "passageId": "9dfa44be-c4db-4aa5-9596-04bc7ce748ad",
+          "quote": "clowder-ai 用「服务端 + 网页界面 + Redis」的分布式架构实现了核心与界面的物理分离。代价:Redis 快照空档丢数据(28 秒,307→144 keys)、进程管理、Lua CAS 并发控制(单用户场景防的是不存在的并发)、Mission Hub 运维面板——每一层基础设施都在解决上一层制造的问题,而不是用户的问题。详见 [design-rationale.md](../design-rationale.md) C.4、[cat-cafe.md](https://github.com/L-1ngg/forge-agent/blob/24750eb3d22d23d72d3c17fa589b1df425d28940/docs/cat-cafe.md) F.1。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "revenue-missing",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 3,
+        "completeness": 3,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "对指定财务问题明确本次依据不足、无法确定，未编造数值或把未知说成零。",
+      "citationOriginalChecks": [],
+      "qualityPass": true,
+      "deliveryPass": false
+    },
+    {
+      "id": "core-evolution",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《09-009-self-owned-agent-core.md》记载：> 状态:自行实现循环的方向由 operator 于 2026-09-08 批准的 [Spec #14](https://github.com/L-1ngg/forge-agent/issues/14) 取代，改为从固定源码建立本地维护的执行底座；输入归属与上下文合同不变。当前生产接入与回退见 [ADR-015](015-pi-core-source-migration.md) 和[施工图](../phases/pi-core-migration.md)。原决策已批准(2026-09-05)。自研内核已提交,施工、自动化证据与剩余验收统一见 [自研执行内核](../phases/owned-core.md);输入与取消边界由 [ADR-010](010-input-ownership-and-interruption.md) 补充。2026-09-06 核对。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 2,
+        "completeness": 1,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "引用状态正确指向后续源码基线，但未说明 Pi 来源、自有不等于原创及 CLI/TUI 保留；替代关系仅部分覆盖。",
+      "citationOriginalChecks": [
+        {
+          "filename": "09-009-self-owned-agent-core.md",
+          "version": "d78176e0-9088-4423-a092-d7273b78254a",
+          "passageId": "0a075543-a414-400f-93e3-b6973e99c14c",
+          "quote": "> 状态:自行实现循环的方向由 operator 于 2026-09-08 批准的 [Spec #14](https://github.com/L-1ngg/forge-agent/issues/14) 取代，改为从固定源码建立本地维护的执行底座；输入归属与上下文合同不变。当前生产接入与回退见 [ADR-015](015-pi-core-source-migration.md) 和[施工图](../phases/pi-core-migration.md)。原决策已批准(2026-09-05)。自研内核已提交,施工、自动化证据与剩余验收统一见 [自研执行内核](../phases/owned-core.md);输入与取消边界由 [ADR-010](010-input-ownership-and-interruption.md) 补充。2026-09-06 核对。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "context-evolution",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "cancel-persistence",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "render-evolution",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "clear-paraphrase",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《10-010-input-ownership-and-interruption.md》记载：> 状态:提交方向部分被 [ADR-013](013-incremental-session-persistence.md) 及 [ADR-014](014-pi-aligned-context-management.md) 取代(2026-09-07)，新方向已实现并完成本地验收，见[实现证据](../phases/context-management-acceptance.md)；下文保留 2026-09-05 历史规则与验收证据，输入归属等未替代部分继续有效。\n> 参与者:operator 提出体验问题并要求记录方案,Codex 调研与起草。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "引用取消/持久化 ADR 状态，不回答 /clear 是否改历史。",
+      "citationOriginalChecks": [
+        {
+          "filename": "10-010-input-ownership-and-interruption.md",
+          "version": "236d4a2b-5294-49e6-9c28-f26ce7db2439",
+          "passageId": "1c02107e-e19d-492e-a8d6-4193efd259f8",
+          "quote": "> 状态:提交方向部分被 [ADR-013](013-incremental-session-persistence.md) 及 [ADR-014](014-pi-aligned-context-management.md) 取代(2026-09-07)，新方向已实现并完成本地验收，见[实现证据](../phases/context-management-acceptance.md)；下文保留 2026-09-05 历史规则与验收证据，输入归属等未替代部分继续有效。\n> 参与者:operator 提出体验问题并要求记录方案,Codex 调研与起草。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "sla-missing-paraphrase",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 3,
+        "completeness": 3,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "明确本次依据不足、无法确定；未承认商业 SLA 前提或编造赔偿比例。",
+      "citationOriginalChecks": [],
+      "qualityPass": true,
+      "deliveryPass": false
+    },
+    {
+      "id": "core-evolution-paraphrase",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《14-014-pi-aligned-context-management.md》记载：基准为 `earendil-works/pi` 的 coding-agent，SHA `9767ba275f3e9a5ee0f5c5342249b629ab1b2282`；不是新的 AgentHarness，也不要求升级整个上游应用。Forge 当前 `pi-ai` 为 0.84.4，执行循环仍由自研 ExecutionCore 拥有。\n《14-014-pi-aligned-context-management.md》记载：# ADR-014: 对齐 Pi 的上下文管理\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "只引用 ADR-014 的旧 ExecutionCore 背景，没有 ADR-015 替代解释，未回答源码所有权与界面保留。",
+      "citationOriginalChecks": [
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "version": "e4929789-abf9-4fd6-9e4f-4aca51c0f464",
+          "passageId": "519c74d4-8154-4f74-84bc-45efa6ad5020",
+          "quote": "基准为 `earendil-works/pi` 的 coding-agent，SHA `9767ba275f3e9a5ee0f5c5342249b629ab1b2282`；不是新的 AgentHarness，也不要求升级整个上游应用。Forge 当前 `pi-ai` 为 0.84.4，执行循环仍由自研 ExecutionCore 拥有。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "version": "e4929789-abf9-4fd6-9e4f-4aca51c0f464",
+          "passageId": "924d077f-fae7-457d-8e51-d7099c6c6ca0",
+          "quote": "# ADR-014: 对齐 Pi 的上下文管理\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "context-evolution-paraphrase",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《18-sdk.md》记载：主动压缩失败保留旧视图并允许任务请求。overflow 与符合 Pi 条件的 length 共用连续失败链的一次压缩恢复，失败的部分输出保留在历史，恢复不重放工具。成功答案即使用量超窗也不重新生成。`enabled: false` 同时禁用自动压缩和自动恢复，手动压缩仍可用。\n《18-sdk.md》记载：[English](sdk.en.md) · [中文 README](../README.zh-CN.md)\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "压缩失败与 enabled=false 的引文不是 B/M、read_context、全文归档及替代关系的答案。",
+      "citationOriginalChecks": [
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "fe4d6bf7-47ad-49b2-b5c7-c79965fbc9c0",
+          "quote": "主动压缩失败保留旧视图并允许任务请求。overflow 与符合 Pi 条件的 length 共用连续失败链的一次压缩恢复，失败的部分输出保留在历史，恢复不重放工具。成功答案即使用量超窗也不重新生成。`enabled: false` 同时禁用自动压缩和自动恢复，手动压缩仍可用。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "7c0cd03c-1847-4c10-80fa-9051cf67adbe",
+          "quote": "[English](sdk.en.md) · [中文 README](../README.zh-CN.md)\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "request-shape",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《02-002-request-bus-shape.md》记载：- **变容易**:换传输层(socket、web UI)只替换两条 iterable 的两端,`core` 不动。第二个客户端不需要重新设计 permission 语义。\n- **变难**:`core` 内部要自己维护 pending map + 超时,约多 50 行。调用点从 `await confirm()` 变成 `await bus.ask(...)` —— 形状仍是 await,可读性损失有限。\n- **不可回退面**:M1 定的五个 kind 一旦合入,后续只许加字段不许改形状。\n- **安全语义**:降级方向恒为 deny(abort → cancelled → deny;headless 默认 deny),不存在隐式 allow 路径。\n- **需要同步的文档**:[phases/phase-2.md](../phases/phase-2.md) M1(已含本决策);[plan.md](../plan.md) Phase 2 行动项「request 总线」条目引用本 ADR 即可,不复制理由。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 2,
+        "completeness": 1,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "引用讲两条 iterable 的传输替换与解耦，但未明确 request/response async iterable 和唯一不复用 ID；核心方向部分正确。",
+      "citationOriginalChecks": [
+        {
+          "filename": "02-002-request-bus-shape.md",
+          "version": "1d834b00-6e55-4846-ab4c-b3b55c19b2dd",
+          "passageId": "7c367fde-188e-4d0d-8970-c4fc072d97e9",
+          "quote": "- **变容易**:换传输层(socket、web UI)只替换两条 iterable 的两端,`core` 不动。第二个客户端不需要重新设计 permission 语义。\n- **变难**:`core` 内部要自己维护 pending map + 超时,约多 50 行。调用点从 `await confirm()` 变成 `await bus.ask(...)` —— 形状仍是 await,可读性损失有限。\n- **不可回退面**:M1 定的五个 kind 一旦合入,后续只许加字段不许改形状。\n- **安全语义**:降级方向恒为 deny(abort → cancelled → deny;headless 默认 deny),不存在隐式 allow 路径。\n- **需要同步的文档**:[phases/phase-2.md](../phases/phase-2.md) M1(已含本决策);[plan.md](../plan.md) Phase 2 行动项「request 总线」条目引用本 ADR 即可,不复制理由。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "headless",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《18-sdk.md》记载：默认未允许的工具调用需要授权。宿主可配置 `permission.rules`,或并行消费 `agent.requests`,通过 `agent.respond(response)` 答复。请求流应与执行流并行消费,不能等执行完成才处理授权。无答复默认 30 秒后拒绝,没有界面不等于自动放行。\n《18-sdk.md》记载：每实例默认有独立权限记忆和请求总线。CLI 为兼容现有 TUI 显式传入独占 RequestBus,交互模式允许无限等待;SDK dispose 会关闭该总线,不得跨实例共享。请求观察、授权与释放不依赖 pi 类型。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "引用 SDK 权限等待规则，未回答三类 headless 决策和退出码，不能把 SDK 的30秒超时当作 headless 规则。",
+      "citationOriginalChecks": [
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "9a0c66dc-cc50-41ed-aa20-54c43ea88dd5",
+          "quote": "默认未允许的工具调用需要授权。宿主可配置 `permission.rules`,或并行消费 `agent.requests`,通过 `agent.respond(response)` 答复。请求流应与执行流并行消费,不能等执行完成才处理授权。无答复默认 30 秒后拒绝,没有界面不等于自动放行。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "e2b02396-920f-4c8e-a1af-7eb1a9496353",
+          "quote": "每实例默认有独立权限记忆和请求总线。CLI 为兼容现有 TUI 显式传入独占 RequestBus,交互模式允许无限等待;SDK dispose 会关闭该总线,不得跨实例共享。请求观察、授权与释放不依赖 pi 类型。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "permission",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《20-session-management.md》记载：---\ndoc_kind: plan\ncreated: 2026-09-09\n---\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "仅抄录会话文档 frontmatter，无 permission 模式答案。",
+      "citationOriginalChecks": [
+        {
+          "filename": "20-session-management.md",
+          "version": "a77747ad-d82f-4897-b36a-6ce6c68df9d3",
+          "passageId": "39d43d73-7be4-4f0d-a949-6a927cd9208b",
+          "quote": "---\ndoc_kind: plan\ncreated: 2026-09-09\n---\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "dangerous",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《02-002-request-bus-shape.md》记载：| kind | payload | response result | headless exit code |\n|---|---|---|---:|\n| `permission` | `toolCall`, `reason?`, `rememberRule?` | `allow_once` / `allow_always(scope)` / `deny` | 20 |\n| `cancel_confirm` | `action`, `consequence?` | `cancel` / `keep_running` | 21 |\n| `question` | `prompt`, `choices?`, `allowFreeText?`, `multiple?` | `answer(answers[])` / `cancel` | 22 |\n| `plan_approval` | `plan` | `approve` / `reject(feedback?)` | 23 |\n| `oauth` | `provider`, `authorizationUrl`, `instructions?` | `completed` / `cancel` | 24 |\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "请求类型表不回答危险 git push 是否忽略已记住规则。",
+      "citationOriginalChecks": [
+        {
+          "filename": "02-002-request-bus-shape.md",
+          "version": "1d834b00-6e55-4846-ab4c-b3b55c19b2dd",
+          "passageId": "cc8c74cd-5eb0-4d27-bd4e-c19d348c05b5",
+          "quote": "| kind | payload | response result | headless exit code |\n|---|---|---|---:|\n| `permission` | `toolCall`, `reason?`, `rememberRule?` | `allow_once` / `allow_always(scope)` / `deny` | 20 |\n| `cancel_confirm` | `action`, `consequence?` | `cancel` / `keep_running` | 21 |\n| `question` | `prompt`, `choices?`, `allowFreeText?`, `multiple?` | `answer(answers[])` / `cancel` | 22 |\n| `plan_approval` | `plan` | `approve` / `reject(feedback?)` | 23 |\n| `oauth` | `provider`, `authorizationUrl`, `instructions?` | `completed` / `cancel` | 24 |\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "isolation",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《18-sdk.md》记载：跨 invocation 队列属于宿主。TUI 在等待期间持续接受输入,显示 FIFO,空输入框 Up 取回队尾编辑;Esc 停止续发并恢复草稿,Ctrl+Enter 仅在旧任务成功收尾后发送指定输入,其余待发原文恢复草稿。提交失败暂停队列,检查存储并重建实例后由宿主明确恢复。`agent_end` 仅表示执行终止,整个异步迭代正常完成才表示会话提交完成。\n《18-sdk.md》记载：> 范围:仓库内 Bun SDK,入口 `@forge-agent/core/sdk`。未承诺 npm 发布、Node.js 兼容或进程隔离。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 2,
+        "completeness": 1,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "引用不承诺进程隔离，可支持否定方向；未解释同进程故障/沙箱边界或宿主进程容器选择。",
+      "citationOriginalChecks": [
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "409b60e5-810c-4b27-b7f1-d9a2157da154",
+          "quote": "跨 invocation 队列属于宿主。TUI 在等待期间持续接受输入,显示 FIFO,空输入框 Up 取回队尾编辑;Esc 停止续发并恢复草稿,Ctrl+Enter 仅在旧任务成功收尾后发送指定输入,其余待发原文恢复草稿。提交失败暂停队列,检查存储并重建实例后由宿主明确恢复。`agent_end` 仅表示执行终止,整个异步迭代正常完成才表示会话提交完成。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "732248b4-9df3-40e2-9fb8-d098b800f9ed",
+          "quote": "> 范围:仓库内 Bun SDK,入口 `@forge-agent/core/sdk`。未承诺 npm 发布、Node.js 兼容或进程隔离。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "reference",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《06-006-tui-cell-parity.md》记载：# ADR-006: TUI 视觉出口升级为锁定环境内逐 cell 零差异\n《06-006-tui-cell-parity.md》记载：> 状态:已批准(2026-09-04)。reference 获取路径被 [ADR-007](./007-no-compile-grok-reference.md) 修订:不再编译 grok-build;cell 回归改为 in-repo golden。决策 2/3(自有 compositor、PNG 非硬门禁)仍有效。\n> 参与者:operator(发起与拍板)、Grok(起草)\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 3,
+        "completeness": 2,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "状态行已正确说明不再编译、改仓库 golden；未明确不能据此宣称与 grok 运行时逐 cell 相同。",
+      "citationOriginalChecks": [
+        {
+          "filename": "06-006-tui-cell-parity.md",
+          "version": "8ea5fb3d-80b2-412e-98cd-74eac5cc6a78",
+          "passageId": "174e1d23-c80e-4059-918f-8023d958f4fa",
+          "quote": "# ADR-006: TUI 视觉出口升级为锁定环境内逐 cell 零差异\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "06-006-tui-cell-parity.md",
+          "version": "8ea5fb3d-80b2-412e-98cd-74eac5cc6a78",
+          "passageId": "e5acb3ba-84bb-4938-b8f6-41b36f803960",
+          "quote": "> 状态:已批准(2026-09-04)。reference 获取路径被 [ADR-007](./007-no-compile-grok-reference.md) 修订:不再编译 grok-build;cell 回归改为 in-repo golden。决策 2/3(自有 compositor、PNG 非硬门禁)仍有效。\n> 参与者:operator(发起与拍板)、Grok(起草)\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "team",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "release",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "draft-release",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "clear",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "session-path",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "storage",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "manual-compact",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "markdown",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "sla-missing",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《04-004-single-process-protocol-isolation.md》记载：clowder-ai 用「服务端 + 网页界面 + Redis」的分布式架构实现了核心与界面的物理分离。代价:Redis 快照空档丢数据(28 秒,307→144 keys)、进程管理、Lua CAS 并发控制(单用户场景防的是不存在的并发)、Mission Hub 运维面板——每一层基础设施都在解决上一层制造的问题,而不是用户的问题。详见 [design-rationale.md](../design-rationale.md) C.4、[cat-cafe.md](https://github.com/L-1ngg/forge-agent/blob/24750eb3d22d23d72d3c17fa589b1df425d28940/docs/cat-cafe.md) F.1。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 1,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "引用 clowder Redis 事故无关；泛称部分覆盖未明确 SLA 前提及赔偿比例无依据，虽未编造比例也不能算充分拒答。",
+      "citationOriginalChecks": [
+        {
+          "filename": "04-004-single-process-protocol-isolation.md",
+          "version": "986bcad1-7814-43b6-a523-5eedfe94a592",
+          "passageId": "9dfa44be-c4db-4aa5-9596-04bc7ce748ad",
+          "quote": "clowder-ai 用「服务端 + 网页界面 + Redis」的分布式架构实现了核心与界面的物理分离。代价:Redis 快照空档丢数据(28 秒,307→144 keys)、进程管理、Lua CAS 并发控制(单用户场景防的是不存在的并发)、Mission Hub 运维面板——每一层基础设施都在解决上一层制造的问题,而不是用户的问题。详见 [design-rationale.md](../design-rationale.md) C.4、[cat-cafe.md](https://github.com/L-1ngg/forge-agent/blob/24750eb3d22d23d72d3c17fa589b1df425d28940/docs/cat-cafe.md) F.1。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "revenue-missing",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 3,
+        "completeness": 3,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "对指定财务问题明确本次依据不足、无法确定，未编造数值或把未知说成零。",
+      "citationOriginalChecks": [],
+      "qualityPass": true,
+      "deliveryPass": false
+    },
+    {
+      "id": "core-evolution",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《09-009-self-owned-agent-core.md》记载：> 状态:自行实现循环的方向由 operator 于 2026-09-08 批准的 [Spec #14](https://github.com/L-1ngg/forge-agent/issues/14) 取代，改为从固定源码建立本地维护的执行底座；输入归属与上下文合同不变。当前生产接入与回退见 [ADR-015](015-pi-core-source-migration.md) 和[施工图](../phases/pi-core-migration.md)。原决策已批准(2026-09-05)。自研内核已提交,施工、自动化证据与剩余验收统一见 [自研执行内核](../phases/owned-core.md);输入与取消边界由 [ADR-010](010-input-ownership-and-interruption.md) 补充。2026-09-06 核对。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 2,
+        "completeness": 1,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "引用状态正确指向后续源码基线，但未说明 Pi 来源、自有不等于原创及 CLI/TUI 保留；替代关系仅部分覆盖。",
+      "citationOriginalChecks": [
+        {
+          "filename": "09-009-self-owned-agent-core.md",
+          "version": "d78176e0-9088-4423-a092-d7273b78254a",
+          "passageId": "0a075543-a414-400f-93e3-b6973e99c14c",
+          "quote": "> 状态:自行实现循环的方向由 operator 于 2026-09-08 批准的 [Spec #14](https://github.com/L-1ngg/forge-agent/issues/14) 取代，改为从固定源码建立本地维护的执行底座；输入归属与上下文合同不变。当前生产接入与回退见 [ADR-015](015-pi-core-source-migration.md) 和[施工图](../phases/pi-core-migration.md)。原决策已批准(2026-09-05)。自研内核已提交,施工、自动化证据与剩余验收统一见 [自研执行内核](../phases/owned-core.md);输入与取消边界由 [ADR-010](010-input-ownership-and-interruption.md) 补充。2026-09-06 核对。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "context-evolution",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "cancel-persistence",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "render-evolution",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "clear-paraphrase",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《10-010-input-ownership-and-interruption.md》记载：> 状态:提交方向部分被 [ADR-013](013-incremental-session-persistence.md) 及 [ADR-014](014-pi-aligned-context-management.md) 取代(2026-09-07)，新方向已实现并完成本地验收，见[实现证据](../phases/context-management-acceptance.md)；下文保留 2026-09-05 历史规则与验收证据，输入归属等未替代部分继续有效。\n> 参与者:operator 提出体验问题并要求记录方案,Codex 调研与起草。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "引用取消/持久化 ADR 状态，不回答 /clear 是否改历史。",
+      "citationOriginalChecks": [
+        {
+          "filename": "10-010-input-ownership-and-interruption.md",
+          "version": "236d4a2b-5294-49e6-9c28-f26ce7db2439",
+          "passageId": "1c02107e-e19d-492e-a8d6-4193efd259f8",
+          "quote": "> 状态:提交方向部分被 [ADR-013](013-incremental-session-persistence.md) 及 [ADR-014](014-pi-aligned-context-management.md) 取代(2026-09-07)，新方向已实现并完成本地验收，见[实现证据](../phases/context-management-acceptance.md)；下文保留 2026-09-05 历史规则与验收证据，输入归属等未替代部分继续有效。\n> 参与者:operator 提出体验问题并要求记录方案,Codex 调研与起草。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "sla-missing-paraphrase",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 3,
+        "completeness": 3,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "明确本次依据不足、无法确定；未承认商业 SLA 前提或编造赔偿比例。",
+      "citationOriginalChecks": [],
+      "qualityPass": true,
+      "deliveryPass": false
+    },
+    {
+      "id": "core-evolution-paraphrase",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《14-014-pi-aligned-context-management.md》记载：基准为 `earendil-works/pi` 的 coding-agent，SHA `9767ba275f3e9a5ee0f5c5342249b629ab1b2282`；不是新的 AgentHarness，也不要求升级整个上游应用。Forge 当前 `pi-ai` 为 0.84.4，执行循环仍由自研 ExecutionCore 拥有。\n《14-014-pi-aligned-context-management.md》记载：# ADR-014: 对齐 Pi 的上下文管理\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "只引用 ADR-014 的旧 ExecutionCore 背景，没有 ADR-015 替代解释，未回答源码所有权与界面保留。",
+      "citationOriginalChecks": [
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "version": "e4929789-abf9-4fd6-9e4f-4aca51c0f464",
+          "passageId": "519c74d4-8154-4f74-84bc-45efa6ad5020",
+          "quote": "基准为 `earendil-works/pi` 的 coding-agent，SHA `9767ba275f3e9a5ee0f5c5342249b629ab1b2282`；不是新的 AgentHarness，也不要求升级整个上游应用。Forge 当前 `pi-ai` 为 0.84.4，执行循环仍由自研 ExecutionCore 拥有。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "version": "e4929789-abf9-4fd6-9e4f-4aca51c0f464",
+          "passageId": "924d077f-fae7-457d-8e51-d7099c6c6ca0",
+          "quote": "# ADR-014: 对齐 Pi 的上下文管理\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "context-evolution-paraphrase",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《18-sdk.md》记载：主动压缩失败保留旧视图并允许任务请求。overflow 与符合 Pi 条件的 length 共用连续失败链的一次压缩恢复，失败的部分输出保留在历史，恢复不重放工具。成功答案即使用量超窗也不重新生成。`enabled: false` 同时禁用自动压缩和自动恢复，手动压缩仍可用。\n《18-sdk.md》记载：[English](sdk.en.md) · [中文 README](../README.zh-CN.md)\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "压缩失败与 enabled=false 的引文不是 B/M、read_context、全文归档及替代关系的答案。",
+      "citationOriginalChecks": [
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "fe4d6bf7-47ad-49b2-b5c7-c79965fbc9c0",
+          "quote": "主动压缩失败保留旧视图并允许任务请求。overflow 与符合 Pi 条件的 length 共用连续失败链的一次压缩恢复，失败的部分输出保留在历史，恢复不重放工具。成功答案即使用量超窗也不重新生成。`enabled: false` 同时禁用自动压缩和自动恢复，手动压缩仍可用。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "7c0cd03c-1847-4c10-80fa-9051cf67adbe",
+          "quote": "[English](sdk.en.md) · [中文 README](../README.zh-CN.md)\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "request-shape",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《02-002-request-bus-shape.md》记载：- **变容易**:换传输层(socket、web UI)只替换两条 iterable 的两端,`core` 不动。第二个客户端不需要重新设计 permission 语义。\n- **变难**:`core` 内部要自己维护 pending map + 超时,约多 50 行。调用点从 `await confirm()` 变成 `await bus.ask(...)` —— 形状仍是 await,可读性损失有限。\n- **不可回退面**:M1 定的五个 kind 一旦合入,后续只许加字段不许改形状。\n- **安全语义**:降级方向恒为 deny(abort → cancelled → deny;headless 默认 deny),不存在隐式 allow 路径。\n- **需要同步的文档**:[phases/phase-2.md](../phases/phase-2.md) M1(已含本决策);[plan.md](../plan.md) Phase 2 行动项「request 总线」条目引用本 ADR 即可,不复制理由。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 2,
+        "completeness": 1,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "引用讲两条 iterable 的传输替换与解耦，但未明确 request/response async iterable 和唯一不复用 ID；核心方向部分正确。",
+      "citationOriginalChecks": [
+        {
+          "filename": "02-002-request-bus-shape.md",
+          "version": "1d834b00-6e55-4846-ab4c-b3b55c19b2dd",
+          "passageId": "7c367fde-188e-4d0d-8970-c4fc072d97e9",
+          "quote": "- **变容易**:换传输层(socket、web UI)只替换两条 iterable 的两端,`core` 不动。第二个客户端不需要重新设计 permission 语义。\n- **变难**:`core` 内部要自己维护 pending map + 超时,约多 50 行。调用点从 `await confirm()` 变成 `await bus.ask(...)` —— 形状仍是 await,可读性损失有限。\n- **不可回退面**:M1 定的五个 kind 一旦合入,后续只许加字段不许改形状。\n- **安全语义**:降级方向恒为 deny(abort → cancelled → deny;headless 默认 deny),不存在隐式 allow 路径。\n- **需要同步的文档**:[phases/phase-2.md](../phases/phase-2.md) M1(已含本决策);[plan.md](../plan.md) Phase 2 行动项「request 总线」条目引用本 ADR 即可,不复制理由。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "headless",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《18-sdk.md》记载：默认未允许的工具调用需要授权。宿主可配置 `permission.rules`,或并行消费 `agent.requests`,通过 `agent.respond(response)` 答复。请求流应与执行流并行消费,不能等执行完成才处理授权。无答复默认 30 秒后拒绝,没有界面不等于自动放行。\n《18-sdk.md》记载：每实例默认有独立权限记忆和请求总线。CLI 为兼容现有 TUI 显式传入独占 RequestBus,交互模式允许无限等待;SDK dispose 会关闭该总线,不得跨实例共享。请求观察、授权与释放不依赖 pi 类型。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "引用 SDK 权限等待规则，未回答三类 headless 决策和退出码，不能把 SDK 的30秒超时当作 headless 规则。",
+      "citationOriginalChecks": [
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "9a0c66dc-cc50-41ed-aa20-54c43ea88dd5",
+          "quote": "默认未允许的工具调用需要授权。宿主可配置 `permission.rules`,或并行消费 `agent.requests`,通过 `agent.respond(response)` 答复。请求流应与执行流并行消费,不能等执行完成才处理授权。无答复默认 30 秒后拒绝,没有界面不等于自动放行。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "e2b02396-920f-4c8e-a1af-7eb1a9496353",
+          "quote": "每实例默认有独立权限记忆和请求总线。CLI 为兼容现有 TUI 显式传入独占 RequestBus,交互模式允许无限等待;SDK dispose 会关闭该总线,不得跨实例共享。请求观察、授权与释放不依赖 pi 类型。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "permission",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《20-session-management.md》记载：---\ndoc_kind: plan\ncreated: 2026-09-09\n---\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "仅抄录会话文档 frontmatter，无 permission 模式答案。",
+      "citationOriginalChecks": [
+        {
+          "filename": "20-session-management.md",
+          "version": "a77747ad-d82f-4897-b36a-6ce6c68df9d3",
+          "passageId": "39d43d73-7be4-4f0d-a949-6a927cd9208b",
+          "quote": "---\ndoc_kind: plan\ncreated: 2026-09-09\n---\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "dangerous",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《02-002-request-bus-shape.md》记载：| kind | payload | response result | headless exit code |\n|---|---|---|---:|\n| `permission` | `toolCall`, `reason?`, `rememberRule?` | `allow_once` / `allow_always(scope)` / `deny` | 20 |\n| `cancel_confirm` | `action`, `consequence?` | `cancel` / `keep_running` | 21 |\n| `question` | `prompt`, `choices?`, `allowFreeText?`, `multiple?` | `answer(answers[])` / `cancel` | 22 |\n| `plan_approval` | `plan` | `approve` / `reject(feedback?)` | 23 |\n| `oauth` | `provider`, `authorizationUrl`, `instructions?` | `completed` / `cancel` | 24 |\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "请求类型表不回答危险 git push 是否忽略已记住规则。",
+      "citationOriginalChecks": [
+        {
+          "filename": "02-002-request-bus-shape.md",
+          "version": "1d834b00-6e55-4846-ab4c-b3b55c19b2dd",
+          "passageId": "cc8c74cd-5eb0-4d27-bd4e-c19d348c05b5",
+          "quote": "| kind | payload | response result | headless exit code |\n|---|---|---|---:|\n| `permission` | `toolCall`, `reason?`, `rememberRule?` | `allow_once` / `allow_always(scope)` / `deny` | 20 |\n| `cancel_confirm` | `action`, `consequence?` | `cancel` / `keep_running` | 21 |\n| `question` | `prompt`, `choices?`, `allowFreeText?`, `multiple?` | `answer(answers[])` / `cancel` | 22 |\n| `plan_approval` | `plan` | `approve` / `reject(feedback?)` | 23 |\n| `oauth` | `provider`, `authorizationUrl`, `instructions?` | `completed` / `cancel` | 24 |\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "isolation",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《18-sdk.md》记载：跨 invocation 队列属于宿主。TUI 在等待期间持续接受输入,显示 FIFO,空输入框 Up 取回队尾编辑;Esc 停止续发并恢复草稿,Ctrl+Enter 仅在旧任务成功收尾后发送指定输入,其余待发原文恢复草稿。提交失败暂停队列,检查存储并重建实例后由宿主明确恢复。`agent_end` 仅表示执行终止,整个异步迭代正常完成才表示会话提交完成。\n《18-sdk.md》记载：> 范围:仓库内 Bun SDK,入口 `@forge-agent/core/sdk`。未承诺 npm 发布、Node.js 兼容或进程隔离。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 2,
+        "completeness": 1,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "引用不承诺进程隔离，可支持否定方向；未解释同进程故障/沙箱边界或宿主进程容器选择。",
+      "citationOriginalChecks": [
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "409b60e5-810c-4b27-b7f1-d9a2157da154",
+          "quote": "跨 invocation 队列属于宿主。TUI 在等待期间持续接受输入,显示 FIFO,空输入框 Up 取回队尾编辑;Esc 停止续发并恢复草稿,Ctrl+Enter 仅在旧任务成功收尾后发送指定输入,其余待发原文恢复草稿。提交失败暂停队列,检查存储并重建实例后由宿主明确恢复。`agent_end` 仅表示执行终止,整个异步迭代正常完成才表示会话提交完成。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "732248b4-9df3-40e2-9fb8-d098b800f9ed",
+          "quote": "> 范围:仓库内 Bun SDK,入口 `@forge-agent/core/sdk`。未承诺 npm 发布、Node.js 兼容或进程隔离。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "reference",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《06-006-tui-cell-parity.md》记载：# ADR-006: TUI 视觉出口升级为锁定环境内逐 cell 零差异\n《06-006-tui-cell-parity.md》记载：> 状态:已批准(2026-09-04)。reference 获取路径被 [ADR-007](./007-no-compile-grok-reference.md) 修订:不再编译 grok-build;cell 回归改为 in-repo golden。决策 2/3(自有 compositor、PNG 非硬门禁)仍有效。\n> 参与者:operator(发起与拍板)、Grok(起草)\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 3,
+        "completeness": 2,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "状态行已正确说明不再编译、改仓库 golden；未明确不能据此宣称与 grok 运行时逐 cell 相同。",
+      "citationOriginalChecks": [
+        {
+          "filename": "06-006-tui-cell-parity.md",
+          "version": "8ea5fb3d-80b2-412e-98cd-74eac5cc6a78",
+          "passageId": "174e1d23-c80e-4059-918f-8023d958f4fa",
+          "quote": "# ADR-006: TUI 视觉出口升级为锁定环境内逐 cell 零差异\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "06-006-tui-cell-parity.md",
+          "version": "8ea5fb3d-80b2-412e-98cd-74eac5cc6a78",
+          "passageId": "e5acb3ba-84bb-4938-b8f6-41b36f803960",
+          "quote": "> 状态:已批准(2026-09-04)。reference 获取路径被 [ADR-007](./007-no-compile-grok-reference.md) 修订:不再编译 grok-build;cell 回归改为 in-repo golden。决策 2/3(自有 compositor、PNG 非硬门禁)仍有效。\n> 参与者:operator(发起与拍板)、Grok(起草)\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "team",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "release",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "draft-release",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "clear",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "session-path",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "storage",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "manual-compact",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "markdown",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "sla-missing",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《04-004-single-process-protocol-isolation.md》记载：clowder-ai 用「服务端 + 网页界面 + Redis」的分布式架构实现了核心与界面的物理分离。代价:Redis 快照空档丢数据(28 秒,307→144 keys)、进程管理、Lua CAS 并发控制(单用户场景防的是不存在的并发)、Mission Hub 运维面板——每一层基础设施都在解决上一层制造的问题,而不是用户的问题。详见 [design-rationale.md](../design-rationale.md) C.4、[cat-cafe.md](https://github.com/L-1ngg/forge-agent/blob/24750eb3d22d23d72d3c17fa589b1df425d28940/docs/cat-cafe.md) F.1。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 1,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "引用 clowder Redis 事故无关；泛称部分覆盖未明确 SLA 前提及赔偿比例无依据，虽未编造比例也不能算充分拒答。",
+      "citationOriginalChecks": [
+        {
+          "filename": "04-004-single-process-protocol-isolation.md",
+          "version": "986bcad1-7814-43b6-a523-5eedfe94a592",
+          "passageId": "9dfa44be-c4db-4aa5-9596-04bc7ce748ad",
+          "quote": "clowder-ai 用「服务端 + 网页界面 + Redis」的分布式架构实现了核心与界面的物理分离。代价:Redis 快照空档丢数据(28 秒,307→144 keys)、进程管理、Lua CAS 并发控制(单用户场景防的是不存在的并发)、Mission Hub 运维面板——每一层基础设施都在解决上一层制造的问题,而不是用户的问题。详见 [design-rationale.md](../design-rationale.md) C.4、[cat-cafe.md](https://github.com/L-1ngg/forge-agent/blob/24750eb3d22d23d72d3c17fa589b1df425d28940/docs/cat-cafe.md) F.1。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "revenue-missing",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 3,
+        "completeness": 3,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "对指定财务问题明确本次依据不足、无法确定，未编造数值或把未知说成零。",
+      "citationOriginalChecks": [],
+      "qualityPass": true,
+      "deliveryPass": false
+    },
+    {
+      "id": "core-evolution",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《09-009-self-owned-agent-core.md》记载：> 状态:自行实现循环的方向由 operator 于 2026-09-08 批准的 [Spec #14](https://github.com/L-1ngg/forge-agent/issues/14) 取代，改为从固定源码建立本地维护的执行底座；输入归属与上下文合同不变。当前生产接入与回退见 [ADR-015](015-pi-core-source-migration.md) 和[施工图](../phases/pi-core-migration.md)。原决策已批准(2026-09-05)。自研内核已提交,施工、自动化证据与剩余验收统一见 [自研执行内核](../phases/owned-core.md);输入与取消边界由 [ADR-010](010-input-ownership-and-interruption.md) 补充。2026-09-06 核对。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 2,
+        "completeness": 1,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "引用状态正确指向后续源码基线，但未说明 Pi 来源、自有不等于原创及 CLI/TUI 保留；替代关系仅部分覆盖。",
+      "citationOriginalChecks": [
+        {
+          "filename": "09-009-self-owned-agent-core.md",
+          "version": "d78176e0-9088-4423-a092-d7273b78254a",
+          "passageId": "0a075543-a414-400f-93e3-b6973e99c14c",
+          "quote": "> 状态:自行实现循环的方向由 operator 于 2026-09-08 批准的 [Spec #14](https://github.com/L-1ngg/forge-agent/issues/14) 取代，改为从固定源码建立本地维护的执行底座；输入归属与上下文合同不变。当前生产接入与回退见 [ADR-015](015-pi-core-source-migration.md) 和[施工图](../phases/pi-core-migration.md)。原决策已批准(2026-09-05)。自研内核已提交,施工、自动化证据与剩余验收统一见 [自研执行内核](../phases/owned-core.md);输入与取消边界由 [ADR-010](010-input-ownership-and-interruption.md) 补充。2026-09-06 核对。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "context-evolution",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "cancel-persistence",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "render-evolution",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "冻结材料可回答，但仅说本次检索依据不足，未覆盖必要点；不将检索未命中当成语料没有答案。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "clear-paraphrase",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《10-010-input-ownership-and-interruption.md》记载：> 状态:提交方向部分被 [ADR-013](013-incremental-session-persistence.md) 及 [ADR-014](014-pi-aligned-context-management.md) 取代(2026-09-07)，新方向已实现并完成本地验收，见[实现证据](../phases/context-management-acceptance.md)；下文保留 2026-09-05 历史规则与验收证据，输入归属等未替代部分继续有效。\n> 参与者:operator 提出体验问题并要求记录方案,Codex 调研与起草。\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "引用取消/持久化 ADR 状态，不回答 /clear 是否改历史。",
+      "citationOriginalChecks": [
+        {
+          "filename": "10-010-input-ownership-and-interruption.md",
+          "version": "236d4a2b-5294-49e6-9c28-f26ce7db2439",
+          "passageId": "1c02107e-e19d-492e-a8d6-4193efd259f8",
+          "quote": "> 状态:提交方向部分被 [ADR-013](013-incremental-session-persistence.md) 及 [ADR-014](014-pi-aligned-context-management.md) 取代(2026-09-07)，新方向已实现并完成本地验收，见[实现证据](../phases/context-management-acceptance.md)；下文保留 2026-09-05 历史规则与验收证据，输入归属等未替代部分继续有效。\n> 参与者:operator 提出体验问题并要求记录方案,Codex 调研与起草。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "sla-missing-paraphrase",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "本次检索未取得足够依据，无法确定答案。",
+      "scores": {
+        "correctness": 3,
+        "completeness": 3,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "明确本次依据不足、无法确定；未承认商业 SLA 前提或编造赔偿比例。",
+      "citationOriginalChecks": [],
+      "qualityPass": true,
+      "deliveryPass": false
+    },
+    {
+      "id": "core-evolution-paraphrase",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《14-014-pi-aligned-context-management.md》记载：基准为 `earendil-works/pi` 的 coding-agent，SHA `9767ba275f3e9a5ee0f5c5342249b629ab1b2282`；不是新的 AgentHarness，也不要求升级整个上游应用。Forge 当前 `pi-ai` 为 0.84.4，执行循环仍由自研 ExecutionCore 拥有。\n《14-014-pi-aligned-context-management.md》记载：# ADR-014: 对齐 Pi 的上下文管理\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "只引用 ADR-014 的旧 ExecutionCore 背景，没有 ADR-015 替代解释，未回答源码所有权与界面保留。",
+      "citationOriginalChecks": [
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "version": "e4929789-abf9-4fd6-9e4f-4aca51c0f464",
+          "passageId": "519c74d4-8154-4f74-84bc-45efa6ad5020",
+          "quote": "基准为 `earendil-works/pi` 的 coding-agent，SHA `9767ba275f3e9a5ee0f5c5342249b629ab1b2282`；不是新的 AgentHarness，也不要求升级整个上游应用。Forge 当前 `pi-ai` 为 0.84.4，执行循环仍由自研 ExecutionCore 拥有。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "version": "e4929789-abf9-4fd6-9e4f-4aca51c0f464",
+          "passageId": "924d077f-fae7-457d-8e51-d7099c6c6ca0",
+          "quote": "# ADR-014: 对齐 Pi 的上下文管理\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "context-evolution-paraphrase",
+      "profile": "combined",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "《18-sdk.md》记载：主动压缩失败保留旧视图并允许任务请求。overflow 与符合 Pi 条件的 length 共用连续失败链的一次压缩恢复，失败的部分输出保留在历史，恢复不重放工具。成功答案即使用量超窗也不重新生成。`enabled: false` 同时禁用自动压缩和自动恢复，手动压缩仍可用。\n《18-sdk.md》记载：[English](sdk.en.md) · [中文 README](../README.zh-CN.md)\n仅列出部分来源，其他内容尚未完整覆盖。",
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 3
+      },
+      "gapsHandled": false,
+      "explanation": "压缩失败与 enabled=false 的引文不是 B/M、read_context、全文归档及替代关系的答案。",
+      "citationOriginalChecks": [
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "fe4d6bf7-47ad-49b2-b5c7-c79965fbc9c0",
+          "quote": "主动压缩失败保留旧视图并允许任务请求。overflow 与符合 Pi 条件的 length 共用连续失败链的一次压缩恢复，失败的部分输出保留在历史，恢复不重放工具。成功答案即使用量超窗也不重新生成。`enabled: false` 同时禁用自动压缩和自动恢复，手动压缩仍可用。\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        },
+        {
+          "filename": "18-sdk.md",
+          "version": "0392d79a-cedc-40d1-8230-9376fc18bfb8",
+          "passageId": "7c0cd03c-1847-4c10-80fa-9051cf67adbe",
+          "quote": "[English](sdk.en.md) · [中文 README](../README.zh-CN.md)\n",
+          "judgment": "引用逐字存在于对应版本原文，回答明确归属为该文记载；引文内容支持这项归属主张，但不自动支持问题的正确答案。"
+        }
+      ],
+      "qualityPass": false,
+      "deliveryPass": false
+    }
+  ],
+  "reportSha256": "8a7afa52a02641a5b29c1610f031a9f539ce408e6b590cb14eb55069dd13045c"
+}

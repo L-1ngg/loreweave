@@ -3,6 +3,7 @@ import { PublicAnswers } from "../src/evaluation/client.ts";
 import { evaluate } from "../src/evaluation/runner.ts";
 import { profiles, type Profile } from "../src/evaluation/schema.ts";
 import { loadEvaluationConfig } from "../src/config.ts";
+import { summarizeRoutes } from "../src/evaluation/comparison.ts";
 const config = loadEvaluationConfig();
 const args = new Map<string, string>();
 for (let index = 2; index < Bun.argv.length; index += 2) {
@@ -39,7 +40,11 @@ await writeFile(args.get("--output")!, JSON.stringify(report, null, 2) + "\n", {
 });
 console.log(
   JSON.stringify(
-    { report: args.get("--output"), categories: report.categories },
+    {
+      report: args.get("--output"),
+      categories: report.categories,
+      comparison: summarizeRoutes(report.cases),
+    },
     null,
     2,
   ),

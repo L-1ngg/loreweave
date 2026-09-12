@@ -1,0 +1,898 @@
+[
+  {
+    "profile": "source",
+    "complexity": "ordinary",
+    "total": 18,
+    "passed": 0,
+    "failed": 18,
+    "pendingReview": 0,
+    "unavailable": 0,
+    "answered": 0,
+    "partial": 0,
+    "timeouts": 18,
+    "evidenceRecall": {
+      "numerator": 14,
+      "denominator": 22
+    },
+    "citationLocators": {
+      "numerator": 0,
+      "denominator": 0
+    },
+    "latency": {
+      "delivery": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 30026.147675000015
+        },
+        "p95": {
+          "status": "available",
+          "value": 30037.854509999976
+        }
+      },
+      "queue": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 31
+        },
+        "p95": {
+          "status": "available",
+          "value": 68
+        }
+      },
+      "retrieval": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 149.7945020000334
+        },
+        "p95": {
+          "status": "available",
+          "value": 409.4421000001021
+        }
+      },
+      "generation": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 7989.676822999958
+        },
+        "p95": {
+          "status": "available",
+          "value": 21313.03772599995
+        }
+      },
+      "review": {
+        "samples": 10,
+        "missing": 8,
+        "p50": {
+          "status": "available",
+          "value": 3024.4630770001095
+        },
+        "p95": {
+          "status": "available",
+          "value": 15833.855299999996
+        }
+      }
+    },
+    "requests": {
+      "model": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 4
+        },
+        "p95": {
+          "status": "available",
+          "value": 6
+        }
+      },
+      "embedding": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 1
+        },
+        "p95": {
+          "status": "available",
+          "value": 2
+        }
+      }
+    },
+    "cost": {
+      "status": "unavailable",
+      "reason": "provider token usage and pricing unavailable; request counts are not currency cost"
+    }
+  },
+  {
+    "profile": "source",
+    "complexity": "complex",
+    "total": 6,
+    "passed": 0,
+    "failed": 6,
+    "pendingReview": 0,
+    "unavailable": 0,
+    "answered": 0,
+    "partial": 0,
+    "timeouts": 6,
+    "evidenceRecall": {
+      "numerator": 16,
+      "denominator": 27
+    },
+    "citationLocators": {
+      "numerator": 0,
+      "denominator": 0
+    },
+    "latency": {
+      "delivery": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 60020.53328400012
+        },
+        "p95": {
+          "status": "available",
+          "value": 60040.807159000076
+        }
+      },
+      "queue": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 29
+        },
+        "p95": {
+          "status": "available",
+          "value": 33
+        }
+      },
+      "retrieval": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 165.7701010000892
+        },
+        "p95": {
+          "status": "available",
+          "value": 569.3073990000412
+        }
+      },
+      "generation": {
+        "samples": 5,
+        "missing": 1,
+        "p50": {
+          "status": "available",
+          "value": 17303.194750000024
+        },
+        "p95": {
+          "status": "available",
+          "value": 34219.11263300001
+        }
+      },
+      "review": {
+        "samples": 2,
+        "missing": 4,
+        "p50": {
+          "status": "available",
+          "value": 6414.891166999936
+        },
+        "p95": {
+          "status": "available",
+          "value": 14674.18298500008
+        }
+      }
+    },
+    "requests": {
+      "model": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 3
+        },
+        "p95": {
+          "status": "available",
+          "value": 5
+        }
+      },
+      "embedding": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 1
+        },
+        "p95": {
+          "status": "available",
+          "value": 3
+        }
+      }
+    },
+    "cost": {
+      "status": "unavailable",
+      "reason": "provider token usage and pricing unavailable; request counts are not currency cost"
+    }
+  },
+  {
+    "profile": "wiki",
+    "complexity": "ordinary",
+    "total": 18,
+    "passed": 0,
+    "failed": 17,
+    "pendingReview": 1,
+    "unavailable": 0,
+    "answered": 0,
+    "partial": 1,
+    "timeouts": 17,
+    "evidenceRecall": {
+      "numerator": 14,
+      "denominator": 22
+    },
+    "citationLocators": {
+      "numerator": 2,
+      "denominator": 2
+    },
+    "latency": {
+      "delivery": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 30030.89394099987
+        },
+        "p95": {
+          "status": "available",
+          "value": 30040.844616000075
+        }
+      },
+      "queue": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 30
+        },
+        "p95": {
+          "status": "available",
+          "value": 38
+        }
+      },
+      "retrieval": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 154.30329700000584
+        },
+        "p95": {
+          "status": "available",
+          "value": 345.7186999998521
+        }
+      },
+      "generation": {
+        "samples": 16,
+        "missing": 2,
+        "p50": {
+          "status": "available",
+          "value": 7983.255367999896
+        },
+        "p95": {
+          "status": "available",
+          "value": 16849.68405400007
+        }
+      },
+      "review": {
+        "samples": 7,
+        "missing": 11,
+        "p50": {
+          "status": "available",
+          "value": 8589.042145999847
+        },
+        "p95": {
+          "status": "available",
+          "value": 20651.13612599997
+        }
+      }
+    },
+    "requests": {
+      "model": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 4
+        },
+        "p95": {
+          "status": "available",
+          "value": 4
+        }
+      },
+      "embedding": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 1
+        },
+        "p95": {
+          "status": "available",
+          "value": 2
+        }
+      }
+    },
+    "cost": {
+      "status": "unavailable",
+      "reason": "provider token usage and pricing unavailable; request counts are not currency cost"
+    }
+  },
+  {
+    "profile": "wiki",
+    "complexity": "complex",
+    "total": 6,
+    "passed": 0,
+    "failed": 6,
+    "pendingReview": 0,
+    "unavailable": 0,
+    "answered": 0,
+    "partial": 0,
+    "timeouts": 6,
+    "evidenceRecall": {
+      "numerator": 16,
+      "denominator": 27
+    },
+    "citationLocators": {
+      "numerator": 0,
+      "denominator": 0
+    },
+    "latency": {
+      "delivery": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 60027.098990000086
+        },
+        "p95": {
+          "status": "available",
+          "value": 60036.75709099998
+        }
+      },
+      "queue": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 33
+        },
+        "p95": {
+          "status": "available",
+          "value": 34
+        }
+      },
+      "retrieval": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 167.81469999998808
+        },
+        "p95": {
+          "status": "available",
+          "value": 511.09321499988437
+        }
+      },
+      "generation": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 7420.144041000167
+        },
+        "p95": {
+          "status": "available",
+          "value": 43741.43959400011
+        }
+      },
+      "review": {
+        "samples": 4,
+        "missing": 2,
+        "p50": {
+          "status": "available",
+          "value": 21507.656038000016
+        },
+        "p95": {
+          "status": "available",
+          "value": 47030.24955200008
+        }
+      }
+    },
+    "requests": {
+      "model": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 4
+        },
+        "p95": {
+          "status": "available",
+          "value": 5
+        }
+      },
+      "embedding": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 1
+        },
+        "p95": {
+          "status": "available",
+          "value": 3
+        }
+      }
+    },
+    "cost": {
+      "status": "unavailable",
+      "reason": "provider token usage and pricing unavailable; request counts are not currency cost"
+    }
+  },
+  {
+    "profile": "graph",
+    "complexity": "ordinary",
+    "total": 18,
+    "passed": 0,
+    "failed": 17,
+    "pendingReview": 1,
+    "unavailable": 0,
+    "answered": 0,
+    "partial": 2,
+    "timeouts": 16,
+    "evidenceRecall": {
+      "numerator": 14,
+      "denominator": 22
+    },
+    "citationLocators": {
+      "numerator": 1,
+      "denominator": 1
+    },
+    "latency": {
+      "delivery": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 30029.031112999655
+        },
+        "p95": {
+          "status": "available",
+          "value": 30041.031060000416
+        }
+      },
+      "queue": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 32
+        },
+        "p95": {
+          "status": "available",
+          "value": 45
+        }
+      },
+      "retrieval": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 156.799601000268
+        },
+        "p95": {
+          "status": "available",
+          "value": 351.8606990003027
+        }
+      },
+      "generation": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 8652.638902000152
+        },
+        "p95": {
+          "status": "available",
+          "value": 22811.172806000337
+        }
+      },
+      "review": {
+        "samples": 9,
+        "missing": 9,
+        "p50": {
+          "status": "available",
+          "value": 7086.833023000043
+        },
+        "p95": {
+          "status": "available",
+          "value": 16429.011225000024
+        }
+      }
+    },
+    "requests": {
+      "model": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 4
+        },
+        "p95": {
+          "status": "available",
+          "value": 5
+        }
+      },
+      "embedding": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 1
+        },
+        "p95": {
+          "status": "available",
+          "value": 2
+        }
+      }
+    },
+    "cost": {
+      "status": "unavailable",
+      "reason": "provider token usage and pricing unavailable; request counts are not currency cost"
+    }
+  },
+  {
+    "profile": "graph",
+    "complexity": "complex",
+    "total": 6,
+    "passed": 0,
+    "failed": 6,
+    "pendingReview": 0,
+    "unavailable": 0,
+    "answered": 0,
+    "partial": 0,
+    "timeouts": 6,
+    "evidenceRecall": {
+      "numerator": 16,
+      "denominator": 27
+    },
+    "citationLocators": {
+      "numerator": 0,
+      "denominator": 0
+    },
+    "latency": {
+      "delivery": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 60025.83703200007
+        },
+        "p95": {
+          "status": "available",
+          "value": 60030.77767600026
+        }
+      },
+      "queue": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 31
+        },
+        "p95": {
+          "status": "available",
+          "value": 33
+        }
+      },
+      "retrieval": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 188.7192000001669
+        },
+        "p95": {
+          "status": "available",
+          "value": 465.8536999998614
+        }
+      },
+      "generation": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 14587.298452000134
+        },
+        "p95": {
+          "status": "available",
+          "value": 36927.748902999796
+        }
+      },
+      "review": {
+        "samples": 5,
+        "missing": 1,
+        "p50": {
+          "status": "available",
+          "value": 21057.242823000066
+        },
+        "p95": {
+          "status": "available",
+          "value": 23890.738736999687
+        }
+      }
+    },
+    "requests": {
+      "model": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 4
+        },
+        "p95": {
+          "status": "available",
+          "value": 5
+        }
+      },
+      "embedding": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 1
+        },
+        "p95": {
+          "status": "available",
+          "value": 2
+        }
+      }
+    },
+    "cost": {
+      "status": "unavailable",
+      "reason": "provider token usage and pricing unavailable; request counts are not currency cost"
+    }
+  },
+  {
+    "profile": "combined",
+    "complexity": "ordinary",
+    "total": 18,
+    "passed": 0,
+    "failed": 18,
+    "pendingReview": 0,
+    "unavailable": 0,
+    "answered": 0,
+    "partial": 0,
+    "timeouts": 18,
+    "evidenceRecall": {
+      "numerator": 14,
+      "denominator": 22
+    },
+    "citationLocators": {
+      "numerator": 0,
+      "denominator": 0
+    },
+    "latency": {
+      "delivery": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 30026.531751000322
+        },
+        "p95": {
+          "status": "available",
+          "value": 30043.69351999974
+        }
+      },
+      "queue": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 32
+        },
+        "p95": {
+          "status": "available",
+          "value": 39
+        }
+      },
+      "retrieval": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 170.0464999997057
+        },
+        "p95": {
+          "status": "available",
+          "value": 340.3282480002381
+        }
+      },
+      "generation": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 7983.955006999895
+        },
+        "p95": {
+          "status": "available",
+          "value": 19060.580970999785
+        }
+      },
+      "review": {
+        "samples": 7,
+        "missing": 11,
+        "p50": {
+          "status": "available",
+          "value": 8056.430668999907
+        },
+        "p95": {
+          "status": "available",
+          "value": 10338.964633000083
+        }
+      }
+    },
+    "requests": {
+      "model": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 4
+        },
+        "p95": {
+          "status": "available",
+          "value": 5
+        }
+      },
+      "embedding": {
+        "samples": 18,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 1
+        },
+        "p95": {
+          "status": "available",
+          "value": 2
+        }
+      }
+    },
+    "cost": {
+      "status": "unavailable",
+      "reason": "provider token usage and pricing unavailable; request counts are not currency cost"
+    }
+  },
+  {
+    "profile": "combined",
+    "complexity": "complex",
+    "total": 6,
+    "passed": 0,
+    "failed": 6,
+    "pendingReview": 0,
+    "unavailable": 0,
+    "answered": 0,
+    "partial": 0,
+    "timeouts": 6,
+    "evidenceRecall": {
+      "numerator": 16,
+      "denominator": 27
+    },
+    "citationLocators": {
+      "numerator": 0,
+      "denominator": 0
+    },
+    "latency": {
+      "delivery": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 60020.509681000374
+        },
+        "p95": {
+          "status": "available",
+          "value": 60032.55380500015
+        }
+      },
+      "queue": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 29
+        },
+        "p95": {
+          "status": "available",
+          "value": 37
+        }
+      },
+      "retrieval": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 174.9629000001587
+        },
+        "p95": {
+          "status": "available",
+          "value": 341.4432029998861
+        }
+      },
+      "generation": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 14984.823898999952
+        },
+        "p95": {
+          "status": "available",
+          "value": 44346.42147299973
+        }
+      },
+      "review": {
+        "samples": 1,
+        "missing": 5,
+        "p50": {
+          "status": "available",
+          "value": 13198.214875999838
+        },
+        "p95": {
+          "status": "available",
+          "value": 13198.214875999838
+        }
+      }
+    },
+    "requests": {
+      "model": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 4
+        },
+        "p95": {
+          "status": "available",
+          "value": 4
+        }
+      },
+      "embedding": {
+        "samples": 6,
+        "missing": 0,
+        "p50": {
+          "status": "available",
+          "value": 1
+        },
+        "p95": {
+          "status": "available",
+          "value": 2
+        }
+      }
+    },
+    "cost": {
+      "status": "unavailable",
+      "reason": "provider token usage and pricing unavailable; request counts are not currency cost"
+    }
+  }
+]

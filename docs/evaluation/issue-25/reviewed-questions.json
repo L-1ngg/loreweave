@@ -1,0 +1,719 @@
+{
+  "kind": "independent-agent-reviewed",
+  "issue": 25,
+  "frozenBeforeRuns": true,
+  "review": {
+    "kind": "agent",
+    "reviewer": "issue-25-independent-agent",
+    "timestamp": "2026-09-12T07:25:00.725855+00:00",
+    "authorization": "User explicitly authorized independent subagent review and grading for Issue #25; this is not human review."
+  },
+  "corpusTextSha256": "74a41cba6de6f4faffb3fe57cb2e18a5eb889458c10d0e294e170ca7e14d0a64",
+  "corpusSha256": "f3812030485d1a588bab7e0ac4488479260295bb8b0a00ca333b3c81d447da49",
+  "sourceScope": "Exact frozen text in ../forge-preflight/corpus.json; originals.json agrees on every source text. No claim about current upstream runtime.",
+  "rubric": {
+    "correctness": "0 wrong/unsupported central conclusion; 1 materially mixed or unjustified certainty; 2 correct central conclusion with minor error; 3 no material factual error and correct resolution/abstention.",
+    "completeness": "0 no required points; 1 fewer than half covered; 2 at least half but not all; 3 all required points substantively covered.",
+    "citationSupport": "0 substantive factual answer has no supporting original citation or uses contradictory evidence; 1 minority supported; 2 most supported with a material gap; 3 every material factual claim supported by cited original text. Pure justified no-answer with no external factual claim may score 3 with no citation.",
+    "evidenceRecall": "Diagnostic: fraction of required reference units found in answer evidence; null for missing cases. Do not equate exact quote matching or automatic support status with factual correctness.",
+    "conflicting": "Historical and newer text differ, but explicit supersession resolves the conflict; no unresolved contradiction category is invented.",
+    "paraphrase": "Compare point coverage and conclusions within each paired group; singleton groups excluded from paraphrase consistency.",
+    "aggregation": "Report ordinary/complex and sufficient/missing/conflicting separately; paired paraphrases are correlated, not independent samples.",
+    "gradingBoundary": "Independent agent judges original evidence and answer text. Certificates, automatic support and model confidence are diagnostics, never independent fact verification."
+  },
+  "cases": [
+    {
+      "id": "request-shape",
+      "question": "普通的阻塞式交互总线采用什么形状？为什么不直接调用 ui.confirm？",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "requiredPoints": [
+        "双向 request/response async iterable",
+        "core 分配全局唯一、不复用 ID",
+        "不把响应者绑定为直接 UI 函数调用"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "02-002-request-bus-shape.md",
+          "quote": "总线实现成**双向事件流**:request 出、response 入,两条 async iterable。"
+        },
+        {
+          "filename": "02-002-request-bus-shape.md",
+          "quote": "1. id 由 `core` 分配,全局唯一,不复用。"
+        },
+        {
+          "filename": "02-002-request-bus-shape.md",
+          "quote": "| `Promise<Decision>` 风格的直接调用(`await ui.confirm()`) | 在 in-process 下更短,但把「谁是响应者」编译期绑死。以后换 socket / web UI 是**重写**而非替换实现([design-rationale C.4](../design-rationale.md) 演进路径) |"
+        }
+      ],
+      "paraphraseGroup": "request-shape",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "headless",
+      "question": "headless 遇到 permission、question、oauth 请求时默认怎么处理，退出码分别是多少？",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "requiredPoints": [
+        "permission 默认 deny，退出码20",
+        "question 默认 cancel，退出码22",
+        "oauth 默认 cancel，退出码24"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "02-002-request-bus-shape.md",
+          "quote": "| `permission` | `toolCall`, `reason?`, `rememberRule?` | `allow_once` / `allow_always(scope)` / `deny` | 20 |"
+        },
+        {
+          "filename": "02-002-request-bus-shape.md",
+          "quote": "| `question` | `prompt`, `choices?`, `allowFreeText?`, `multiple?` | `answer(answers[])` / `cancel` | 22 |"
+        },
+        {
+          "filename": "02-002-request-bus-shape.md",
+          "quote": "| `oauth` | `provider`, `authorizationUrl`, `instructions?` | `completed` / `cancel` | 24 |"
+        },
+        {
+          "filename": "02-002-request-bus-shape.md",
+          "quote": "`rememberRule` 是确认前展示给用户的规则原文;没有该字段时 UI 不得提供 Always allow。headless 的 permission 结果是 deny,cancel_confirm/question/oauth 是 cancel,plan_approval 是 reject。既有退出码 `1` / `2` 继续分别表示启动错误 / 参数错误。"
+        }
+      ],
+      "paraphraseGroup": "headless",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "permission",
+      "question": "permission mode 有哪些？是否预留了 plan 模式？",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "requiredPoints": [
+        "枚举为 default、accept-edits、deny-all",
+        "不预留 plan 模式"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "03-003-permission-rule-matching.md",
+          "quote": "5. mode 只有 `default` / `accept-edits` / `deny-all`;`plan` 不在枚举里预留。"
+        }
+      ],
+      "paraphraseGroup": "permission",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "dangerous",
+      "question": "记住 git push 的 always-allow 前缀后，会不会免除危险操作提示？",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "requiredPoints": [
+        "危险 git push 不认可记住的 always-allow 前缀",
+        "仍需要提示确认"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "03-003-permission-rule-matching.md",
+          "quote": "2. 危险清单(`rm` / `chmod` / `kill` / `git push`)**从不认记住的前缀**,即使存在匹配的 always-allow 规则仍然提示。"
+        }
+      ],
+      "paraphraseGroup": "dangerous",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "isolation",
+      "question": "同进程创建多个 Agent 实例是否等于进程级故障隔离或安全沙箱？",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "requiredPoints": [
+        "同进程多实例不提供进程级故障隔离或安全沙箱",
+        "硬隔离由宿主选择进程或容器"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "04-004-single-process-protocol-isolation.md",
+          "quote": "- 同进程实例没有进程级故障隔离,SDK 不能作为安全沙箱。需要硬隔离时由宿主选择进程或容器,不能替宿主接受单点故障风险。"
+        }
+      ],
+      "paraphraseGroup": "isolation",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "reference",
+      "question": "视觉回归现在还要求编译 grok-build 生成参考吗？",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "requiredPoints": [
+        "不再要求编译或运行 grok-build",
+        "参考为仓库内 FrameDump golden",
+        "不据此宣称与 grok-build 运行时逐 cell 一致"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "07-007-no-compile-grok-reference.md",
+          "quote": "2. **cell 回归的参考答案改为本仓库锁定的 FrameDump golden**(由 `paintScenario` / `tui-frame dump-scenarios` 生成并 check-in)。同一 fixture 重跑 hash 必须一致;改 1 cell 必须变红。这锁的是**我们自己的输出不漂**,不是 grok 二进制。"
+        },
+        {
+          "filename": "07-007-no-compile-grok-reference.md",
+          "quote": "4. **ADR-006 的「与 grok-build 运行时 dump 零差异」不再是出口条件。** 产品目标仍是 grok 的信息架构与交互;视觉靠齐以规格、in-repo golden 与人工验收为准。当前不保留旧 PNG 对照资产;今后人工截图仍可作辅证,不作为硬门禁。"
+        }
+      ],
+      "paraphraseGroup": "reference",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "team",
+      "question": "Forge 的 SDK 是否内置 Team 编排？",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "requiredPoints": [
+        "SDK 为单 Agent，可由宿主创建多个独立实例",
+        "不内置 Team，编排由外部宿主承担"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "04-004-single-process-protocol-isolation.md",
+          "quote": "4. SDK 需支持宿主创建多个状态独立的单 Agent 实例,不内置 Team 编排。外部 multi-agent 系统自行选择部署方式;原 Phase 2.5 同进程 Team 方案退为历史参考(ADR-008)。"
+        }
+      ],
+      "paraphraseGroup": "team",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "release",
+      "question": "Forge 会发布 npm 包或可执行二进制吗？",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "requiredPoints": [
+        "发布源码快照",
+        "包保持 private，不发布 npm 包或可执行二进制"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "19-release.md",
+          "quote": "Forge Agent releases are source snapshots of a personal project. Packages remain private; no npm packages or executable binaries are published. The maintainer pushes directly to `master`; CI runs after pushes and on PRs. Release validation runs independently against an exact commit."
+        }
+      ],
+      "paraphraseGroup": "release",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "draft-release",
+      "question": "预发布工作流检查通过后会自动公开发布 release 吗？",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "requiredPoints": [
+        "检查成功后仅创建 draft prerelease",
+        "公开发布是单独人工操作，不自动公开"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "19-release.md",
+          "quote": "3. Wait for validation and both Ubuntu 24.04 / macOS 14 checks. The workflow creates a draft prerelease only after all checks succeed."
+        },
+        {
+          "filename": "19-release.md",
+          "quote": "4. Review its source SHA, verification link, limitations, archive, and checksum. Publishing the draft is a separate manual action on GitHub; the workflow never publishes it automatically."
+        }
+      ],
+      "paraphraseGroup": "draft-release",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "clear",
+      "question": "TUI 的 /clear 会清除 Core 会话历史吗？",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "requiredPoints": [
+        "/clear 仅清屏",
+        "不修改 Core 会话历史"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "20-session-management.md",
+          "quote": "- **TUI**：在 `packages/tui/src/app.ts` 处理命令、选择器和切换状态；通过宿主接口请求会话切换。清屏不操作 Core 历史。"
+        }
+      ],
+      "paraphraseGroup": "clear",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "session-path",
+      "question": "当前 CLI 还保留 --session 和 config.sessionPath 吗？SDK storage 是否也被移除？",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "requiredPoints": [
+        "CLI --session 与 config.sessionPath 已移除",
+        "SDK storage 保留"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "20-session-management.md",
+          "quote": "已确认交互、完整用户故事、范围边界和 AC-1 至 AC-14 统一维护在 [GitHub #27](https://github.com/L-1ngg/forge-agent/issues/27)。包括最后确认的 CLI `--session` 与配置 `sessionPath` 移除、SDK `storage` 保留；不再将显式路径兼容作为待决产品行为。"
+        }
+      ],
+      "paraphraseGroup": "session-path",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "storage",
+      "question": "逐步持久化过程中存储写入失败，实例会继续调度还是停用？",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "requiredPoints": [
+        "停止新调度并停用实例",
+        "宿主核对实际存储状态后重建",
+        "抛错不代表零写入"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "13-013-incremental-session-persistence.md",
+          "quote": "- 任一存储写入失败，停止继续调度并停用实例，由宿主核对实际存储状态后重建。已经开始的写入不可保证取消，抛错不代表零写入；不能盲目重试追加，也不回滚工具外部副作用。"
+        }
+      ],
+      "paraphraseGroup": "storage",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "manual-compact",
+      "question": "关闭自动压缩后，是否还能手动 compact？",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "requiredPoints": [
+        "关闭自动压缩仍可手动 compact",
+        "enabled=false 同时关闭主动压缩和 overflow/length 自动恢复"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "quote": "- `enabled = false` 禁用主动压缩及 overflow/length 自动恢复；手动 compact 仍可执行。关闭自动压缩不关闭工具自身截断。"
+        }
+      ],
+      "paraphraseGroup": "manual-compact",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "markdown",
+      "question": "当前 Markdown 解析器和代码高亮用什么依赖？是否因此替换了自有 compositor？",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "requiredPoints": [
+        "Markdown 使用 marked，代码高亮使用 lowlight",
+        "仍由自有 TerminalFrame compositor 绘制，禁止外部 TUI 框架"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "16-016-markdown-rendering.md",
+          "quote": "assistant 正文和详情使用 `marked` 解析 Markdown,高亮使用 `lowlight` 的结构化 AST;继续由 Forge 自有 `TerminalFrame` compositor 和终端宿主完成所有绘制。低层宽度、输入、布局仍由本项目维护;禁止外部 TUI 框架。"
+        }
+      ],
+      "paraphraseGroup": "markdown",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "sla-missing",
+      "question": "Forge 商业版的 99.99% SLA 违约赔偿比例是多少？",
+      "complexity": "ordinary",
+      "category": "missing",
+      "requiredPoints": [
+        "明确材料不足，无法确定 SLA 违约赔偿比例",
+        "不编造百分比或承认问题中的商业 SLA 前提"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [
+        "商业 SLA 的存在、99.99% 指标与赔偿比例均无材料支持"
+      ],
+      "references": [],
+      "paraphraseGroup": "sla-missing",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "revenue-missing",
+      "question": "Forge 在 2026 年 8 月的付费客户数量和营收是多少？",
+      "complexity": "ordinary",
+      "category": "missing",
+      "requiredPoints": [
+        "明确材料不足，无法确定指定月份付费客户与营收",
+        "不编造数值或将无数据说成零"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [
+        "2026年8月的付费客户数量与营收数据缺失"
+      ],
+      "references": [],
+      "paraphraseGroup": "revenue-missing",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "core-evolution",
+      "question": "结合 ADR-009 与 ADR-015，当前“自有 Core”指完全原创执行算法吗？CLI/TUI 会被 Pi 一并替换吗？",
+      "complexity": "complex",
+      "category": "conflicting",
+      "requiredPoints": [
+        "ADR-009 自行实现方向被 ADR-015 的本地维护 Pi 源码基线取代",
+        "自有不等于原创算法",
+        "保留 Forge CLI/TUI，非整体移植 Pi 应用"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "09-009-self-owned-agent-core.md",
+          "quote": "1. **自研执行内核:**自行实现模型与工具之间的循环、继续/终止条件、执行状态、消息上下文、事件输出和 usage 更新时机。"
+        },
+        {
+          "filename": "15-015-pi-core-source-migration.md",
+          "quote": "1. **来源与所有权。** 复制标准 Pi 使用的 `Agent`、`agent-loop`、相关类型与必要依赖闭包，保留源码来源、固定 SHA 和 MIT 许可。生产执行循环由本仓库维护，不仅在外面包装 npm 的 `pi-agent-core`。不将源码派生描述为原创算法。"
+        },
+        {
+          "filename": "15-015-pi-core-source-migration.md",
+          "quote": "3. **保留本项目应用。** CLI/TUI、终端展示、输入交互与 headless 入口继续由 Forge 拥有；协议和调用点可随迁移修改，最终共同使用同一执行路径。Core 不依赖 CLI/TUI。"
+        },
+        {
+          "filename": "15-015-pi-core-source-migration.md",
+          "quote": "本 ADR 修订 [ADR-009](009-self-owned-agent-core.md) 对“自行实现”的含义：执行实现由本地拥有和维护，初始源码来自 Pi；不再以现有 ExecutionCore 算法为必须保留的基线。保留 pi-ai、单 Agent、无永久双引擎等原则。"
+        }
+      ],
+      "paraphraseGroup": "core-evolution",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。 冲突为历史决策与明确替代决策，可根据替代关系解决。"
+    },
+    {
+      "id": "context-evolution",
+      "question": "结合 ADR-012 与 ADR-014，当前还实行严格上下文硬准入 B/M、专用 read_context 原文找回及工具全文归档平台吗？",
+      "complexity": "complex",
+      "category": "conflicting",
+      "requiredPoints": [
+        "ADR-014 取代 ADR-012 的当前方案入口",
+        "不设置普通任务硬准入 B/M",
+        "取消专用 read_context、持久分页引用和工具全文归档平台",
+        "原始记录供查看或导出，不保证模型自动找回遗漏"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "12-012-context-management-direction.md",
+          "quote": "- 提供模型可调用的按引用分页读取工具，首版不做语义检索。摘要及被省略的工具结果携带引用，找回结果同样受上下文预算限制；引用保存期限和未提交内容归属见后续已确认小节，具体接口见配套设计。"
+        },
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "quote": "本决策取代 [ADR-012](012-context-management-direction.md) 的当前方案入口，历史比较记录保留；并补充 [ADR-013](013-incremental-session-persistence.md) 的保存时序和格式，替代其中模型按历史引用找回、损坏行一律拒绝等与本文冲突的方向。ADR-013 的逐步保存、取消保留、请求修补及存储失败停用继续有效。完整施工与验收只维护在[上下文管理方案](../phases/context-management.md)。"
+        },
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "quote": "| 计量 | 最近有效任务 usage 加后续增量估算，无依据时回退字符启发式；不设置普通任务硬准入 B/M |"
+        },
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "quote": "| 原文找回 | 保留原始会话记录供宿主查看/导出；取消专用 read_context、持久原文分页引用和工具全文归档平台；不承诺模型自动找回摘要遗漏 |"
+        }
+      ],
+      "paraphraseGroup": "context-evolution",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。 冲突为历史决策与明确替代决策，可根据替代关系解决。 改写旧题前提：ADR-012 正文也记录过放弃部分硬准入，不能把全篇概括成严格预算方案。"
+    },
+    {
+      "id": "cancel-persistence",
+      "question": "结合 ADR-010、013、014，取消任务是否回滚已保存消息、已开始写入和工具副作用？",
+      "complexity": "complex",
+      "category": "conflicting",
+      "requiredPoints": [
+        "旧整轮提交前取消不保存规则被 ADR-013/014 取代",
+        "停止新模型/工具调用并等待收尾",
+        "保留已保存消息和摘要，保存已形成最终结果",
+        "不保证取消已开始写入，不回滚工具外部副作用"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "10-010-input-ownership-and-interruption.md",
+          "quote": "- 进入提交前取消,仍遵守整次 invocation 不提交的既有契约。提交入口与取消判断必须有确定顺序。"
+        },
+        {
+          "filename": "13-013-incremental-session-persistence.md",
+          "quote": "本决策部分替代 [ADR-010](010-input-ownership-and-interruption.md) 第 3 节的整次 invocation 提交与提交前取消不保存规则，以及其中针对该规则的旧验收断言；输入归属和写入不可撤销等其他原则继续有效。"
+        },
+        {
+          "filename": "13-013-incremental-session-persistence.md",
+          "quote": "- 取消停止后续执行，保留已经保存的消息和摘要；不退回 invocation 开始前的历史。不承诺尚未完成或未开始保存的内容一定落盘。"
+        },
+        {
+          "filename": "13-013-incremental-session-persistence.md",
+          "quote": "- 任一存储写入失败，停止继续调度并停用实例，由宿主核对实际存储状态后重建。已经开始的写入不可保证取消，抛错不代表零写入；不能盲目重试追加，也不回滚工具外部副作用。"
+        },
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "quote": "- 取消时不再启动新模型/工具；等待在运行的工具收尾，保存已形成的最终消息/结果，写入失败则停用实例。不承诺进程崩溃时尚未形成或写入的数据可恢复。"
+        }
+      ],
+      "paraphraseGroup": "cancel-persistence",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。 冲突为历史决策与明确替代决策，可根据替代关系解决。"
+    },
+    {
+      "id": "render-evolution",
+      "question": "从 ADR-005/006/007 到 ADR-016，Markdown 与视觉回归的哪些旧要求被替代，哪些继续保留？",
+      "complexity": "complex",
+      "category": "conflicting",
+      "requiredPoints": [
+        "ADR-016 替代 Markdown 自写限制，使用 marked/lowlight",
+        "继续自有 compositor",
+        "ADR-007 替代编译 grok-build 及运行时 cell 零差异要求，使用仓库内 golden",
+        "PNG 仅辅证，不作硬门禁"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "05-005-tui-own-compositor.md",
+          "quote": "> 状态:已批准(2026-09-04,operator 确认 1A/2A/3A 与 phase-2.2 Key Decisions 4-7)。选择 1A(下文决策 2,产品目标)由 [ADR-006](./006-tui-cell-parity.md) 修订,reference 路径再由 [ADR-007](./007-no-compile-grok-reference.md) 修订;自有 compositor 仍有效;Markdown 自写及依赖边界由 [ADR-016](016-markdown-rendering.md) 定向修订。2026-09-06 核对:旧截图仅为历史参考,Team 方向以 ADR-008 为准。"
+        },
+        {
+          "filename": "06-006-tui-cell-parity.md",
+          "quote": "1. **视觉出口 = 锁定参考环境内,myh `TerminalFrame` 与 grok-build reference cell dump 逐 cell 零差异**(grapheme、width/continuation、foreground、background、全部 attributes、cursor)。覆盖 [grok-build-tui-gap.md](../research/grok-build-tui-gap.md) §6.2 的 canonical scenarios 与 §6.3 的逐区域字段。"
+        },
+        {
+          "filename": "07-007-no-compile-grok-reference.md",
+          "quote": "4. **ADR-006 的「与 grok-build 运行时 dump 零差异」不再是出口条件。** 产品目标仍是 grok 的信息架构与交互;视觉靠齐以规格、in-repo golden 与人工验收为准。当前不保留旧 PNG 对照资产;今后人工截图仍可作辅证,不作为硬门禁。"
+        },
+        {
+          "filename": "07-007-no-compile-grok-reference.md",
+          "quote": "2. **cell 回归的参考答案改为本仓库锁定的 FrameDump golden**(由 `paintScenario` / `tui-frame dump-scenarios` 生成并 check-in)。同一 fixture 重跑 hash 必须一致;改 1 cell 必须变红。这锁的是**我们自己的输出不漂**,不是 grok 二进制。"
+        },
+        {
+          "filename": "16-016-markdown-rendering.md",
+          "quote": "> 状态:已批准(2026-09-09,operator 在 #28 规格对齐中确认解析器、高亮依赖与原文复制方向)。仅修订 ADR-005 的 Markdown 自写及相关依赖限制。"
+        },
+        {
+          "filename": "16-016-markdown-rendering.md",
+          "quote": "assistant 正文和详情使用 `marked` 解析 Markdown,高亮使用 `lowlight` 的结构化 AST;继续由 Forge 自有 `TerminalFrame` compositor 和终端宿主完成所有绘制。低层宽度、输入、布局仍由本项目维护;禁止外部 TUI 框架。"
+        }
+      ],
+      "paraphraseGroup": "render-evolution",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。 冲突为历史决策与明确替代决策，可根据替代关系解决。"
+    },
+    {
+      "id": "clear-paraphrase",
+      "question": "使用 /clear 清空终端后，再发一个问题，Core 保存的对话历史也被删除了吗？",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "requiredPoints": [
+        "/clear 仅清屏",
+        "不修改 Core 会话历史"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "20-session-management.md",
+          "quote": "- **TUI**：在 `packages/tui/src/app.ts` 处理命令、选择器和切换状态；通过宿主接口请求会话切换。清屏不操作 Core 历史。"
+        }
+      ],
+      "paraphraseGroup": "clear",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "sla-missing-paraphrase",
+      "question": "如果 Forge 没有达到 99.99% 可用性，商业客户能拿回多少比例的费用？",
+      "complexity": "ordinary",
+      "category": "missing",
+      "requiredPoints": [
+        "明确材料不足，无法确定 SLA 违约赔偿比例",
+        "不编造百分比或承认问题中的商业 SLA 前提"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [
+        "商业 SLA 的存在、99.99% 指标与赔偿比例均无材料支持"
+      ],
+      "references": [],
+      "paraphraseGroup": "sla-missing",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。"
+    },
+    {
+      "id": "core-evolution-paraphrase",
+      "question": "Forge 说 Core 是自己拥有的，这是否表示循环算法完全原创，而且界面也换成 Pi 了？请结合早期与后续 ADR 判断。",
+      "complexity": "complex",
+      "category": "conflicting",
+      "requiredPoints": [
+        "ADR-009 自行实现方向被 ADR-015 的本地维护 Pi 源码基线取代",
+        "自有不等于原创算法",
+        "保留 Forge CLI/TUI，非整体移植 Pi 应用"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "09-009-self-owned-agent-core.md",
+          "quote": "1. **自研执行内核:**自行实现模型与工具之间的循环、继续/终止条件、执行状态、消息上下文、事件输出和 usage 更新时机。"
+        },
+        {
+          "filename": "15-015-pi-core-source-migration.md",
+          "quote": "1. **来源与所有权。** 复制标准 Pi 使用的 `Agent`、`agent-loop`、相关类型与必要依赖闭包，保留源码来源、固定 SHA 和 MIT 许可。生产执行循环由本仓库维护，不仅在外面包装 npm 的 `pi-agent-core`。不将源码派生描述为原创算法。"
+        },
+        {
+          "filename": "15-015-pi-core-source-migration.md",
+          "quote": "3. **保留本项目应用。** CLI/TUI、终端展示、输入交互与 headless 入口继续由 Forge 拥有；协议和调用点可随迁移修改，最终共同使用同一执行路径。Core 不依赖 CLI/TUI。"
+        },
+        {
+          "filename": "15-015-pi-core-source-migration.md",
+          "quote": "本 ADR 修订 [ADR-009](009-self-owned-agent-core.md) 对“自行实现”的含义：执行实现由本地拥有和维护，初始源码来自 Pi；不再以现有 ExecutionCore 算法为必须保留的基线。保留 pi-ai、单 Agent、无永久双引擎等原则。"
+        }
+      ],
+      "paraphraseGroup": "core-evolution",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。 冲突为历史决策与明确替代决策，可根据替代关系解决。"
+    },
+    {
+      "id": "context-evolution-paraphrase",
+      "question": "旧文档提出模型按引用翻页找回原文；按后来的上下文决策，严格 B/M 准入、专用 read_context 和工具全文归档还保留吗？",
+      "complexity": "complex",
+      "category": "conflicting",
+      "requiredPoints": [
+        "ADR-014 取代 ADR-012 的当前方案入口",
+        "不设置普通任务硬准入 B/M",
+        "取消专用 read_context、持久分页引用和工具全文归档平台",
+        "原始记录供查看或导出，不保证模型自动找回遗漏"
+      ],
+      "review": {
+        "kind": "agent",
+        "reviewer": "issue-25-independent-agent",
+        "timestamp": "2026-09-12T07:25:00.725855+00:00"
+      },
+      "expectedGaps": [],
+      "references": [
+        {
+          "filename": "12-012-context-management-direction.md",
+          "quote": "- 提供模型可调用的按引用分页读取工具，首版不做语义检索。摘要及被省略的工具结果携带引用，找回结果同样受上下文预算限制；引用保存期限和未提交内容归属见后续已确认小节，具体接口见配套设计。"
+        },
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "quote": "本决策取代 [ADR-012](012-context-management-direction.md) 的当前方案入口，历史比较记录保留；并补充 [ADR-013](013-incremental-session-persistence.md) 的保存时序和格式，替代其中模型按历史引用找回、损坏行一律拒绝等与本文冲突的方向。ADR-013 的逐步保存、取消保留、请求修补及存储失败停用继续有效。完整施工与验收只维护在[上下文管理方案](../phases/context-management.md)。"
+        },
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "quote": "| 计量 | 最近有效任务 usage 加后续增量估算，无依据时回退字符启发式；不设置普通任务硬准入 B/M |"
+        },
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "quote": "| 原文找回 | 保留原始会话记录供宿主查看/导出；取消专用 read_context、持久原文分页引用和工具全文归档平台；不承诺模型自动找回摘要遗漏 |"
+        }
+      ],
+      "paraphraseGroup": "context-evolution",
+      "reviewNotes": "按冻结 corpus 原文独立审定；不证明当前上游实现。 冲突为历史决策与明确替代决策，可根据替代关系解决。 改写旧题前提：ADR-012 正文也记录过放弃部分硬准入，不能把全篇概括成严格预算方案。"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { grade } from "../src/evaluation/grading.ts";
+import { grade, gradeAgent } from "../src/evaluation/grading.ts";
 import { test, expect } from "bun:test";
 import { evaluationFixture } from "../src/evaluation/fixture.ts";
 import { evaluate } from "../src/evaluation/runner.ts";
@@ -11,6 +11,68 @@ import {
 } from "../src/evaluation/schema.ts";
 const url = process.env.TEST_DATABASE_URL;
 if (!url) throw new Error("TEST_DATABASE_URL required");
+test("agent annotations stay separate from human grades and bind to the exact public report", async () => {
+  const f = await evaluationFixture(url!);
+  try {
+    const dataset = {
+      ...f.dataset,
+      mode: "agent",
+      cases: f.dataset.cases.map((item) => ({
+        ...item,
+        review: {
+          kind: "agent",
+          reviewer: "dataset-agent",
+          reviewedAt: "2026-09-12T00:00:00.000Z",
+        },
+      })),
+    };
+    const checkpoints: number[] = [];
+    const report = await evaluate({
+      manifest: f.manifest,
+      dataset,
+      clients: { source: f.client },
+      onCase: async (snapshot) => {
+        checkpoints.push(snapshot.cases.length);
+      },
+    });
+    expect(report.provenance).toBe("independent-agent-review-required");
+    expect(report.cases[0]!.outcome).toBe("pending_agent");
+    expect(checkpoints).toContain(1);
+    expect(checkpoints.at(-1)).toBe(4);
+    const review = {
+      id: "logs",
+      profile: "source",
+      reviewer: "answer-agent",
+      reviewedAt: "2026-09-12T00:00:00.000Z",
+      correctness: true,
+      completeness: true,
+      citationsSupported: true,
+      gaps: true,
+      notes: "Synthetic test annotation, not acceptance evidence",
+    };
+    const annotations = {
+      kind: "independent-agent",
+      schemaVersion: 1,
+      reportSha256: digest(JSON.stringify(report)),
+      reviews: [review, { ...review, profile: "wiki" }],
+    };
+    const graded = gradeAgent(report, annotations);
+    expect(graded.cases[0]!.outcome).toBe("pass");
+    expect(graded.cases[1]!.outcome).toBe("unavailable");
+    expect(graded.cases[0]!.reason).toBe("independent_agent_review");
+    expect("humanGrades" in graded).toBe(false);
+    expect(report.cases[0]!.outcome).toBe("pending_agent");
+    expect(() =>
+      gradeAgent(report, { ...annotations, reportSha256: "0".repeat(64) }),
+    ).toThrow("report_hash_mismatch");
+    const { kind, ...humanShaped } = annotations;
+    expect(() => grade(report, humanShaped)).toThrow(
+      "agent_report_requires_agent_grades",
+    );
+  } finally {
+    await f.close();
+  }
+}, 30000);
 for (const corrupt of [false, true]) {
   test(`public answer evaluation reports ${corrupt ? "rejected wrong answers" : "valid answers"}, actual citations and unavailable controls`, async () => {
     const f = await evaluationFixture(url!, corrupt);

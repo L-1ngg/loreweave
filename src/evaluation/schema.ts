@@ -29,6 +29,11 @@ const review = z.discriminatedUnion("kind", [
     reviewer: name,
     reviewedAt: z.iso.datetime(),
   }),
+  z.strictObject({
+    kind: z.literal("agent"),
+    reviewer: name,
+    reviewedAt: z.iso.datetime(),
+  }),
   z.strictObject({ kind: z.literal("fixture"), oracle: name }),
 ]);
 const caseSchema = z.strictObject({
@@ -53,7 +58,7 @@ const common = {
 export const developmentSchema = z.strictObject({
   ...common,
   split: z.literal("development"),
-  mode: z.enum(["fixture", "human"]),
+  mode: z.enum(["fixture", "human", "agent"]),
 });
 export const acceptanceSchema = z.strictObject({
   ...common,
@@ -158,7 +163,8 @@ export function validateDataset(
       throw new Error("unknown_reference_version");
     if (
       item.review.kind === "pending" ||
-      (dataset.mode === "human" && item.review.kind !== "human")
+      (dataset.mode === "human" && item.review.kind !== "human") ||
+      (dataset.mode === "agent" && item.review.kind !== "agent")
     )
       throw new Error("unreviewed_reference");
     if (item.category === "sufficient" && !item.references.length)

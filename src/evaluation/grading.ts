@@ -20,9 +20,27 @@ export const humanGradesSchema = z.strictObject({
     )
     .min(1),
 });
+export const agentGradesSchema = humanGradesSchema.extend({
+  kind: z.literal("independent-agent"),
+});
 /** Independent annotations bind to an exact immutable report, never model input. */
 export function grade(report: EvaluationReport, input: unknown) {
   const grades = humanGradesSchema.parse(input);
+  if (report.provenance === "independent-agent-review-required")
+    throw new Error("agent_report_requires_agent_grades");
+  return { ...applyGrades(report, grades, "human"), humanGrades: grades };
+}
+export function gradeAgent(report: EvaluationReport, input: unknown) {
+  const grades = agentGradesSchema.parse(input);
+  if (report.provenance !== "independent-agent-review-required")
+    throw new Error("agent_review_report_required");
+  return { ...applyGrades(report, grades, "agent"), agentGrades: grades };
+}
+function applyGrades(
+  report: EvaluationReport,
+  grades: z.infer<typeof humanGradesSchema>,
+  reviewer: "human" | "agent",
+) {
   if (grades.reportSha256 !== digest(JSON.stringify(report)))
     throw new Error("report_hash_mismatch");
   const result = structuredClone(report);
@@ -37,7 +55,13 @@ export function grade(report: EvaluationReport, input: unknown) {
     if (!item) throw new Error("unknown_case");
     // Human scoring cannot make an unavailable route, failed transport or broken
     // original locator pass. It may accept equivalent evidence outside reference IDs.
-    if (!["pending_human", "pass"].includes(item.outcome)) continue;
+    if (
+      ![
+        reviewer === "human" ? "pending_human" : "pending_agent",
+        "pass",
+      ].includes(item.outcome)
+    )
+      continue;
     item.quality = measured({
       correctness: review.correctness,
       completeness: review.completeness,
@@ -50,8 +74,8 @@ export function grade(report: EvaluationReport, input: unknown) {
       review.gaps
         ? "pass"
         : "fail";
-    item.reason = "independent_human_review";
+    item.reason = `independent_${reviewer}_review`;
   }
   result.categories = categories(result.cases);
-  return { ...result, humanGrades: grades };
+  return result;
 }

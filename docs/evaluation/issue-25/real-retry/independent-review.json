@@ -1,0 +1,1679 @@
+{
+  "kind": "independent-agent",
+  "reviewer": "issue-25-independent-agent",
+  "reviewedAt": "2026-09-12T08:57:03.301Z",
+  "runtime": "real provider; bounded developer corpus snapshot comparison",
+  "method": "Independently inspected all96 statuses, all3 answer texts, all3 actual citation records and source text agreement across20 documents; no certificate verdict used. No text scored0 including missing questions.",
+  "scoreTranslation": "Only score3 maps true. gaps independently requires correct abstention or conflict resolution; timed-out/no-answer always false. Text quality and delivery remain separate; partial never becomes completed.",
+  "summary": {
+    "total": 96,
+    "timedOut": 93,
+    "partial": 3,
+    "textQualityPassed": 3,
+    "completedDeliveryPassed": 0,
+    "qualityByProfile": {
+      "source": 0,
+      "wiki": 1,
+      "graph": 2,
+      "combined": 0
+    }
+  },
+  "reviews": [
+    {
+      "id": "request-shape",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "headless",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "permission",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "dangerous",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "isolation",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "reference",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "team",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "release",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "draft-release",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "clear",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "session-path",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "storage",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "manual-compact",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "markdown",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "sla-missing",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "revenue-missing",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "core-evolution",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "context-evolution",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "cancel-persistence",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "render-evolution",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "clear-paraphrase",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "sla-missing-paraphrase",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "core-evolution-paraphrase",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "context-evolution-paraphrase",
+      "profile": "source",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "request-shape",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "headless",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "permission",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "dangerous",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "isolation",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "reference",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "team",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "release",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "draft-release",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "clear",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "session-path",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "storage",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "manual-compact",
+      "profile": "wiki",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "关闭自动压缩（enabled = false）只禁用主动压缩及 overflow/length 自动恢复，手动 compact 仍可执行。",
+      "scores": {
+        "correctness": 3,
+        "completeness": 3,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "回答明确 enabled=false 关闭主动压缩及 overflow/length 自动恢复，同时保留手动 compact；完整覆盖两个 requiredPoints。实际 e1 原文直接支持全部主张，e7 支持手动入口。没有因模型 certificate 而给分。",
+      "citationOriginalChecks": [
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "version": "016c71f5-5cc2-46ad-9fae-bc368461d9f3",
+          "passageId": "5aaf1f63-ecb4-4faf-9edb-21542ef0c3c7",
+          "quote": "- 用户输入进入上下文时保存，完成 assistant 在工具调度前保存；并行工具结束后按调用顺序保存已形成结果，随后才进入下一模型请求。不照搬 Pi 首个 assistant 前延迟刷盘的内部优化，不把 SDK 写入成功降为纯内存缓冲。\n- 取消时不再启动新模型/工具；等待在运行的工具收尾，保存已形成的最终消息/结果，写入失败则停用实例。不承诺进程崩溃时尚未形成或写入的数据可恢复。\n- 文件加载逐行解析，坏 JSON 行可跳过并报告；不因缺失工具结果拒绝历史。有效 header 和可解释的选中分支仍是使用前提，坏行导致分支或压缩边界不可重建时明确拒绝该视图，不伪造历史。读取不自动修复源文件。\n- `enabled = false` 禁用主动压缩及 overflow/length 自动恢复；手动 compact 仍可执行。关闭自动压缩不关闭工具自身截断。\n- compact 的自定义 instructions 作为历史摘要的 Additional focus，不覆盖摘要 system，也不当作主任务新输入。公开事件采用 Forge 的 SessionEvent 体系，覆盖开始、结束、失败、重试和恢复，不复制 Pi 整套扩展框架。\n\n",
+          "judgment": "已核对实际原始版本与 passage 的逐字引用，并独立判断该引用对回答主张的支持，见 explanation。"
+        },
+        {
+          "filename": "14-014-pi-aligned-context-management.md",
+          "version": "016c71f5-5cc2-46ad-9fae-bc368461d9f3",
+          "passageId": "f2178c1e-a778-4d4d-85cd-e026473c60e7",
+          "quote": "| 范围 | 最终选择 |\n|---|---|\n| 执行位置 | 每次任务模型请求前准备上下文；响应后识别超限/length 并有限恢复。工具批次未结束不压缩 |\n| 主动触发 | 默认启用；`contextTokens > W - 16384`；保留约 20000 tokens 近期原文，按 Pi 合法切点选择 |\n| 计量 | 最近有效任务 usage 加后续增量估算，无依据时回退字符启发式；不设置普通任务硬准入 B/M |\n| 摘要结构 | 历史摘要及可选 turn 前缀摘要，最多两个逻辑请求，直接拼接；旧 user 可摘要；没有通用分块或模型合并 |\n| 摘要材料 | 独立摘要 system、文本序列化对话、旧摘要更新模板；每个工具结果文本在摘要输入中只保留前 2000 个 JS 字符并标记省略 |\n| 摘要输出 | 历史 `floor(0.8 * R)`、turn 前缀 `floor(0.5 * R)`，模型声明正的 maxTokens 时再取较小值；不以压缩后变小作为发布条件 |\n| 调用设置 | 当前主模型、路由及重试策略；摘要 cacheRetention 为 none；默认重试三次，2/4/8 秒退避 |\n| 调用总量 | 无每次压缩/每次任务累计额度，无频繁压缩停止规则；记录次数与 usage |\n| 自动失败 | 主动压缩失败沿用当前上下文尝试任务；恢复压缩失败不重试；不循环压缩到阈值以下 |\n| 失败恢复 | 明确 overflow 与 `length && model.maxTokens > 0 && usage.output < model.maxTokens` 共用连续失败链的一次恢复；部分输出不排除恢复 |\n| 工具输出 | 工具自己截断；删除内核统一单条 token 配额、整批再分配及最小封套预算机制；自定义工具自行控制结果大小 |\n| Read / Bash | 默认预览 2000 行 / 50 KiB，Read 取头、Bash 取尾；Read 用 offset/limit 按行读取，Bash 大输出懒写系统临时日志 |\n| 日志生命周期 | 无单文件、会话或全局日志配额，无 TTL、退出删除或启动清扫；普通 Read 补查日志，系统/用户清理 |\n| 原文找回 | 保留原始会话记录供宿主查看/导出；取消专用 read_context、持久原文分页引用和工具全文归档平台；不承诺模型自动找回摘要遗漏 |\n| 会话重建 | JSONL 消息/压缩追加记录及 parentId 分支；最新 compaction 的 summary + firstKeptEntryId 后保留消息 + 后续消息 |\n| 手动入口 | 增加 SDK compact 与 CLI `/compact [instructions]`，先停止当前执行并等待空闲，手动完成后不自动续跑旧任务；可关闭自动压缩 |\n",
+          "judgment": "已核对实际原始版本与 passage 的逐字引用，并独立判断该引用对回答主张的支持，见 explanation。"
+        }
+      ],
+      "qualityPass": true,
+      "deliveryPass": false
+    },
+    {
+      "id": "markdown",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "sla-missing",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "revenue-missing",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "core-evolution",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "context-evolution",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "cancel-persistence",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "render-evolution",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "clear-paraphrase",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "sla-missing-paraphrase",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "core-evolution-paraphrase",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "context-evolution-paraphrase",
+      "profile": "wiki",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "request-shape",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "headless",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "permission",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "dangerous",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "isolation",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "reference",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "team",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "release",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "draft-release",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "clear",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "pending_agent",
+      "answerText": "TUI 的 /clear（清屏）不会清除 Core 会话历史；清屏只影响 TUI 界面，不操作 Core 历史。",
+      "scores": {
+        "correctness": 3,
+        "completeness": 3,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "回答明确 /clear 仅影响 TUI、不清除 Core 历史，覆盖两个 requiredPoints；实际 e6 原文“清屏不操作 Core 历史”直接支持结论。",
+      "citationOriginalChecks": [
+        {
+          "filename": "20-session-management.md",
+          "version": "74640991-18f6-438a-8f5a-4afa3dc64248",
+          "passageId": "e0546626-f5ea-4748-93bd-ca13502da69d",
+          "quote": "- **TUI**：在 `packages/tui/src/app.ts` 处理命令、选择器和切换状态；通过宿主接口请求会话切换。清屏不操作 Core 历史。\n- **CLI 宿主**：在 `packages/cli/src/` 管理会话发现、路径、延迟创建与实例切换。`main.ts` 已通过 `SessionHost` 完成装配，具体接口见本轮施工选择。\n- **Core / SDK**：优先复用创建、取消、等待收尾、存储与释放契约；不引入 slash command 解析。延迟创建不得降低 `SessionStorage.append()` 成功后可重载的保证。\n- **资源释放**：当前 SDK 的 `dispose()` 还会释放实例拥有的请求总线，切换需连同权限请求订阅与界面事件绑定重新装配，不能只替换消息数组。\n- **保存范围**：保持原始消息、压缩记录及未知工具副作用的既有语义；恢复不自动重放工具。\n\n",
+          "judgment": "已核对实际原始版本与 passage 的逐字引用，并独立判断该引用对回答主张的支持，见 explanation。"
+        }
+      ],
+      "qualityPass": true,
+      "deliveryPass": false
+    },
+    {
+      "id": "session-path",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "storage",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "manual-compact",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "markdown",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "sla-missing",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "revenue-missing",
+      "profile": "graph",
+      "runStatus": "partial",
+      "originalOutcome": "fail",
+      "answerText": "所提供的材料中没有任何关于 Forge（Forge Agent）在 2026 年 8 月的付费客户数量或营收的数据；文档均为决策、计划与实现说明，不包含商业指标。",
+      "scores": {
+        "correctness": 3,
+        "completeness": 3,
+        "citationSupport": 3
+      },
+      "gapsHandled": true,
+      "explanation": "明确指定年月付费客户及营收没有材料依据，未编造数值或说零。独立核对20篇冻结语料的主题和正文无这些商业指标；“文档均为决策、计划与实现说明”为范围概述，不能扩展为外部业务事实。无引用符合缺失题合理拒答规则。运行仍 partial，原 outcome fail 保留。",
+      "citationOriginalChecks": [],
+      "qualityPass": true,
+      "deliveryPass": false
+    },
+    {
+      "id": "core-evolution",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "context-evolution",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "cancel-persistence",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "render-evolution",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "clear-paraphrase",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "sla-missing-paraphrase",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "core-evolution-paraphrase",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "context-evolution-paraphrase",
+      "profile": "graph",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "request-shape",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "headless",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "permission",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "dangerous",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "isolation",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "reference",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "team",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "release",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "draft-release",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "clear",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "session-path",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "storage",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "manual-compact",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "markdown",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "sla-missing",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "revenue-missing",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "core-evolution",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "context-evolution",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "cancel-persistence",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "render-evolution",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "clear-paraphrase",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "sla-missing-paraphrase",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "core-evolution-paraphrase",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    },
+    {
+      "id": "context-evolution-paraphrase",
+      "profile": "combined",
+      "runStatus": "timed_out",
+      "originalOutcome": "fail",
+      "answerText": null,
+      "scores": {
+        "correctness": 0,
+        "completeness": 0,
+        "citationSupport": 0
+      },
+      "gapsHandled": false,
+      "explanation": "运行 timed_out，未产生答案文本，无法审定正确性、完整性或引用支持；不补造答案，不把超时当作缺失题正确拒答。",
+      "citationOriginalChecks": [],
+      "qualityPass": false,
+      "deliveryPass": false
+    }
+  ],
+  "reportSha256": "5f0ae23e82b7953c82b1633d0a7f4a135c6a24e1732b2ce20281b2edb12491a9"
+}

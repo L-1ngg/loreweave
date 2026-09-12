@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "corpus": "forge-documentation-frozen",
+  "snapshot": "f3812030485d1a588bab7e0ac4488479260295bb8b0a00ca333b3c81d447da49",
+  "sources": [
+    {
+      "version": "33c386b8-0a90-49f7-b967-993c6b5ad381",
+      "sha256": "fc9e95b3fd2aaa5eed6f4ba2cf486324b10e7f252972fa098481771bce64383c",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "3335ef7a-e734-43a0-844e-a8898007468f",
+      "sha256": "81cb850efe1ef753089f7aa248f9c35e468502bf700a60fd3d4ad414dd3efda6",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "0619ac6e-bcce-44f8-8e64-e5e5a6ef6e6c",
+      "sha256": "952f0c0b80b15271a45af79e20b51b7b6c54c9281a4ef671aafc73acf0684df0",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "2e617e7c-ef36-40be-9c01-795bfc01b01b",
+      "sha256": "9031c182c1c8606cc1d16a8d4173443f6dc4f72a4fac711fb0846abf26d6edc8",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "5cc667fe-65eb-46dd-a0e1-8c589794ceca",
+      "sha256": "efab065266aef8148ebf502b84f4dd19fe08989eb7cc66ecff28a742c96afe55",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "1079c82f-534c-4583-9a53-4054b6379129",
+      "sha256": "03477d07a7feefa812a4412ec335f26f43f31ec5f1228e703394c7c78d12ba64",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "bacbeb68-b1ed-47a8-8ff3-7252e601cc11",
+      "sha256": "eeb96693004a62d26f8b04bb793b7507afb768618b8035a5305c1fcd14273061",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "e669b20f-42f6-4e63-adec-ae15223d207c",
+      "sha256": "f87cefe4a2e41e5d8dee9512a63270e41d748a90eff4a40901cc72c24724dd76",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "76b35482-0bfd-4ba4-9d1f-fea44ba7e45a",
+      "sha256": "486b46d50e542ffd65aa7145c937271674d1bb4c9a7a9048e29a1e94f4a9ce9f",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "bb3356e8-bb75-4a6d-8347-f37010cdca64",
+      "sha256": "ae1651602df9c1e6b1d228e70c76efb3b77c133130348dd6e431f0ce47f6dc82",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "32391b53-1c62-4771-8889-5a9275fd3368",
+      "sha256": "1e36cece28cc1230e1296c83d8a2b7dd74253fbd8c37e98c43ecc46c1f32be50",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "d7514170-aa04-4a6e-92c2-7d6556d3da8b",
+      "sha256": "20ab3bfee1c1f328791d09fc06079bfd33c6e427b6497a709c340991249c1708",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "4886cbe0-038a-4711-8786-81d7606892b0",
+      "sha256": "fb31796b5aef291e5978f5e6349ee8157bcbf5dea88b61dda9552dbd56f7667a",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "016c71f5-5cc2-46ad-9fae-bc368461d9f3",
+      "sha256": "dc2aa46107f731d9ae622d32fcdbc009c3c2107d4aeee8ce013e7e739bfb1901",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "f346c669-4c93-42ab-9d4b-75042a03b025",
+      "sha256": "4120ba2188c0ac5bef337f00fd823a305cd87c8fd0f803664cf6b8728b23b2f1",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "2bd95600-355d-468f-a10a-fad8e5fb7b69",
+      "sha256": "ac8248327c63c7b5e9d017b7f4addb4ec354548902b5df4b80b6fe01f84bcffe",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "cf695731-a3f9-412f-82de-fb0b13a54f98",
+      "sha256": "1d1ccdfa61599b9d4333fc42b0f3455af3f1b80384ee4d0094b3576aa7ee66e0",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "02e6ce3a-0ffc-4480-b859-e4e92ff6fa64",
+      "sha256": "bc5e4851b9778cb63ea8b4c422d48618d8102764a23d5a752ffc03ae4ae3cc0b",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "48a43eef-b433-4834-b8ea-10395e3aee2c",
+      "sha256": "b422ae5485ed3c72054892f1e17ced2c2ebafdadeb5af722af7efe379e76e2a7",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    },
+    {
+      "version": "74640991-18f6-438a-8f5a-4afa3dc64248",
+      "sha256": "3c7779690a55fb4a8b89c2a126798255fac8204789d76d3c528657727d1a9fc2",
+      "projectId": "2ad520a4-f91e-4577-a319-393a9908893a",
+      "parser": "markdown-it-15.0.1-tables-v1",
+      "embedding": "openai-embeddings:BAAI/bge-m3:1024:v1"
+    }
+  ]
+}

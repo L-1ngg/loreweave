@@ -19,7 +19,7 @@ export interface CaseResult {
   profile: Profile;
   complexity: EvaluationCase["complexity"];
   category: EvaluationCase["category"];
-  outcome: "pass" | "fail" | "pending_human" | "unavailable";
+  outcome: "pass" | "fail" | "pending_human" | "pending_agent" | "unavailable";
   reason?: string;
   run?: RunSnapshot;
   elapsedMs: number;
@@ -46,7 +46,10 @@ export interface EvaluationReport {
   dataset: Dataset;
   manifest: SourceManifest;
   datasetSha256: string;
-  provenance: "controlled-provider" | "human-review-required";
+  provenance:
+    | "controlled-provider"
+    | "human-review-required"
+    | "independent-agent-review-required";
   configurations: Partial<
     Record<
       Profile,
@@ -61,6 +64,7 @@ export interface EvaluationReport {
     passed: number;
     failed: number;
     pendingHuman: number;
+    pendingAgent: number;
     unavailable: number;
     total: number;
     completed: number;
@@ -265,6 +269,8 @@ export function categories(
     failed: items.filter((item) => item.outcome === "fail").length,
     pendingHuman: items.filter((item) => item.outcome === "pending_human")
       .length,
+    pendingAgent: items.filter((item) => item.outcome === "pending_agent")
+      .length,
     unavailable: items.filter((item) => item.outcome === "unavailable").length,
     total: items.length,
     completed: items.filter((item) => item.run?.status === "answered").length,
@@ -281,6 +287,7 @@ export async function evaluate(input: {
   dataset: unknown;
   development?: unknown;
   clients: Partial<Record<Profile, PublicAnswers>>;
+  onCase?: (report: EvaluationReport) => Promise<void>;
 }): Promise<EvaluationReport> {
   const manifest = sourceManifestSchema.parse(input.manifest),
     dataset = datasetSchema.parse(input.dataset);
@@ -299,7 +306,9 @@ export async function evaluate(input: {
     provenance:
       dataset.mode === "fixture"
         ? "controlled-provider"
-        : "human-review-required",
+        : dataset.mode === "agent"
+          ? "independent-agent-review-required"
+          : "human-review-required",
     configurations: {},
     cases: [],
     categories: [],
@@ -355,7 +364,7 @@ export async function evaluate(input: {
       );
       continue;
     }
-    for (const item of dataset.cases)
+    for (const item of dataset.cases) {
       report.cases.push(
         await evaluateCase(
           client,
@@ -365,6 +374,14 @@ export async function evaluate(input: {
           dataset.mode === "fixture",
         ),
       );
+      const latest = report.cases.at(-1)!;
+      if (dataset.mode === "agent" && latest.outcome === "pending_human") {
+        latest.outcome = "pending_agent";
+        latest.reason = "independent_agent_review_required";
+      }
+      report.categories = categories(report.cases);
+      await input.onCase?.(structuredClone(report));
+    }
     // A concurrent corpus change invalidates this comparison even if citations used
     // an unaffected source. Capacity interference uses its separate protocol.
     try {
@@ -384,5 +401,6 @@ export async function evaluate(input: {
     }
   }
   report.categories = categories(report.cases);
+  await input.onCase?.(structuredClone(report));
   return report;
 }
