@@ -1,155 +1,39 @@
-import { MaintenanceService } from "../maintenance.ts";
-import { ExternalKnowledge } from "../external-knowledge.ts";
-import { WikiService } from "../wiki.ts";
-import { ScriptedWikiModel } from "./wiki-model.ts";
-import { IdentityService } from "../identity.ts";
-import { EvidenceService } from "../evidence.ts";
-import { SourceService } from "../sources.ts";
-import { ControlledEmbeddings } from "./embeddings.ts";
-import { AccessService } from "../access.ts";
-import { PostgresConversations } from "../conversations.ts";
-import { KnowledgeHost } from "../host.ts";
-import { createApp } from "../http.ts";
-import { startScriptedProvider } from "./provider.ts";
-import { FixtureSources } from "./sources.ts";
-import { GraphService } from "../graph.ts";
 import { loadConfig } from "../config.ts";
-import { OpenAIEmbeddings } from "../providers/embeddings.ts";
-import { OpenAIKnowledgeModel } from "../providers/chat.ts";
+import { createRuntime } from "./runtime.ts";
 
 const config = loadConfig();
-const mode = config.providerMode;
-const real = config.provider;
-const embeddings = real
-  ? new OpenAIEmbeddings(real.embedding)
-  : new ControlledEmbeddings();
-const knowledgeModel = real
-  ? new OpenAIKnowledgeModel(real.chat)
-  : new ScriptedWikiModel();
-
-const databaseUrl = config.databaseUrl;
-if (!databaseUrl) throw new Error("missing_config:DATABASE_URL");
-const access = new AccessService(databaseUrl);
-const conversations = new PostgresConversations(databaseUrl);
-const maintenance = new MaintenanceService(databaseUrl, access);
-let host: KnowledgeHost | undefined;
-let provider: ReturnType<typeof startScriptedProvider> | undefined;
-let server: ReturnType<typeof Bun.serve> | undefined;
-let closing = false;
-const imports = new SourceService(databaseUrl, access, embeddings);
-const identities = new IdentityService(databaseUrl, access, imports);
-const wiki = new WikiService(
-  databaseUrl,
-  access,
-  imports,
-  identities,
-  embeddings,
-  knowledgeModel,
-);
-const graph = new GraphService(
-  databaseUrl,
-  access,
-  imports,
-  identities,
-  knowledgeModel,
-);
-let worker: Promise<void> | undefined;
-async function prepareSources() {
-  while (!closing) {
-    try {
-      if (
-        !(await imports.workOne()) &&
-        !(await identities.workOne()) &&
-        !(await wiki.workOne()) &&
-        !(await graph.workOne())
-      )
-        await Bun.sleep(200);
-    } catch (error) {
-      console.error(
-        "Source worker unavailable",
-        error instanceof Error ? error.name : "error",
-      );
-      await Bun.sleep(1000);
-    }
+const runtime = createRuntime(config);
+let stopping = false;
+async function stop() {
+  stopping = true;
+  try {
+    await runtime.close();
+  } catch {
+    console.error("Runtime cleanup failed");
+    process.exitCode = 1;
+  } finally {
+    for (const signal of ["SIGINT", "SIGTERM"] as const)
+      process.off(signal, onSignal);
   }
 }
-async function close() {
-  if (closing) return;
-  closing = true;
-  await host?.close();
-  server?.stop(true);
-  provider?.stop();
-  await worker;
-  await wiki.close();
-  await graph.close();
-  await identities.close();
-  await imports.close();
-  await conversations.close();
-  await maintenance.close();
-  await access.close();
+function onSignal() {
+  void stop();
 }
+for (const signal of ["SIGINT", "SIGTERM"] as const)
+  process.on(signal, onSignal);
 try {
-  await access.migrate();
-  const organization = config.organization;
-  if (config.bootstrap) {
-    await access.bootstrap({ organization, ...config.bootstrap });
-  }
-  const sources = new FixtureSources({
-    organizationId: await access.organization(organization),
-  });
-  if (!real) provider = startScriptedProvider({ delayMs: 120 });
-  // Ordinary interactive answers use the source hybrid baseline. Additional
-  // Wiki/graph routes are opt-in experiments so every question does not pay
-  // their query and source-resolution cost.
-  const profile = config.retrievalProfile;
-  const evidence = new EvidenceService(
-    imports,
-    wiki,
-    graph,
-    profile as import("../evidence.ts").RetrievalProfile | undefined,
-  );
-  host = new KnowledgeHost({
-    wiki,
-    providerUrl: real?.chat.baseUrl ?? provider!.url,
-    ...(real
-      ? {
-          model: {
-            profile: knowledgeModel.profile,
-            exploration: real.exploration,
-            request: knowledgeModel.request.bind(knowledgeModel),
-          },
-        }
-      : {}),
-    sources,
-    conversations,
-    evidence,
-    imports,
-    access,
-  });
-  const external = new ExternalKnowledge(access, imports, evidence, host);
-  const app = createApp(host, sources, {
-    external,
-    maintenance,
-    identities,
-    wiki,
-    imports,
-    browserOrigin: "http://127.0.0.1:41735",
-    access,
-    graph,
-  });
-  server = Bun.serve({
-    hostname: "127.0.0.1",
-    port: 41736,
-    maxRequestBodySize: 2 * 1024 * 1024,
-    fetch: (request) => app.fetch(request),
-  });
-  worker = prepareSources();
-  console.log(`LoreWeave authenticated API (${mode}): http://127.0.0.1:41736`);
-  for (const signal of ["SIGINT", "SIGTERM"] as const)
-    process.on(signal, () => {
-      void close().then(() => process.exit(0));
-    });
+  await runtime.start();
+  if (!stopping)
+    console.log(
+      `LoreWeave authenticated API (${config.providerMode}): http://127.0.0.1:41736`,
+    );
 } catch (error) {
-  await close();
-  throw error;
+  if (!stopping) {
+    console.error(
+      "Runtime startup failed",
+      error instanceof Error ? error.name : "error",
+    );
+    process.exitCode = 1;
+  }
+  await stop();
 }

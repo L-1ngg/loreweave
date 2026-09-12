@@ -52,6 +52,14 @@ startup applies the reviewed Drizzle SQL migrations. If either fixed port is occ
 new process and resolve the conflict explicitly; it never replaces another service.
 The dev command disables automatic `.env` loading for its backend.
 
+`src/development/main.ts` owns configuration loading and process signals.
+`createRuntime(config)` in `src/development/runtime.ts` owns application setup,
+with `start()` and `close()` as its lifecycle. Setup failure releases resources
+already acquired. Shutdown stops HTTP, settles the host and current background
+work, then releases the provider and database connections. Repeated close calls
+wait for the same cleanup; one cleanup failure does not skip remaining resources.
+The lifecycle regression cases run as part of `bun run test`.
+
 Log in with organization `local`, username `admin` and the password you chose.
 Use “成员与项目管理” to create members, revoke their existing logins and create
 project classifications. A selected project also searches applicable shared material;
