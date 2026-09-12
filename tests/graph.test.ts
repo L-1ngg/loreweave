@@ -285,11 +285,22 @@ for (const waiting of [true, false])
       );
       work = f.graph.workOne(f.token);
       let before = await maintenance.inspect(f.token, operation.id);
-      for (let i = 0; i < 100 && before.modelRequests.length === 0; i++) {
+      // Inspection reads jobs and requests separately. Wait for both the admitted
+      // request and its durable deadline before freezing the recovery baseline.
+      for (
+        let i = 0;
+        i < 100 &&
+        (before.modelRequests.length === 0 ||
+          !before.jobs.find((job) => job.kind === "graph.refresh")?.deadline);
+        i++
+      ) {
         await Bun.sleep(5);
         before = await maintenance.inspect(f.token, operation.id);
       }
       expect(before.modelRequests).toHaveLength(1);
+      expect(
+        before.jobs.find((job) => job.kind === "graph.refresh")?.deadline,
+      ).toBeTruthy();
       if (!waiting) await entered.promise;
       const generation = (await f.graph.inspect(f.token, operation.id))
         .generations[0]!;

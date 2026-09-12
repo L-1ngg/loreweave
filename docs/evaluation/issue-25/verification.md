@@ -14,9 +14,8 @@ review provenance, regression coverage and retained measurement evidence.
   the replacement claim was `undefined` instead of the expected job ID.
 - A focused rerun of the complete `tests/operations.test.ts` file passed:
   **6 passed, 0 failed**, 25 assertions. The initial failure remains recorded;
-  the full run is not described as green. No operations implementation or lease
-  test was modified by this task. Residual risk: this timing-sensitive regression
-  was not diagnosed to a root cause by this measurement task.
+  the full run is not described as green. The initial measurement commit did not modify operations or relax this test.
+  A subsequent CI failure prompted the separately recorded delivery fix below.
 - The targeted evaluation regressions passed, covering report/hash binding,
   agent-versus-human provenance, unavailable-route grading, original-quote
   mapping, percentiles and partial checkpoint preservation.
@@ -51,3 +50,33 @@ connectivity evidence, not answer quality or a latency percentile.
 
 The dataset is a small development comparison, not #18's human-reviewed holdout,
 production traffic, capacity protocol or release certification.
+
+## CI-discovered lease renewal correction
+
+The pushed measurement commit `5280770638391c26b144bdcca844992f5fa8b3d7` failed
+[CI 34684651085](https://github.com/L-1ngg/loreweave/actions/runs/34684651085)
+in the same expired-renewal test. Repeating that exact test ten times locally
+reproduced five failures. This was a product race, not merely a test delay:
+PostgreSQL can evaluate an UPDATE expiry predicate before waiting for a row lock.
+If the locking transaction releases an unchanged row after expiry, the pending
+statement can extend the stale lease.
+
+The narrow follow-up acquires the job row lock in a transaction, then issues a
+new guarded UPDATE so fence/state/expiry are checked after the wait. Existing
+regression assertions and timing were unchanged. The same ten-repeat test then
+passed 10/10 (40 assertions). This delivery correction does not alter the frozen
+comparison artifacts; those are measurements of the preceding implementation.
+A new route quality run was not performed after this lease fix, because no
+quality improvement is claimed and the original measurement remains valid
+historical evidence. Fully populated derived-route benefits remain unmeasured.
+
+The first related regression run had 59 passes and one Graph test sampling race:
+maintenance inspection reads jobs and model requests separately, allowing a
+pre-admission null deadline alongside an admitted request. The test now waits
+for both fields before recording its recovery baseline, asserts the deadline is
+present, and retains the exact unchanged-deadline assertion after takeover.
+
+Final related regression: **60 passed, 0 failed**, 343 assertions across
+Operations, Graph, Wiki and verification lifecycle tests. Typecheck, formatting
+and documentation checks passed after the follow-up. Both review axes accepted
+the three-file correction without actionable findings.

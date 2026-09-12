@@ -69,8 +69,14 @@ export class Operations {
       if (stopped || controller.signal.aborted) return;
       const started = performance.now();
       try {
-        const [renewed] = await this
-          .sql`UPDATE knowledge_jobs SET lease_until=clock_timestamp()+${leaseMs}*interval '1 millisecond' WHERE id=${job.id} AND fence=${job.fence} AND state='running' AND lease_until>clock_timestamp() RETURNING id`;
+        const renewed = await this.sql.begin(async (tx) => {
+          // A waiting UPDATE may evaluate its predicate before acquiring the row
+          // lock. Recheck expiry in a new statement after the lock is held.
+          await tx`SELECT id FROM knowledge_jobs WHERE id=${job.id} FOR UPDATE`;
+          const [row] =
+            await tx`UPDATE knowledge_jobs SET lease_until=clock_timestamp()+${leaseMs}*interval '1 millisecond' WHERE id=${job.id} AND fence=${job.fence} AND state='running' AND lease_until>clock_timestamp() RETURNING id`;
+          return row;
+        });
         if (!renewed) {
           // Completion can race a heartbeat; its durable receipt resolves that race.
           if (!(await this.committed(job))) lose();
