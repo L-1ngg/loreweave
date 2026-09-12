@@ -1,19 +1,28 @@
-/** Own resources as soon as they are acquired; release them in reverse order. */
-export function createLifecycle(
+/** Stop ingress, settle work, then release dependencies; reverse acquisition within each phase. */
+const releaseOrder = { ingress: 0, settlement: 1, dependency: 2 };
+export function createLifecycle<T>(
   setup: (scope: {
     signal: AbortSignal;
-    defer: (release: () => void | Promise<unknown>) => void;
-  }) => Promise<void>,
+    defer: (
+      release: () => void | Promise<unknown>,
+      phase?: keyof typeof releaseOrder,
+    ) => void;
+  }) => Promise<T>,
 ) {
   const controller = new AbortController();
-  const releases: Array<() => void | Promise<unknown>> = [];
-  let starting: Promise<void> | undefined;
+  const releases: Array<{
+    cleanup: () => void | Promise<unknown>;
+    phase: keyof typeof releaseOrder;
+  }> = [];
+  let starting: Promise<T> | undefined;
   let closing: Promise<void> | undefined;
   let releasing: Promise<void> | undefined;
   function release() {
     return (releasing ??= (async () => {
       const errors: unknown[] = [];
-      for (const cleanup of releases.reverse()) {
+      for (const { cleanup } of releases
+        .reverse()
+        .sort((a, b) => releaseOrder[a.phase] - releaseOrder[b.phase])) {
         try {
           await cleanup();
         } catch (error) {
@@ -31,11 +40,13 @@ export function createLifecycle(
       return (starting ??= Promise.resolve().then(async () => {
         try {
           controller.signal.throwIfAborted();
-          await setup({
+          const result = await setup({
             signal: controller.signal,
-            defer: (cleanup) => releases.push(cleanup),
+            defer: (cleanup, phase = "dependency") =>
+              releases.push({ cleanup, phase }),
           });
           controller.signal.throwIfAborted();
+          return result;
         } catch (error) {
           controller.abort();
           try {

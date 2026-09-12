@@ -16,7 +16,7 @@ import { GraphService } from "../graph.ts";
 import { OpenAIEmbeddings } from "../providers/embeddings.ts";
 import { OpenAIKnowledgeModel } from "../providers/chat.ts";
 import type { RuntimeConfig } from "../config.ts";
-import { createLifecycle } from "./lifecycle.ts";
+import { createLifecycle } from "../lifecycle.ts";
 
 export function createRuntime(config: RuntimeConfig) {
   return createLifecycle(async ({ signal, defer }) => {

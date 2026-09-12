@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { createLifecycle } from "../src/development/lifecycle.ts";
+import { createLifecycle } from "../src/lifecycle.ts";
 import { createRuntime } from "../src/development/runtime.ts";
 import { loadConfig } from "../src/config.ts";
 

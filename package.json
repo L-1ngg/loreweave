@@ -32,7 +32,7 @@
     "test:mcp": "bun --no-env-file test tests/mcp.test.ts",
     "test:graph": "bun --no-env-file test tests/graph.test.ts",
     "test:operations": "bun --no-env-file test tests/operations.test.ts",
-    "test:evaluation": "bun --no-env-file test tests/evaluation.test.ts",
+    "test:evaluation": "bun --no-env-file test tests/evaluation.test.ts tests/verification-lifecycle.test.ts",
     "eval:run": "bun --no-env-file scripts/evaluate.ts",
     "eval:fixture": "bun --no-env-file scripts/evaluate-fixture.ts",
     "eval:grade": "bun --no-env-file scripts/evaluate-grade.ts",
