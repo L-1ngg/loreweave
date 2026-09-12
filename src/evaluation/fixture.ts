@@ -163,8 +163,43 @@ export async function evaluationFixture(
     port: 0,
     fetch: (request) => app.fetch(request),
   });
+  const profileServers: Array<{ stop(closeActiveConnections?: boolean): void }> = [server];
+  const profileHosts: KnowledgeHost[] = [host];
+  const profileClients: Partial<Record<Profile, PublicAnswers>> = {
+    source: new PublicAnswers(String(server.url), readerToken),
+  };
+  for (const route of ["wiki", "graph", "combined"] as const) {
+    const routeHost = new KnowledgeHost({
+      access,
+      imports: sources,
+      conversations,
+      sources: fixtureSources,
+      evidence: new EvidenceService(sources, wiki, graph, route),
+      providerUrl: faulty ? String(faulty.url) : provider.url,
+    });
+    const routeApp = createApp(routeHost, fixtureSources, {
+      access,
+      imports: sources,
+      maintenance,
+      ...(identities ? { identities } : {}),
+      ...(wiki ? { wiki } : {}),
+      ...(graph ? { graph } : {}),
+    });
+    const routeServer = Bun.serve({
+      hostname: "127.0.0.1",
+      port: 0,
+      fetch: (request) => routeApp.fetch(request),
+    });
+    profileServers.push(routeServer);
+    profileHosts.push(routeHost);
+    profileClients[route] = new PublicAnswers(
+      String(routeServer.url),
+      readerToken,
+    );
+  }
   return {
     endpoint: String(server.url),
+    clients: profileClients,
     manifest,
     dataset,
     sources,
@@ -178,8 +213,8 @@ export async function evaluationFixture(
     wiki,
     graph,
     async close() {
-      await host.close();
-      server.stop(true);
+      for (const profileHost of profileHosts) await profileHost.close();
+      for (const routeServer of profileServers) routeServer.stop(true);
       faulty?.stop(true);
       provider.stop();
       await wiki?.close();

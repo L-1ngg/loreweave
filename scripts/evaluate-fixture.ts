@@ -11,12 +11,12 @@ for (const [name, corrupt] of [
   ["good", false],
   ["bad", true],
 ] as const) {
-  const fixture = await evaluationFixture(database, corrupt);
+    const fixture = await evaluationFixture(database, corrupt, "source", true);
   try {
     const report = await evaluate({
       manifest: fixture.manifest,
       dataset: fixture.dataset,
-      clients: { source: fixture.client },
+      clients: fixture.clients,
     });
     for (const [suffix, value] of [
       ["manifest", fixture.manifest],
