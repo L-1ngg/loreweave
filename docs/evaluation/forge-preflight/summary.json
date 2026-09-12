@@ -1,0 +1,1017 @@
+{
+  "source": {
+    "all": {
+      "n": 20,
+      "status": {
+        "timed_out": 16,
+        "partial": 3,
+        "failed": 1
+      },
+      "medianMs": 30024.0,
+      "p95NearestRankMs": 60025
+    },
+    "ordinary": {
+      "n": 16,
+      "status": {
+        "timed_out": 14,
+        "partial": 2
+      },
+      "medianMs": 30022.0,
+      "p95NearestRankMs": 30039
+    },
+    "complex": {
+      "n": 4,
+      "status": {
+        "timed_out": 2,
+        "partial": 1,
+        "failed": 1
+      },
+      "medianMs": 57155.0,
+      "p95NearestRankMs": 60027
+    },
+    "citations": {
+      "n": 6,
+      "resolvedAndTextContained": 6
+    },
+    "primaryReferenceHit": {
+      "n": 18,
+      "hits": [
+        "request-shape",
+        "headless",
+        "permission",
+        "dangerous",
+        "isolation",
+        "reference",
+        "team",
+        "clear",
+        "session-path",
+        "storage",
+        "manual-compact",
+        "markdown",
+        "core-evolution",
+        "context-evolution"
+      ]
+    },
+    "rows": [
+      {
+        "id": "request-shape",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30039,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 2,
+          "generation": 1,
+          "exploration": 3
+        }
+      },
+      {
+        "id": "headless",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30037,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "permission",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30021,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "dangerous",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30009,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "isolation",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30024,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 0,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "reference",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30009,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 2,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "team",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30015,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 0,
+          "retrieval": 2,
+          "generation": 1,
+          "exploration": 3
+        }
+      },
+      {
+        "id": "release",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30010,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "draft-release",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30031,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "clear",
+        "status": "partial",
+        "reason": "incomplete_support",
+        "elapsedMs": 22591,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": "TUI 的清屏操作不会清除 Core 会话历史；文档明确“清屏不操作 Core 历史”，TUI 仅负责命令处理、选择器和切换状态，历史存储与释放由 CLI 宿主和 Core/SDK 契约管理。",
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "session-path",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30024,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "storage",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30028,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "manual-compact",
+        "status": "partial",
+        "reason": "incomplete_support",
+        "elapsedMs": 18099,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": "关闭自动压缩后，手动 compact 仍可执行；`enabled = false` 仅禁用主动压缩及 overflow/length 自动恢复，不关闭工具自身截断。",
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "markdown",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30029,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "sla-missing",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30023,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 2,
+          "generation": 1,
+          "exploration": 3
+        }
+      },
+      {
+        "id": "revenue-missing",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30009,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "core-evolution",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 60025,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 2,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "context-evolution",
+        "status": "partial",
+        "reason": "incomplete_support",
+        "elapsedMs": 54285,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": "ADR-014 取代了 ADR-012 的当前方案入口，ADR-012 状态标记为“被 ADR-014 取代”，不再作为当前施工规格。\nADR-014 明确“工具自己截断”替代 ADR-012 第 7 项额外内核预算；“原文找回”替代第 8 项专用模型读取工具，并取消专用 read_context、持久原文分页引用和工具全文归档平台。因此严格上下文预算和 read_context 原文找回平台不再属于当前方案，仅保留原始会话记录供宿主查看/导出。",
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "cancel-persistence",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 60027,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 2,
+          "generation": 1,
+          "exploration": 3
+        }
+      },
+      {
+        "id": "render-evolution",
+        "status": "failed",
+        "reason": "invalid_draft",
+        "elapsedMs": 47088,
+        "gaps": [
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 0,
+          "retrieval": 3,
+          "generation": 2,
+          "exploration": 3
+        }
+      }
+    ]
+  },
+  "combined": {
+    "all": {
+      "n": 20,
+      "status": {
+        "timed_out": 17,
+        "partial": 3
+      },
+      "medianMs": 30019.0,
+      "p95NearestRankMs": 60020
+    },
+    "ordinary": {
+      "n": 16,
+      "status": {
+        "timed_out": 13,
+        "partial": 3
+      },
+      "medianMs": 30017.5,
+      "p95NearestRankMs": 30041
+    },
+    "complex": {
+      "n": 4,
+      "status": {
+        "timed_out": 4
+      },
+      "medianMs": 60016.0,
+      "p95NearestRankMs": 60031
+    },
+    "citations": {
+      "n": 3,
+      "resolvedAndTextContained": 3
+    },
+    "primaryReferenceHit": {
+      "n": 18,
+      "hits": [
+        "request-shape",
+        "headless",
+        "permission",
+        "dangerous",
+        "isolation",
+        "reference",
+        "team",
+        "clear",
+        "session-path",
+        "storage",
+        "manual-compact",
+        "markdown",
+        "core-evolution",
+        "context-evolution"
+      ]
+    },
+    "rows": [
+      {
+        "id": "request-shape",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30018,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "headless",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30018,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 0,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "permission",
+        "status": "partial",
+        "reason": "incomplete_support",
+        "elapsedMs": 15613,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": "permission 的 mode 只有三种：`default` / `accept-edits` / `deny-all`；`plan` 不在枚举里预留。",
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "dangerous",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30012,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "isolation",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30020,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "reference",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30036,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 2,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "team",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30041,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 0,
+          "retrieval": 1,
+          "generation": 2,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "release",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30029,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "draft-release",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30021,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "clear",
+        "status": "partial",
+        "reason": "incomplete_support",
+        "elapsedMs": 25677,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": "TUI 的 /clear（清屏）不会清除 Core 会话历史；文档明确说明“清屏不操作 Core 历史”。",
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "session-path",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30011,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "storage",
+        "status": "partial",
+        "reason": "incomplete_support",
+        "elapsedMs": 18711,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": "任一存储写入失败时，停止继续调度并停用实例，由宿主核对实际存储状态后重建；已开始的写入不可保证取消，抛错不代表零写入，也不盲目重试追加或回滚工具外部副作用。",
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "manual-compact",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30025,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "markdown",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30012,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "sla-missing",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30017,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 2,
+          "generation": 1,
+          "exploration": 3
+        }
+      },
+      {
+        "id": "revenue-missing",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 30012,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 0,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "core-evolution",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 60012,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 2,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "context-evolution",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 60012,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "cancel-persistence",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 60031,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      },
+      {
+        "id": "render-evolution",
+        "status": "timed_out",
+        "reason": "budget_exhausted",
+        "elapsedMs": 60020,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": null,
+        "counts": {
+          "review": 1,
+          "retrieval": 2,
+          "generation": 1,
+          "exploration": 3
+        }
+      }
+    ]
+  },
+  "combined-after-update": {
+    "all": {
+      "n": 1,
+      "status": {
+        "partial": 1
+      },
+      "medianMs": 25218,
+      "p95NearestRankMs": 25218
+    },
+    "ordinary": {
+      "n": 1,
+      "status": {
+        "partial": 1
+      },
+      "medianMs": 25218,
+      "p95NearestRankMs": 25218
+    },
+    "complex": {
+      "n": 0,
+      "status": {},
+      "medianMs": null,
+      "p95NearestRankMs": null
+    },
+    "citations": {
+      "n": 1,
+      "resolvedAndTextContained": 1
+    },
+    "primaryReferenceHit": {
+      "n": 0,
+      "hits": []
+    },
+    "rows": [
+      {
+        "id": "update-canary",
+        "status": "partial",
+        "reason": "incomplete_support",
+        "elapsedMs": 25218,
+        "gaps": [
+          "graph_pending",
+          "graph_incomplete",
+          "context_limit"
+        ],
+        "wikiCandidates": 0,
+        "graphCandidates": 0,
+        "text": "仅限预验收副本的构建代号是 LW-CANARY-7429，此标记不是 Forge 正式设计。",
+        "counts": {
+          "review": 1,
+          "retrieval": 1,
+          "generation": 1,
+          "exploration": 2
+        }
+      }
+    ]
+  },
+  "maintenance": {
+    "source": {
+      "searchable": 20
+    },
+    "wiki": {
+      "pending": 17,
+      "failed": 3
+    },
+    "graph": {
+      "pending": 18,
+      "failed": 2
+    }
+  },
+  "maintenanceWindow": {
+    "budgetMs": 720000,
+    "elapsedMs": 727726,
+    "workerCalls": 8,
+    "activity": {
+      "sampledAt": "2026-09-12T02:34:50.435Z",
+      "acceptedOperations": 20,
+      "pending": 52,
+      "failed": 5,
+      "jobs": [
+        {
+          "kind": "graph.refresh",
+          "state": "failed",
+          "count": 2
+        },
+        {
+          "kind": "graph.refresh",
+          "state": "queued",
+          "count": 17
+        },
+        {
+          "kind": "graph.refresh",
+          "state": "running",
+          "count": 1
+        },
+        {
+          "kind": "identity.revalidate",
+          "state": "queued",
+          "count": 17
+        },
+        {
+          "kind": "wiki.refresh",
+          "state": "failed",
+          "count": 3
+        },
+        {
+          "kind": "wiki.refresh",
+          "state": "queued",
+          "count": 17
+        }
+      ]
+    }
+  },
+  "update": {
+    "originalFileUnchanged": true,
+    "priorVersion": "22fd21b3-2945-41c8-b38d-26f8dad005fa",
+    "operation": {
+      "graph": "pending",
+      "wiki": "pending",
+      "id": "6d6fd13c-1553-4e2e-bc66-1463d6e74d3b",
+      "documentId": "43d190da-aac6-4118-b3dc-c63e04c6f4f2",
+      "versionId": "e81de35b-2876-45d5-92c9-5f11df500b57",
+      "source": "searchable",
+      "maintenance": [
+        {
+          "id": "80da9d72-c973-4e4d-8f8f-0a02862cefb8",
+          "kind": "graph.refresh",
+          "state": "queued"
+        },
+        {
+          "id": "a8f597fa-2d49-413f-b83c-d5d90f6b264e",
+          "kind": "identity.revalidate",
+          "state": "queued"
+        },
+        {
+          "id": "3c2d8600-f5f1-4e24-98a5-2c2beefd5d1b",
+          "kind": "wiki.dependencies",
+          "state": "queued"
+        },
+        {
+          "id": "8cb150b3-76d9-4a76-938a-a39772f4a9be",
+          "kind": "wiki.refresh",
+          "state": "queued"
+        }
+      ]
+    },
+    "historicalReadable": true,
+    "staleWikiReferences": []
+  }
+}

@@ -1,0 +1,61 @@
+import {AccessService} from '/home/l1ngg/dev/My-RAG/src/access.ts';
+import {SourceService} from '/home/l1ngg/dev/My-RAG/src/sources.ts';
+import {IdentityService} from '/home/l1ngg/dev/My-RAG/src/identity.ts';
+import {WikiService} from '/home/l1ngg/dev/My-RAG/src/wiki.ts';
+import {GraphService} from '/home/l1ngg/dev/My-RAG/src/graph.ts';
+import {EvidenceService} from '/home/l1ngg/dev/My-RAG/src/evidence.ts';
+import {KnowledgeHost} from '/home/l1ngg/dev/My-RAG/src/host.ts';
+import {PostgresConversations} from '/home/l1ngg/dev/My-RAG/src/conversations.ts';
+import {FixtureSources} from '/home/l1ngg/dev/My-RAG/src/development/sources.ts';
+import {createApp} from '/home/l1ngg/dev/My-RAG/src/http.ts';
+import {PublicAnswers} from '/home/l1ngg/dev/My-RAG/src/evaluation/client.ts';
+import {MaintenanceService} from '/home/l1ngg/dev/My-RAG/src/maintenance.ts';
+import {providerConfig} from '/home/l1ngg/dev/My-RAG/src/providers/config.ts';
+import {OpenAIEmbeddings} from '/home/l1ngg/dev/My-RAG/src/providers/embeddings.ts';
+import {OpenAIKnowledgeModel} from '/home/l1ngg/dev/My-RAG/src/providers/chat.ts';
+const dir='/tmp/loreweave-forge-preflight';
+const save=async(name:string,value:unknown)=>Bun.write(`${dir}/${name}.json`,JSON.stringify(value,null,2)+'\n');
+const url=process.env.TEST_DATABASE_URL!;if(!url)throw Error('test_database_required');
+const config=providerConfig(process.env),embeddings=new OpenAIEmbeddings(config.embedding),model=new OpenAIKnowledgeModel(config.chat);
+const access=new AccessService(url),sources=new SourceService(url,access,embeddings),identity=new IdentityService(url,access,sources),wiki=new WikiService(url,access,sources,identity,embeddings,model),graph=new GraphService(url,access,sources,identity,model),maintenance=new MaintenanceService(url,access),conversations=new PostgresConversations(url);
+let host:KnowledgeHost|undefined,server:ReturnType<typeof Bun.serve>|undefined;
+const report:any={startedAt:new Date().toISOString(),formalAcceptance:false,models:{chat:model.profile,embedding:embeddings.profile},imports:[],runs:[],maintenance:[]};
+const account={organization:`forge-preflight-${crypto.randomUUID()}`,username:'admin',password:crypto.randomUUID()};
+try{
+ await access.migrate();await access.bootstrap(account);const {token}=await access.login(account);
+ const reader={username:'reader',password:crypto.randomUUID(),grants:['read'] as ['read']};await access.createMember(token,reader);const {token:readToken}=await access.login({...reader,organization:account.organization});
+ const project=await access.createProject(token,'Forge Agent');
+ const manifest=await Bun.file(`${dir}/corpus-manifest.json`).json(),questions=await Bun.file(`${dir}/questions.json`).json();
+ for(const item of manifest.documents){const start=Date.now();const op=await sources.submit(token,{key:crypto.randomUUID(),filename:item.file,projectId:project.id,bytes:new Uint8Array(await Bun.file(`${dir}/corpus/${item.file}`).arrayBuffer())});await sources.workOne();const state=await sources.inspect(token,op.id);report.imports.push({...item,operation:state,elapsedMs:Date.now()-start});console.log(`import ${item.file}: ${state.source}`);await save('results',report);}
+ // Keep all raw originals/version locators for independent inspection; never ingest questions or labels.
+ const originals=[];for(const item of report.imports)if(item.operation.source==='searchable') originals.push({file:item.file,source:await sources.version(readToken,item.operation.versionId)});await save('originals',originals);
+ async function open(profile:'source'|'combined'){
+   await host?.close();server?.stop(true);
+   const evidence=new EvidenceService(sources,profile==='combined'?wiki:undefined,profile==='combined'?graph:undefined,profile);
+   const fixtures=new FixtureSources({organizationId:await access.organization(account.organization)});
+   host=new KnowledgeHost({access,imports:sources,wiki,evidence,conversations,sources:fixtures,providerUrl:config.chat.baseUrl,model:{profile:model.profile,exploration:config.exploration,request:model.request.bind(model)}});
+   const app=createApp(host,fixtures,{access,imports:sources,identities:identity,wiki,graph,maintenance});server=Bun.serve({hostname:'127.0.0.1',port:0,fetch:r=>app.fetch(r)});
+   const client=new PublicAnswers(server.url.toString(),readToken);await client.configuration(AbortSignal.timeout(5000));return client;
+ }
+ async function ask(client:PublicAnswers,item:any,profile:string){const started=Date.now();let run:any,error;try{run=await client.answer({...item,projectId:project.id},AbortSignal.timeout(70000));await host!.settled(run.id);}catch(e){error=e instanceof Error?e.message:'error';}
+ const citationChecks=[];for(const c of run?.answer?.citations??[]){try{const original=await sources.resolve(readToken,c.version,c.passageId);citationChecks.push({version:c.version,passageId:c.passageId,resolves:true,textContained:original.text.includes(c.text)});}catch{citationChecks.push({version:c.version,passageId:c.passageId,resolves:false});}}
+ report.runs.push({id:item.id,profile,question:item.question,complexity:item.complexity,elapsedMs:Date.now()-started,run,error,citationChecks});await save('results',report);console.log(`answer ${profile}/${item.id}: ${run?.status??error}`);}
+ let client=await open('source');for(const q of questions.cases)await ask(client,q,'source');await host!.close();server!.stop(true);host=undefined;server=undefined;
+ // Operator workload cap, not a new product deadline. No work is reported ready merely because time elapsed.
+ const maintenanceStart=Date.now(),limit=maintenanceStart+12*60*1000;let calls=0;
+ while(Date.now()<limit){let worked=false;for(const [name,worker] of [['identity',()=>identity.workOne()],['wiki',()=>wiki.workOne()],['graph',()=>graph.workOne()]] as const){if(Date.now()>=limit)break;try{const did=await worker();worked=did||worked;if(did){calls++;console.log(`maintenance ${name} job ${calls}, ${Math.round((Date.now()-maintenanceStart)/1000)}s`);}}catch(e){console.log(`maintenance ${name}: ${e instanceof Error?e.message:'error'}`);}}
+ if(!worked)break;
+ }
+ report.maintenanceWindow={budgetMs:12*60*1000,elapsedMs:Date.now()-maintenanceStart,workerCalls:calls,activity:await maintenance.activity(readToken)};
+ for(const item of report.imports){report.maintenance.push({file:item.file,source:await sources.inspect(readToken,item.operation.id),diagnostics:await maintenance.inspect(readToken,item.operation.id),graph:await graph.inspect(readToken,item.operation.id)});}await save('results',report);
+ const pages=[];let after='';do{const listed=await wiki.list(readToken,project.id,after);for(const p of listed.items)pages.push(await wiki.page(readToken,p.id));after=listed.next??'';}while(after);await save('wiki-pages',pages);
+ client=await open('combined');for(const q of questions.cases)await ask(client,q,'combined');
+ // Modify only the isolated imported copy, never the user's source repository.
+ const target=report.imports.find((i:any)=>i.file.includes('016-'));const old=await sources.version(readToken,target.operation.versionId);
+ const changed=old.text+'\n\n## 仅限预验收副本的更新标记\n\n本次预验收副本的构建代号是 LW-CANARY-7429。此标记不是 Forge 正式设计。\n';
+ const op=await sources.submit(token,{key:crypto.randomUUID(),filename:target.file,projectId:project.id,documentId:old.id,expectedPrior:old.version,bytes:new TextEncoder().encode(changed)});await sources.workOne();
+ report.update={originalFileUnchanged:(await Bun.file('/home/l1ngg/dev/forge-agent/'+target.sourcePath).text())===old.text,priorVersion:old.version,operation:await sources.inspect(readToken,op.id),historicalReadable:(await sources.version(readToken,old.version)).text===old.text};await save('results',report);
+ await ask(client,{id:'update-canary',question:'仅限预验收副本的构建代号是什么？这是 Forge 正式设计吗？',complexity:'ordinary'},'combined-after-update');
+ report.update.staleWikiReferences=[];for(const p of pages.filter((p:any)=>p.sources.some((s:any)=>s.version===old.version))){const current=await wiki.page(readToken,p.id);report.update.staleWikiReferences.push({id:p.id,fresh:current.fresh});}
+ report.finishedAt=new Date().toISOString();await save('results',report);
+}finally{await host?.close();server?.stop(true);await conversations.close();await graph.close();await wiki.close();await identity.close();await sources.close();await maintenance.close();await access.close();}

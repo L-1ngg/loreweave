@@ -1,0 +1,70 @@
+import 01-001-doc-system.md: searchable
+import 02-002-request-bus-shape.md: searchable
+import 03-003-permission-rule-matching.md: searchable
+import 04-004-single-process-protocol-isolation.md: searchable
+import 05-005-tui-own-compositor.md: searchable
+import 06-006-tui-cell-parity.md: searchable
+import 07-007-no-compile-grok-reference.md: searchable
+import 08-008-general-agent-positioning.md: searchable
+import 09-009-self-owned-agent-core.md: searchable
+import 10-010-input-ownership-and-interruption.md: searchable
+import 11-011-forge-agent-github-delivery.md: searchable
+import 12-012-context-management-direction.md: searchable
+import 13-013-incremental-session-persistence.md: searchable
+import 14-014-pi-aligned-context-management.md: searchable
+import 15-015-pi-core-source-migration.md: searchable
+import 16-016-markdown-rendering.md: searchable
+import 17-README.md: searchable
+import 18-sdk.md: searchable
+import 19-release.md: searchable
+import 20-session-management.md: searchable
+answer source/request-shape: timed_out
+answer source/headless: timed_out
+answer source/permission: timed_out
+answer source/dangerous: timed_out
+answer source/isolation: timed_out
+answer source/reference: timed_out
+answer source/team: timed_out
+answer source/release: timed_out
+answer source/draft-release: timed_out
+answer source/clear: partial
+answer source/session-path: timed_out
+answer source/storage: timed_out
+answer source/manual-compact: partial
+answer source/markdown: timed_out
+answer source/sla-missing: timed_out
+answer source/revenue-missing: timed_out
+answer source/core-evolution: timed_out
+answer source/context-evolution: partial
+answer source/cancel-persistence: timed_out
+answer source/render-evolution: failed
+maintenance identity job 1, 0s
+maintenance wiki job 2, 114s
+maintenance graph job 3, 204s
+maintenance identity job 4, 204s
+maintenance wiki job 5, 390s
+maintenance graph job 6, 480s
+maintenance identity job 7, 480s
+maintenance wiki job 8, 570s
+maintenance graph: stale_worker
+answer combined/request-shape: timed_out
+answer combined/headless: timed_out
+answer combined/permission: partial
+answer combined/dangerous: timed_out
+answer combined/isolation: timed_out
+answer combined/reference: timed_out
+answer combined/team: timed_out
+answer combined/release: timed_out
+answer combined/draft-release: timed_out
+answer combined/clear: partial
+answer combined/session-path: timed_out
+answer combined/storage: partial
+answer combined/manual-compact: timed_out
+answer combined/markdown: timed_out
+answer combined/sla-missing: timed_out
+answer combined/revenue-missing: timed_out
+answer combined/core-evolution: timed_out
+answer combined/context-evolution: timed_out
+answer combined/cancel-persistence: timed_out
+answer combined/render-evolution: timed_out
+answer combined-after-update/update-canary: partial

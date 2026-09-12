@@ -1,0 +1,167 @@
+{
+  "sourceRepo": "L-1ngg/forge-agent",
+  "head": "ead9bf28cbd9fafccb8b3fbcc8d3589c0b755916",
+  "workingTreeStatus": " M docs/README.md\n M docs/phases/session-resume-experience.md\n?? docs/phases/testing-system.md\n",
+  "selection": "16 ADRs + documentation index, SDK, release, session management",
+  "documents": [
+    {
+      "file": "01-001-doc-system.md",
+      "sourcePath": "docs/decisions/001-doc-system.md",
+      "sha256": "fc9e95b3fd2aaa5eed6f4ba2cf486324b10e7f252972fa098481771bce64383c",
+      "bytes": 3378,
+      "characters": 2124
+    },
+    {
+      "file": "02-002-request-bus-shape.md",
+      "sourcePath": "docs/decisions/002-request-bus-shape.md",
+      "sha256": "81cb850efe1ef753089f7aa248f9c35e468502bf700a60fd3d4ad414dd3efda6",
+      "bytes": 4689,
+      "characters": 3149
+    },
+    {
+      "file": "03-003-permission-rule-matching.md",
+      "sourcePath": "docs/decisions/003-permission-rule-matching.md",
+      "sha256": "952f0c0b80b15271a45af79e20b51b7b6c54c9281a4ef671aafc73acf0684df0",
+      "bytes": 3746,
+      "characters": 2192
+    },
+    {
+      "file": "04-004-single-process-protocol-isolation.md",
+      "sourcePath": "docs/decisions/004-single-process-protocol-isolation.md",
+      "sha256": "9031c182c1c8606cc1d16a8d4173443f6dc4f72a4fac711fb0846abf26d6edc8",
+      "bytes": 3825,
+      "characters": 2195
+    },
+    {
+      "file": "05-005-tui-own-compositor.md",
+      "sourcePath": "docs/decisions/005-tui-own-compositor.md",
+      "sha256": "efab065266aef8148ebf502b84f4dd19fe08989eb7cc66ecff28a742c96afe55",
+      "bytes": 5985,
+      "characters": 4151
+    },
+    {
+      "file": "06-006-tui-cell-parity.md",
+      "sourcePath": "docs/decisions/006-tui-cell-parity.md",
+      "sha256": "03477d07a7feefa812a4412ec335f26f43f31ec5f1228e703394c7c78d12ba64",
+      "bytes": 4054,
+      "characters": 2509
+    },
+    {
+      "file": "07-007-no-compile-grok-reference.md",
+      "sourcePath": "docs/decisions/007-no-compile-grok-reference.md",
+      "sha256": "eeb96693004a62d26f8b04bb793b7507afb768618b8035a5305c1fcd14273061",
+      "bytes": 2628,
+      "characters": 1546
+    },
+    {
+      "file": "08-008-general-agent-positioning.md",
+      "sourcePath": "docs/decisions/008-general-agent-positioning.md",
+      "sha256": "f87cefe4a2e41e5d8dee9512a63270e41d748a90eff4a40901cc72c24724dd76",
+      "bytes": 4511,
+      "characters": 2253
+    },
+    {
+      "file": "09-009-self-owned-agent-core.md",
+      "sourcePath": "docs/decisions/009-self-owned-agent-core.md",
+      "sha256": "486b46d50e542ffd65aa7145c937271674d1bb4c9a7a9048e29a1e94f4a9ce9f",
+      "bytes": 5288,
+      "characters": 2600
+    },
+    {
+      "file": "10-010-input-ownership-and-interruption.md",
+      "sourcePath": "docs/decisions/010-input-ownership-and-interruption.md",
+      "sha256": "ae1651602df9c1e6b1d228e70c76efb3b77c133130348dd6e431f0ce47f6dc82",
+      "bytes": 12757,
+      "characters": 6465
+    },
+    {
+      "file": "11-011-forge-agent-github-delivery.md",
+      "sourcePath": "docs/decisions/011-forge-agent-github-delivery.md",
+      "sha256": "1e36cece28cc1230e1296c83d8a2b7dd74253fbd8c37e98c43ecc46c1f32be50",
+      "bytes": 2339,
+      "characters": 1209
+    },
+    {
+      "file": "12-012-context-management-direction.md",
+      "sourcePath": "docs/decisions/012-context-management-direction.md",
+      "sha256": "20ab3bfee1c1f328791d09fc06079bfd33c6e427b6497a709c340991249c1708",
+      "bytes": 25616,
+      "characters": 10538
+    },
+    {
+      "file": "13-013-incremental-session-persistence.md",
+      "sourcePath": "docs/decisions/013-incremental-session-persistence.md",
+      "sha256": "fb31796b5aef291e5978f5e6349ee8157bcbf5dea88b61dda9552dbd56f7667a",
+      "bytes": 8065,
+      "characters": 3551
+    },
+    {
+      "file": "14-014-pi-aligned-context-management.md",
+      "sourcePath": "docs/decisions/014-pi-aligned-context-management.md",
+      "sha256": "dc2aa46107f731d9ae622d32fcdbc009c3c2107d4aeee8ce013e7e739bfb1901",
+      "bytes": 8372,
+      "characters": 3978
+    },
+    {
+      "file": "15-015-pi-core-source-migration.md",
+      "sourcePath": "docs/decisions/015-pi-core-source-migration.md",
+      "sha256": "4120ba2188c0ac5bef337f00fd823a305cd87c8fd0f803664cf6b8728b23b2f1",
+      "bytes": 6174,
+      "characters": 3130
+    },
+    {
+      "file": "16-016-markdown-rendering.md",
+      "sourcePath": "docs/decisions/016-markdown-rendering.md",
+      "sha256": "ac8248327c63c7b5e9d017b7f4addb4ec354548902b5df4b80b6fe01f84bcffe",
+      "bytes": 1528,
+      "characters": 804
+    },
+    {
+      "file": "17-README.md",
+      "sourcePath": "docs/README.md",
+      "sha256": "1d1ccdfa61599b9d4333fc42b0f3455af3f1b80384ee4d0094b3576aa7ee66e0",
+      "bytes": 6316,
+      "characters": 3805
+    },
+    {
+      "file": "18-sdk.md",
+      "sourcePath": "docs/sdk.md",
+      "sha256": "bc5e4851b9778cb63ea8b4c422d48618d8102764a23d5a752ffc03ae4ae3cc0b",
+      "bytes": 14433,
+      "characters": 8236
+    },
+    {
+      "file": "19-release.md",
+      "sourcePath": "docs/release.md",
+      "sha256": "b422ae5485ed3c72054892f1e17ced2c2ebafdadeb5af722af7efe379e76e2a7",
+      "bytes": 2982,
+      "characters": 2982
+    },
+    {
+      "file": "20-session-management.md",
+      "sourcePath": "docs/phases/session-management.md",
+      "sha256": "3c7779690a55fb4a8b89c2a126798255fac8204789d76d3c528657727d1a9fc2",
+      "bytes": 8035,
+      "characters": 4041
+    }
+  ],
+  "loreweaveCommit": "6d352ff8557eb79009704c5a84b1027e377bb16e",
+  "questionsSha256": "d3460561faa1bf27d741de9f658f0158a49a70a93665b52cee02e331edb8932d",
+  "protocol": {
+    "questions": 20,
+    "ordinary": 16,
+    "complex": 4,
+    "missingEvidence": 2,
+    "profiles": [
+      "source",
+      "combined"
+    ],
+    "clientConcurrency": 1,
+    "ordinaryDeadlineMs": 30000,
+    "complexDeadlineMs": 60000,
+    "maintenanceWindowMs": 720000,
+    "modelTuningDuringRun": false,
+    "automaticEntityDiscoveryOnly": true,
+    "independentHumanGrades": "pending"
+  }
+}
