@@ -39,6 +39,13 @@ unset LOREWEAVE_BOOTSTRAP_PASSWORD
 bun run dev
 ```
 
+Runtime configuration is parsed from one typed configuration module in
+`src/config.ts`. `DATABASE_URL`, `LOREWEAVE_*`, and the provider settings listed
+in [provider setup](docs/development/providers.md) are the current configuration
+contract. The retired Python `RAG_DATABASE_URL`, Elasticsearch, S3, and MinerU
+settings are not read by the TypeScript runtime. Use `.env.example` as the
+starting point for a local `.env`.
+
 Open <http://127.0.0.1:41735>. The API binds to `127.0.0.1:41736` and the scripted
 model server uses a dynamically assigned loopback port. No provider credentials are required. The database is a dedicated local instance;
 startup applies the reviewed Drizzle SQL migrations. If either fixed port is occupied, stop this
@@ -183,7 +190,6 @@ record the current boundary and deployment limits.
 - [Retired Python baseline and behavior inventory](docs/history/retirement.md)
 - [LLM Wiki](docs/research/llm-wiki.zh-CN.md) and [GraphRAG](docs/research/graphrag.zh-CN.md) learning material
 
-
 ## External Agents (MCP)
 
 The local application exposes authenticated Streamable HTTP MCP at
@@ -193,7 +199,6 @@ revocable API credentials, explicit project scope and the same evidence/answer
 services as browser requests. See [MCP usage and response contract](docs/development/mcp.md)
 for credential issuance, client configuration, scope, gaps and historical reads.
 Run `bun run test:mcp` with `TEST_DATABASE_URL` set to a disposable database.
-
 
 ## Maintenance recovery
 

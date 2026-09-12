@@ -7,7 +7,7 @@
     "vendor/forge-agent/packages/*"
   ],
   "scripts": {
-    "test": "bun test tests/host.test.ts tests/http.test.ts tests/sdk-admission.test.ts tests/markdown.test.ts",
+    "test": "bun test tests/host.test.ts tests/http.test.ts tests/sdk-admission.test.ts tests/markdown.test.ts tests/config.test.ts",
     "typecheck": "tsc --noEmit",
     "check:docs": "bun scripts/check-docs.mjs",
     "dev": "bun --no-env-file scripts/dev.mjs",

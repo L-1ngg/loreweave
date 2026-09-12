@@ -2,9 +2,11 @@ import { writeFile } from "node:fs/promises";
 import { PublicAnswers } from "../src/evaluation/client.ts";
 import { MaintenanceDiagnostics } from "../src/evaluation/maintenance.ts";
 import { routingTargetsSchema } from "../src/evaluation/schema.ts";
+import { loadEvaluationConfig } from "../src/config.ts";
+const config = loadEvaluationConfig();
 const [endpoint, operationId, output, targetsFile] = Bun.argv.slice(2);
-const token = process.env.LOREWEAVE_EVAL_TOKEN,
-  provenance = process.env.LOREWEAVE_EVAL_PROVENANCE;
+const token = config.token,
+  provenance = config.provenance;
 if (
   !endpoint ||
   !operationId ||

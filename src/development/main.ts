@@ -13,14 +13,13 @@ import { createApp } from "../http.ts";
 import { startScriptedProvider } from "./provider.ts";
 import { FixtureSources } from "./sources.ts";
 import { GraphService } from "../graph.ts";
-import { providerConfig } from "../providers/config.ts";
+import { loadConfig } from "../config.ts";
 import { OpenAIEmbeddings } from "../providers/embeddings.ts";
 import { OpenAIKnowledgeModel } from "../providers/chat.ts";
 
-const mode = process.env.LOREWEAVE_PROVIDER_MODE ?? "scripted";
-if (mode !== "scripted" && mode !== "real")
-  throw new Error("invalid_provider_mode");
-const real = mode === "real" ? providerConfig(process.env) : undefined;
+const config = loadConfig();
+const mode = config.providerMode;
+const real = config.provider;
 const embeddings = real
   ? new OpenAIEmbeddings(real.embedding)
   : new ControlledEmbeddings();
@@ -28,11 +27,8 @@ const knowledgeModel = real
   ? new OpenAIKnowledgeModel(real.chat)
   : new ScriptedWikiModel();
 
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl)
-  throw new Error(
-    "Set DATABASE_URL to a dedicated LoreWeave PostgreSQL database. See README.",
-  );
+const databaseUrl = config.databaseUrl;
+if (!databaseUrl) throw new Error("missing_config:DATABASE_URL");
 const access = new AccessService(databaseUrl);
 const conversations = new PostgresConversations(databaseUrl);
 const maintenance = new MaintenanceService(databaseUrl, access);
@@ -94,21 +90,18 @@ async function close() {
 }
 try {
   await access.migrate();
-  const organization = process.env.LOREWEAVE_ORGANIZATION ?? "local";
-  if (process.env.LOREWEAVE_BOOTSTRAP_PASSWORD) {
-    await access.bootstrap({
-      organization,
-      username: process.env.LOREWEAVE_BOOTSTRAP_USERNAME ?? "admin",
-      password: process.env.LOREWEAVE_BOOTSTRAP_PASSWORD,
-    });
+  const organization = config.organization;
+  if (config.bootstrap) {
+    await access.bootstrap({ organization, ...config.bootstrap });
   }
   const sources = new FixtureSources({
     organizationId: await access.organization(organization),
   });
   if (!real) provider = startScriptedProvider({ delayMs: 120 });
-  const profile = process.env.LOREWEAVE_RETRIEVAL_PROFILE;
-  if (profile && !["source", "wiki", "graph", "combined"].includes(profile))
-    throw new Error("invalid retrieval profile");
+  // Ordinary interactive answers use the source hybrid baseline. Additional
+  // Wiki/graph routes are opt-in experiments so every question does not pay
+  // their query and source-resolution cost.
+  const profile = config.retrievalProfile;
   const evidence = new EvidenceService(
     imports,
     wiki,

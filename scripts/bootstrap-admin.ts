@@ -1,15 +1,16 @@
 import { AccessService } from "../src/access.ts";
-if (!process.env.DATABASE_URL || !process.env.LOREWEAVE_BOOTSTRAP_PASSWORD)
+import { loadConfig } from "../src/config.ts";
+const config = loadConfig();
+if (!config.databaseUrl || !config.bootstrap)
   throw new Error(
     "Set DATABASE_URL and LOREWEAVE_BOOTSTRAP_PASSWORD (at least 12 characters)",
   );
-const access = new AccessService(process.env.DATABASE_URL);
+const access = new AccessService(config.databaseUrl);
 try {
   await access.migrate();
   await access.bootstrap({
-    organization: process.env.LOREWEAVE_ORGANIZATION ?? "local",
-    username: process.env.LOREWEAVE_BOOTSTRAP_USERNAME ?? "admin",
-    password: process.env.LOREWEAVE_BOOTSTRAP_PASSWORD,
+    organization: config.organization,
+    ...config.bootstrap,
   });
   console.log("Administrator account is ready. Credentials were not printed.");
 } finally {

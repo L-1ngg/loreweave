@@ -8,18 +8,20 @@ import { KnowledgeHost } from "../src/host.ts";
 import { PostgresConversations } from "../src/conversations.ts";
 import { FixtureSources } from "../src/development/sources.ts";
 import { providerConfig } from "../src/providers/config.ts";
+import { loadConfig } from "../src/config.ts";
 import { OpenAIEmbeddings } from "../src/providers/embeddings.ts";
 import { OpenAIKnowledgeModel } from "../src/providers/chat.ts";
 
 // Explicit opt-in command. Only generated sample text is sent; use an isolated DB.
-const url = process.env.TEST_DATABASE_URL;
+const config = loadConfig();
+const url = config.testDatabaseUrl;
 if (!url)
   throw new Error(
     "TEST_DATABASE_URL must point to a disposable isolated database",
   );
-const config = providerConfig(process.env);
-const embeddings = new OpenAIEmbeddings(config.embedding);
-const model = new OpenAIKnowledgeModel(config.chat);
+const provider = providerConfig(process.env);
+const embeddings = new OpenAIEmbeddings(provider.embedding);
+const model = new OpenAIKnowledgeModel(provider.chat);
 const access = new AccessService(url);
 const sources = new SourceService(url, access, embeddings);
 const identities = new IdentityService(url, access, sources);
@@ -94,10 +96,10 @@ try {
     sources: new FixtureSources({
       organizationId: await access.organization(account.organization),
     }),
-    providerUrl: config.chat.baseUrl,
+    providerUrl: provider.chat.baseUrl,
     model: {
       profile: model.profile,
-      exploration: config.exploration,
+      exploration: provider.exploration,
       request: model.request.bind(model),
     },
   });

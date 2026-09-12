@@ -1,4 +1,6 @@
 import { PostgresConversations } from "../src/conversations.ts";
+import { loadConfig } from "../src/config.ts";
+const config = loadConfig();
 const [id, confirmation] = process.argv.slice(2);
 if (
   !id ||
@@ -8,8 +10,8 @@ if (
   throw new Error(
     "Usage: bun run reconcile:run RUN_ID [--execution-terminated]",
   );
-if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
-const store = new PostgresConversations(process.env.DATABASE_URL);
+if (!config.databaseUrl) throw new Error("missing_config:DATABASE_URL");
+const store = new PostgresConversations(config.databaseUrl);
 try {
   const run = await store.reconcile(
     id,

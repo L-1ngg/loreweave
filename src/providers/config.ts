@@ -2,6 +2,8 @@ import { builtinModels } from "@earendil-works/pi-ai/providers/all";
 import type { ProviderConfig } from "./http.ts";
 import type { EmbeddingConfig } from "./embeddings.ts";
 
+export type ProviderRuntimeConfig = ReturnType<typeof providerConfig>;
+
 /** Read only the explicitly selected provider settings, never legacy database URLs. */
 export function providerConfig(env: Record<string, string | undefined>) {
   function required(key: string) {

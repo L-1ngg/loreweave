@@ -2,6 +2,8 @@ import { writeFile } from "node:fs/promises";
 import { PublicAnswers } from "../src/evaluation/client.ts";
 import { evaluate } from "../src/evaluation/runner.ts";
 import { profiles, type Profile } from "../src/evaluation/schema.ts";
+import { loadEvaluationConfig } from "../src/config.ts";
+const config = loadEvaluationConfig();
 const args = new Map<string, string>();
 for (let index = 2; index < Bun.argv.length; index += 2) {
   const key = Bun.argv[index]!,
@@ -12,7 +14,7 @@ for (let index = 2; index < Bun.argv.length; index += 2) {
 }
 if (
   !["--manifest", "--dataset", "--output"].every((key) => args.has(key)) ||
-  !process.env.LOREWEAVE_EVAL_TOKEN
+  !config.token
 )
   throw new Error(
     "Required: --manifest FILE --dataset FILE --output FILE; LOREWEAVE_EVAL_TOKEN. Routes: --source URL --wiki URL --graph URL --combined URL. Acceptance also requires --development FILE.",
@@ -22,7 +24,7 @@ for (const profile of profiles)
   if (args.has(`--${profile}`))
     clients[profile] = new PublicAnswers(
       args.get(`--${profile}`)!,
-      process.env.LOREWEAVE_EVAL_TOKEN!,
+      config.token,
     );
 const report = await evaluate({
   manifest: await Bun.file(args.get("--manifest")!).json(),

@@ -7,8 +7,10 @@ import {
   capacityPlanSchema,
 } from "../src/evaluation/capacity.ts";
 import { MarkdownUpdate } from "../src/evaluation/markdown-update.ts";
+import { loadEvaluationConfig } from "../src/config.ts";
+const runtimeConfig = loadEvaluationConfig();
 const [file, output] = Bun.argv.slice(2);
-const token = process.env.LOREWEAVE_EVAL_TOKEN;
+const token = runtimeConfig.token;
 if (!file || !output || !token)
   throw new Error(
     "Usage: eval:capacity CONFIG_JSON NEW_OUTPUT; set read-only LOREWEAVE_EVAL_TOKEN; update scenario also needs LOREWEAVE_UPDATE_TOKEN",
@@ -41,7 +43,7 @@ const config = z
   .parse(await Bun.file(file).json());
 let update: (() => Promise<{ operationId: string }>) | undefined;
 if (config.update) {
-  const updateToken = process.env.LOREWEAVE_UPDATE_TOKEN;
+  const updateToken = runtimeConfig.updateToken;
   if (!updateToken) throw new Error("LOREWEAVE_UPDATE_TOKEN required");
   const original = config.update;
   const bytes = new Uint8Array(await readFile(original.file));
