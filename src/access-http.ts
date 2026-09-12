@@ -1,39 +1,15 @@
-import { Hono, type Context } from "hono";
-import { getCookie, setCookie, deleteCookie } from "hono/cookie";
+import { credential, accessError } from "./http-common.ts";
+import { jsonInput, inputRecord, stringField } from "./http-input.ts";
+export { credential, accessError } from "./http-common.ts";
+import { Hono } from "hono";
+import { setCookie, deleteCookie } from "hono/cookie";
 import { AccessService, grants, type Grant } from "./access.ts";
 
-export function credential(context: Context): string {
-  return getCookie(context, "loreweave_session") ?? "";
-}
-export function accessError(context: Context, error: unknown) {
-  const message = error instanceof Error ? error.message : "unavailable";
-  if (message === "unauthorized") return context.json({ error: message }, 401);
-  if (message === "invalid_input") return context.json({ error: message }, 400);
-  if (
-    message === "version_conflict" ||
-    (typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      error.code === "23505")
-  )
-    return context.json({ error: "version_conflict" }, 409);
-  if (
-    [
-      "source_changed",
-      "identity_unresolved",
-      "identity_cycle",
-      "insufficient_evidence",
-    ].includes(message)
-  )
-    return context.json({ error: message }, 409);
-  if (message === "not_found") return context.json({ error: message }, 404);
-  return context.json({ error: "unavailable" }, 503);
-}
 export function accessRoutes(access: AccessService) {
   const app = new Hono();
   app.onError((error, context) => accessError(context, error));
   app.post("/auth/login", async (context) => {
-    const input = (await context.req.json().catch(() => null)) as unknown;
+    const input = await jsonInput(context);
     if (
       !input ||
       typeof input !== "object" ||
@@ -131,15 +107,4 @@ export function accessRoutes(access: AccessService) {
     );
   });
   return app;
-}
-
-async function inputRecord(context: Context): Promise<Record<string, unknown>> {
-  const input = (await context.req.json().catch(() => null)) as unknown;
-  if (!input || typeof input !== "object" || Array.isArray(input))
-    throw new Error("invalid_input");
-  return input as Record<string, unknown>;
-}
-function stringField(input: Record<string, unknown>, key: string): string {
-  if (typeof input[key] !== "string") throw new Error("invalid_input");
-  return input[key];
 }

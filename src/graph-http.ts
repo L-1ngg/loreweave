@@ -1,16 +1,13 @@
+import { isUuid } from "./http-input.ts";
 import { Hono } from "hono";
-import { credential } from "./access-http.ts";
+import { credential } from "./http-common.ts";
 import type { GraphService } from "./graph.ts";
-
-const uuid = (value: unknown) =>
-  typeof value === "string" &&
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 
 export function graphRoutes(graph: GraphService) {
   const app = new Hono();
   app.get("/graph/operations/:id", async (context) => {
     const id = context.req.param("id");
-    if (!uuid(id)) throw new Error("invalid_input");
+    if (!isUuid(id)) throw new Error("invalid_input");
     return context.json(await graph.inspect(credential(context), id));
   });
   app.get("/graph/neighborhood", async (context) => {
@@ -18,7 +15,7 @@ export function graphRoutes(graph: GraphService) {
     const projectId = context.req.query("projectId");
     const predicate = context.req.query("predicate");
     const hopsRaw = context.req.query("hops");
-    if (!uuid(entityId) || (projectId && !uuid(projectId)))
+    if (!isUuid(entityId) || (projectId && !isUuid(projectId)))
       throw new Error("invalid_input");
     const entity = entityId as string;
     const hops = hopsRaw === undefined ? undefined : Number(hopsRaw);

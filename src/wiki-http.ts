@@ -1,12 +1,13 @@
+import { jsonInput } from "./http-input.ts";
 import { Hono } from "hono";
-import { credential } from "./access-http.ts";
-import { isUuid } from "./source-http.ts";
+import { credential } from "./http-common.ts";
+import { isUuid } from "./http-input.ts";
 import type { WikiService } from "./wiki.ts";
 import { record } from "./answer-validation.ts";
 export function wikiRoutes(wiki: WikiService) {
   const app = new Hono();
   app.post("/wiki-restructures", async (c) => {
-    const input: unknown = await c.req.json();
+    const input: unknown = await jsonInput(c);
     if (
       !record(input) ||
       typeof input.key !== "string" ||
@@ -33,7 +34,7 @@ export function wikiRoutes(wiki: WikiService) {
   });
   app.post("/wiki-edit-sets/:id/restore", async (c) => {
     const id = c.req.param("id"),
-      input: unknown = await c.req.json();
+      input: unknown = await jsonInput(c);
     if (
       !isUuid(id) ||
       !record(input) ||
@@ -56,7 +57,7 @@ export function wikiRoutes(wiki: WikiService) {
   });
   app.post("/wiki/:id/restore", async (c) => {
     const id = c.req.param("id"),
-      input: unknown = await c.req.json();
+      input: unknown = await jsonInput(c);
     if (
       !isUuid(id) ||
       !record(input) ||
@@ -77,7 +78,7 @@ export function wikiRoutes(wiki: WikiService) {
     );
   });
   app.post("/wiki-contributions", async (c) => {
-    const input: unknown = await c.req.json();
+    const input: unknown = await jsonInput(c);
     if (
       !record(input) ||
       typeof input.key !== "string" ||
@@ -104,7 +105,7 @@ export function wikiRoutes(wiki: WikiService) {
   });
   app.post("/wiki-operations/:id/repair", async (c) => {
     const id = c.req.param("id"),
-      input: unknown = await c.req.json();
+      input: unknown = await jsonInput(c);
     if (
       !isUuid(id) ||
       !record(input) ||

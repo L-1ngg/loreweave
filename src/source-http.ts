@@ -1,10 +1,9 @@
+import { isUuid, jsonInput } from "./http-input.ts";
+export { isUuid } from "./http-input.ts";
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
-import { credential } from "./access-http.ts";
+import { credential } from "./http-common.ts";
 import { SourceService } from "./sources.ts";
-export const isUuid = (value: unknown): value is string =>
-  typeof value === "string" &&
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 export function sourceRoutes(sources: SourceService) {
   const app = new Hono();
   app.get("/sources/inventory", async (c) => {
@@ -42,7 +41,7 @@ export function sourceRoutes(sources: SourceService) {
     );
   });
   app.post("/imports", async (c) => {
-    const input: unknown = await c.req.json().catch(() => null);
+    const input: unknown = await jsonInput(c);
     if (
       !input ||
       typeof input !== "object" ||

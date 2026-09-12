@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
-import { credential } from "./access-http.ts";
-import { isUuid } from "./source-http.ts";
+import { credential } from "./http-common.ts";
+import { isUuid, jsonInput } from "./http-input.ts";
 import { record } from "./answer-validation.ts";
 import { IdentityService, type IdentityWitness } from "./identity.ts";
 export function identityRoutes(identities: IdentityService) {
@@ -22,7 +22,7 @@ export function identityRoutes(identities: IdentityService) {
   });
   app.post("/sources/:version/identities", async (c) => {
     const version = c.req.param("version"),
-      input: unknown = await c.req.json().catch(() => null);
+      input: unknown = await jsonInput(c);
     if (
       !isUuid(version) ||
       !record(input) ||
@@ -57,7 +57,7 @@ export function identityRoutes(identities: IdentityService) {
     });
   });
   app.post("/identities/bind", async (c) => {
-    const input: unknown = await c.req.json().catch(() => null);
+    const input: unknown = await jsonInput(c);
     if (
       !record(input) ||
       typeof input.key !== "string" ||

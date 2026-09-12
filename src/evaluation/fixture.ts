@@ -163,7 +163,9 @@ export async function evaluationFixture(
     port: 0,
     fetch: (request) => app.fetch(request),
   });
-  const profileServers: Array<{ stop(closeActiveConnections?: boolean): void }> = [server];
+  const profileServers: Array<{
+    stop(closeActiveConnections?: boolean): void;
+  }> = [server];
   const profileHosts: KnowledgeHost[] = [host];
   const profileClients: Partial<Record<Profile, PublicAnswers>> = {
     source: new PublicAnswers(String(server.url), readerToken),

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { credential } from "./access-http.ts";
-import { isUuid } from "./source-http.ts";
+import { credential } from "./http-common.ts";
+import { isUuid } from "./http-input.ts";
 import type { MaintenanceService } from "./maintenance.ts";
 export function maintenanceRoutes(service: MaintenanceService) {
   const app = new Hono();
