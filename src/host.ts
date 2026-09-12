@@ -1,3 +1,4 @@
+import { HostEvidence } from "./host-evidence.ts";
 import {
   sourceIntent,
   sourceChoice,
@@ -578,23 +579,23 @@ export class KnowledgeHost {
       throw new Error("unauthorized");
     return context;
   }
-  private async admit(run: Run, phase: Phase): Promise<void> {
-    await this.authorizeTool(run);
+  private checkRunning(run: Run, exploration = false): void {
     if (Date.now() >= run.deadline) this.stop(run, "timed_out");
     run.controller.signal.throwIfAborted();
-    if (phase === "exploration" && Date.now() >= run.explorationDeadline)
+    if (exploration && Date.now() >= run.explorationDeadline)
       throw new Error("budget_exhausted");
+  }
+  private async admit(run: Run, phase: Phase): Promise<void> {
+    await this.authorizeTool(run);
+    this.checkRunning(run, phase === "exploration");
     const cap = phase === "exploration" ? 3 : 2;
     if (run.snapshot.counts[phase] >= cap) throw new Error("budget_exhausted");
     run.snapshot.counts[phase]++;
     this.publish(run, "progress");
     await run.persistence;
-    run.controller.signal.throwIfAborted();
+    this.checkRunning(run, phase === "exploration");
   }
   private async execute(run: Run, question: string): Promise<void> {
-    let evidence: Evidence | undefined;
-    let pack: EvidencePack | undefined;
-    let retrievalError: unknown;
     if (this.options.evidence)
       run.snapshot.diagnostics = {
         embeddingRequests: 0,
@@ -604,6 +605,72 @@ export class KnowledgeHost {
         gaps: [],
         queueMs: Date.now() - run.startedAt,
       };
+    const evidence = new HostEvidence(
+      {
+        service: this.options.evidence,
+        sources: this.options.sources,
+        credential: run.credential ?? "",
+        runId: run.snapshot.id,
+        question,
+        complex: run.complex,
+        model: this.options.model?.profile ?? "scripted-extractive-v1",
+      },
+      {
+        signal: run.controller.signal,
+        authorize: async () => {
+          const context = await this.authorizeTool(run);
+          this.checkRunning(run, run.snapshot.status === "executing");
+          return context;
+        },
+        beforeEmbedding: async (signal) => {
+          signal.throwIfAborted();
+          if (
+            run.snapshot.status === "executing" &&
+            Date.now() >= run.explorationDeadline
+          )
+            throw new Error("budget_exhausted");
+          await this.authorizeTool(run);
+          this.checkRunning(run, run.snapshot.status === "executing");
+          run.snapshot.diagnostics!.embeddingRequests++;
+          this.publish(run, "progress");
+          await run.persistence;
+          signal.throwIfAborted();
+          this.checkRunning(run, run.snapshot.status === "executing");
+        },
+        remaining: (phase) => 2 - run.snapshot.counts[phase],
+        request: (phase, input, signal) => {
+          if (phase === "generation")
+            run.snapshot.draftId = crypto.randomUUID();
+          return this.request(run, phase, input, signal);
+        },
+        refresh: () => this.refresh(run),
+        refreshed: async () => {
+          this.checkRunning(run);
+          run.snapshot.status = "finalizing";
+          this.publish(run, "state");
+          if (this.options.evidence) await run.persistence;
+        },
+        diagnostics: async (pack) => {
+          const previous = run.snapshot.diagnostics!;
+          run.snapshot.diagnostics = {
+            ...previous,
+            ...pack.diagnostics,
+            retrieved: pack.items,
+            embeddingRequests: previous.embeddingRequests,
+            retrievalMs: previous.retrievalMs + pack.diagnostics.retrievalMs,
+          };
+          if (run.snapshot.status === "executing") {
+            this.publish(run, "progress");
+            await run.persistence;
+          }
+        },
+        retrievalFailed: async () => {
+          run.snapshot.diagnostics!.gaps.push("retrieval_unavailable");
+          this.publish(run, "progress");
+          await run.persistence;
+        },
+      },
+    );
     const unsubscribe = this.options.sources.subscribe(() =>
       run.finalController?.abort(new Error("source_changed")),
     );
@@ -1097,60 +1164,7 @@ export class KnowledgeHost {
               this.publish(run, "progress");
               await run.persistence;
               run.controller.signal.throwIfAborted();
-              if (this.options.evidence) {
-                await this.authorizeTool(run);
-                try {
-                  pack = await this.options.evidence.retrieve(
-                    run.credential ?? "",
-                    {
-                      runId: run.snapshot.id,
-                      question,
-                      ...(run.context?.scope.projectId
-                        ? { projectId: run.context.scope.projectId }
-                        : {}),
-                      complex: run.complex,
-                      signal,
-                      beforeEmbedding: async () => {
-                        signal.throwIfAborted();
-                        if (Date.now() >= run.explorationDeadline)
-                          throw new Error("budget_exhausted");
-                        await this.authorizeTool(run);
-                        run.snapshot.diagnostics!.embeddingRequests++;
-                        this.publish(run, "progress");
-                        await run.persistence;
-                      },
-                    },
-                  );
-                } catch (error) {
-                  retrievalError = error;
-                  run.snapshot.diagnostics!.gaps.push("retrieval_unavailable");
-                  this.publish(run, "progress");
-                  await run.persistence;
-                  throw error;
-                }
-                const previous = run.snapshot.diagnostics!;
-                run.snapshot.diagnostics = {
-                  ...previous,
-                  ...pack.diagnostics,
-                  retrieved: pack.items,
-                  embeddingRequests: previous.embeddingRequests,
-                  retrievalMs:
-                    previous.retrievalMs + pack.diagnostics.retrievalMs,
-                };
-                this.publish(run, "progress");
-                await run.persistence;
-                return {
-                  content: [{ type: "text", text: JSON.stringify(pack) }],
-                  details: pack,
-                };
-              }
-              evidence = this.options.sources.read(
-                await this.authorizeTool(run),
-              );
-              return {
-                content: [{ type: "text", text: evidence.text }],
-                details: evidence,
-              };
+              return evidence.search(signal);
             },
           },
         ],
@@ -1181,31 +1195,31 @@ export class KnowledgeHost {
         this.publish(run, "result");
         return;
       }
-      if (!pack && retrievalError && !run.snapshot.operations?.length)
-        throw retrievalError;
-      if (pack && !run.snapshot.operations?.length) {
-        const answer = await this.finalizeEvidence(run, question, pack);
-        run.snapshot.answer = answer;
-        run.snapshot.status = answer.status;
-        if (answer.reason) run.snapshot.reason = answer.reason;
-        this.publish(run, "result");
-        return;
-      }
+      if (!run.snapshot.operations?.length) evidence.assertRetrieval();
       if (run.snapshot.operations?.length) {
         run.snapshot.answer = {
           text: `已受理 ${run.snapshot.operations.length} 项知识变更；事实来源准备完成后可检索，Wiki 单独刷新；整理偏好已保留。`,
           citations: [],
           validatedAt: new Date().toISOString(),
         };
-      } else if (run.snapshot.attachmentIds?.length && !evidence) {
+      } else if (run.snapshot.attachmentIds?.length && !evidence.available) {
         run.snapshot.answer = {
           text: "本轮未导入附件。若要导入，请明确说明“请把附件导入知识库”，或使用直接导入。",
           citations: [],
           validatedAt: new Date().toISOString(),
         };
       } else {
-        if (!evidence) throw new Error("insufficient_evidence");
-        run.snapshot.answer = await this.finalize(run, question, evidence);
+        const answer = await evidence.finalize();
+        this.checkRunning(run);
+        if (this.options.evidence) {
+          run.snapshot.answer = answer;
+          run.snapshot.status = answer.status;
+          if (answer.reason) run.snapshot.reason = answer.reason;
+          this.publish(run, "result");
+          return;
+        }
+        const { status: _status, ...fixtureAnswer } = answer;
+        run.snapshot.answer = fixtureAnswer;
       }
       run.snapshot.status = "answered";
       this.publish(run, "result");
@@ -1256,153 +1270,33 @@ export class KnowledgeHost {
       await run.writer?.release();
     }
   }
-  private async finalizeEvidence(
-    run: Run,
-    question: string,
-    initial: EvidencePack,
-  ): Promise<GroundedAnswer> {
-    const service = this.options.evidence!;
-    let pack = initial;
-    for (;;) {
-      try {
-        return await service.finalize(run.credential ?? "", pack, {
-          signal: run.controller.signal,
-          model: this.options.model?.profile ?? "scripted-extractive-v1",
-          remaining: (phase) => 2 - run.snapshot.counts[phase],
-          request: async (phase, input, signal) => {
-            if (phase === "generation")
-              run.snapshot.draftId = crypto.randomUUID();
-            return this.request(run, phase, input, signal);
-          },
-        });
-      } catch (error) {
-        run.controller.signal.throwIfAborted();
-        if (!(error instanceof Error) || error.message !== "source_changed")
-          throw error;
-        if (run.snapshot.draftId) {
-          (run.snapshot.supersededDraftIds ??= []).push(run.snapshot.draftId);
-          delete run.snapshot.draftId;
-        }
-        if (
-          run.snapshot.refreshUsed ||
-          run.snapshot.counts.retrieval >= run.retrievalCap ||
-          run.snapshot.counts.generation >= 2 ||
-          run.snapshot.counts.review >= 2 ||
-          Date.now() >= run.deadline
-        ) {
-          const subset = await service.supportedSubset(
-            run.credential ?? "",
-            run.snapshot.id,
-            run.controller.signal,
-          );
-          if (subset) return { ...subset, reason: "source_changed" };
-          throw error;
-        }
-        run.snapshot.refreshUsed = true;
-        run.snapshot.status = "refreshing";
-        run.snapshot.counts.retrieval++;
-        this.publish(run, "state");
-        await run.persistence;
-        await this.authorizeTool(run);
-        pack = await service.retrieve(run.credential ?? "", {
-          runId: run.snapshot.id,
-          question,
-          complex: run.complex,
-          ...(run.context?.scope.projectId
-            ? { projectId: run.context.scope.projectId }
-            : {}),
-          signal: run.controller.signal,
-          beforeEmbedding: async () => {
-            run.controller.signal.throwIfAborted();
-            await this.authorizeTool(run);
-            run.snapshot.diagnostics!.embeddingRequests++;
-            this.publish(run, "progress");
-            await run.persistence;
-          },
-        });
-        const previous = run.snapshot.diagnostics!;
-        run.snapshot.diagnostics = {
-          ...previous,
-          ...pack.diagnostics,
-          retrieved: pack.items,
-          embeddingRequests: previous.embeddingRequests,
-          retrievalMs: previous.retrievalMs + pack.diagnostics.retrievalMs,
-        };
-        run.snapshot.status = "finalizing";
-        this.publish(run, "state");
-        await run.persistence;
+  /** Refresh is a Host transition, charged to the original run's remaining budget. */
+  private async refresh(run: Run): Promise<boolean> {
+    run.controller.signal.throwIfAborted();
+    const supersedeBeforeAdmission = Boolean(this.options.evidence);
+    const supersede = () => {
+      if (run.snapshot.draftId) {
+        (run.snapshot.supersededDraftIds ??= []).push(run.snapshot.draftId);
+        delete run.snapshot.draftId;
       }
-    }
-  }
-  private async finalize(
-    run: Run,
-    question: string,
-    initial: Evidence,
-  ): Promise<NonNullable<RunSnapshot["answer"]>> {
-    let evidence = initial;
-    for (;;) {
-      if (
-        run.snapshot.counts.generation >= 2 ||
-        run.snapshot.counts.review >= 2
-      )
-        throw new Error("budget_exhausted");
-      try {
-        run.snapshot.draftId = crypto.randomUUID();
-        const draft = await this.request(run, "generation", {
-          question,
-          evidence,
-        });
-        if (!this.options.sources.current(evidence))
-          throw new Error("source_changed");
-        if (!isRecord(draft) || typeof draft.text !== "string")
-          throw new Error("invalid_draft");
-        const review = await this.request(run, "review", { draft, evidence });
-        if (!this.options.sources.current(evidence))
-          throw new Error("source_changed");
-        if (!isRecord(review) || review.supported !== true)
-          throw new Error("insufficient_evidence");
-        return {
-          text: draft.text,
-          citations: [evidence],
-          validatedAt: new Date().toISOString(),
-        };
-      } catch (error) {
-        run.controller.signal.throwIfAborted();
-        if (this.options.sources.current(evidence)) {
-          if (
-            error instanceof Error &&
-            ["invalid_draft", "insufficient_evidence"].includes(
-              error.message,
-            ) &&
-            run.snapshot.counts.generation < 2 &&
-            run.snapshot.counts.review < 2
-          )
-            continue;
-          throw error;
-        }
-        if (
-          run.snapshot.refreshUsed ||
-          run.snapshot.counts.retrieval >= run.retrievalCap ||
-          run.snapshot.counts.generation >= 2 ||
-          run.snapshot.counts.review >= 2 ||
-          Date.now() >= run.deadline
-        )
-          throw new Error("source_changed");
-        run.snapshot.status = "refreshing";
-        run.snapshot.refreshUsed = true;
-        if (run.snapshot.draftId) {
-          (run.snapshot.supersededDraftIds ??= []).push(run.snapshot.draftId);
-          delete run.snapshot.draftId;
-        }
-        run.snapshot.counts.retrieval++;
-        this.publish(run, "state");
-        await run.persistence;
-        run.controller.signal.throwIfAborted();
-        evidence = this.options.sources.read(await this.authorizeTool(run));
-        run.snapshot.status = "finalizing";
-        this.publish(run, "state");
-      }
-    }
+    };
+    if (supersedeBeforeAdmission) supersede();
+    if (
+      run.snapshot.refreshUsed ||
+      run.snapshot.counts.retrieval >= run.retrievalCap ||
+      run.snapshot.counts.generation >= 2 ||
+      run.snapshot.counts.review >= 2 ||
+      Date.now() >= run.deadline
+    )
+      return false;
+    run.snapshot.refreshUsed = true;
+    run.snapshot.status = "refreshing";
+    if (!supersedeBeforeAdmission) supersede();
+    run.snapshot.counts.retrieval++;
+    this.publish(run, "state");
+    await run.persistence;
+    run.controller.signal.throwIfAborted();
+    return true;
   }
   private async request(
     run: Run,
@@ -1411,6 +1305,7 @@ export class KnowledgeHost {
     signal?: AbortSignal,
   ): Promise<unknown> {
     await this.admit(run, phase);
+    signal?.throwIfAborted();
     const requestStarted = performance.now();
     try {
       run.finalController = new AbortController();
@@ -1455,10 +1350,6 @@ export class KnowledgeHost {
     }
   }
 }
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
 /** Raw entries stay unchanged; unknown historic effects require M08 reconciliation. */
 function assertReconciled(state: SessionState): void {
   const entries = new Map(state.entries.map((entry) => [entry.id, entry]));

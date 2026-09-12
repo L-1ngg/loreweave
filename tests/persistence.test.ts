@@ -550,3 +550,97 @@ test("concurrent owner cancellation and remote queue inspection acknowledge the 
     await store.close();
   }
 });
+
+for (const boundary of ["generation", "refreshing", "settled"] as const) {
+  test(`Host retains ownership while ${boundary} persistence is pending`, async () => {
+    const { KnowledgeHost } = await import("../src/host.ts");
+    const { FixtureSources } = await import("../src/development/sources.ts");
+    const { startScriptedProvider } =
+      await import("../src/development/provider.ts");
+    let entered!: () => void, release!: () => void;
+    const blocked = new Promise<void>((resolve) => (entered = resolve));
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    class DelayedStore extends PostgresConversations {
+      held = false;
+      override async acquire(id: string, runId?: string) {
+        const writer = await super.acquire(id, runId);
+        if (!writer) return writer;
+        return {
+          ...writer,
+          save: async (event: import("../src/host.ts").RunEvent) => {
+            const matches =
+              boundary === "generation"
+                ? event.type === "progress" && event.run.counts.generation === 1
+                : boundary === "refreshing"
+                  ? event.type === "state" && event.run.status === "refreshing"
+                  : event.type === "settled";
+            if (!this.held && matches) {
+              this.held = true;
+              entered();
+              await gate;
+            }
+            await writer.save(event);
+          },
+        };
+      }
+    }
+    const store = new DelayedStore(url!);
+    await store.migrate();
+    const sources = new FixtureSources();
+    const provider = startScriptedProvider({
+      onRequest(phase) {
+        if (boundary === "refreshing" && phase === "generation")
+          sources.replace("日志保留 60 天。");
+      },
+    });
+    const host = new KnowledgeHost({
+      providerUrl: provider.url,
+      sources,
+      conversations: store,
+    });
+    try {
+      const first = await host.start({ question: "日志保留多久？" });
+      await blocked;
+      let settled = false;
+      void host.settled(first.id).then(() => {
+        settled = true;
+      });
+      const next = await host.start({
+        question: "下一条",
+        conversationId: first.conversationId,
+      });
+      expect((await host.get(first.id)).settledAt).toBeUndefined();
+      expect((await host.get(next.id)).status).toBe("queued");
+      expect(settled).toBe(false);
+      const calls = provider.calls.length;
+      await host.cancel(next.id);
+      if (boundary !== "settled") {
+        const canceled = host.cancel(first.id);
+        while (!(await store.cancellationRequested(first.id)))
+          await Bun.sleep(1);
+        // Let the cancel continuation abort the run while its event save is blocked.
+        await Promise.resolve();
+        release();
+        await canceled;
+      } else release();
+      await host.settled(first.id);
+      const result = await host.get(first.id);
+      expect(result.settledAt).toBeDefined();
+      expect(result.status).toBe(
+        boundary === "settled" ? "answered" : "canceled",
+      );
+      if (boundary !== "settled") {
+        expect(result.answer).toBeUndefined();
+        expect(provider.calls).toHaveLength(calls);
+        expect(provider.calls.some((call) => call.phase === "review")).toBe(
+          false,
+        );
+      }
+    } finally {
+      release();
+      await host.close();
+      provider.stop();
+      await store.close();
+    }
+  });
+}

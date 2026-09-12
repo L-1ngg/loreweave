@@ -268,3 +268,36 @@ test("canceling in-flight final generation never starts support review", async (
     provider.stop();
   }
 });
+
+test("canceling in-flight review never publishes the generated draft or starts repair", async () => {
+  let entered!: () => void;
+  const reviewing = new Promise<void>((resolve) => (entered = resolve));
+  const provider = startScriptedProvider({
+    delays: { review: 300 },
+    rejectReviews: 1,
+    onRequest(phase) {
+      if (phase === "review") entered();
+    },
+  });
+  const host = new KnowledgeHost({
+    providerUrl: provider.url,
+    sources: new FixtureSources(),
+  });
+  try {
+    const run = await host.start({ question: "日志规则" });
+    await reviewing;
+    expect((await host.get(run.id)).answer).toBeUndefined();
+    const calls = provider.calls.length;
+    await host.cancel(run.id);
+    await host.settled(run.id);
+    expect((await host.get(run.id)).status).toBe("canceled");
+    expect((await host.get(run.id)).answer).toBeUndefined();
+    expect(provider.calls).toHaveLength(calls);
+    expect(
+      (await host.events(run.id)).every((event) => !event.run.answer),
+    ).toBe(true);
+  } finally {
+    await host.close();
+    provider.stop();
+  }
+});
