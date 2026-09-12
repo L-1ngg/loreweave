@@ -872,7 +872,7 @@ test("exploration retrieval aborts at its own cutoff and preserves finalization 
     const result = await host.get(run.id, f.token);
     expect(embeddingStarted).toBe(1);
     expect(embeddingStopped).toBe(1);
-    expect(result.status).toBe("failed");
+    expect(result.status).toBe("timed_out");
     expect(result.reason).toBe("budget_exhausted");
     expect(result.diagnostics!.elapsedMs!).toBeLessThan(1800);
     expect(result.counts.generation).toBe(0);

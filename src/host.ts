@@ -1211,8 +1211,10 @@ export class KnowledgeHost {
       this.publish(run, "result");
     } catch (error) {
       if (run.storageFailed || !run.controller.signal.aborted) {
+        const budgetExhausted =
+          error instanceof Error && error.message === "budget_exhausted";
         if (!["canceled", "timed_out"].includes(run.snapshot.status))
-          run.snapshot.status = "failed";
+          run.snapshot.status = budgetExhausted ? "timed_out" : "failed";
         run.snapshot.reason = run.storageFailed
           ? "storage_uncertain"
           : error instanceof Error && error.message === "budget_exhausted"
