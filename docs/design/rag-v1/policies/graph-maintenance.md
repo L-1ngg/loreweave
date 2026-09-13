@@ -1,5 +1,7 @@
 # Graph extraction generations and coverage
 
+Runtime adoption: [Issue 28 contract](../issue-28-adoption.md) supersedes the conflicting online-answer, retrieval, admission and incremental-maintenance defaults below; unaffected invariants and historical records remain in force.
+
 Status: design defaults selected on 2026-09-10. M04 owns graph construction;
 M03 owns identity proofs, M02 source versions, and M08 durable work. Query-time
 limits of two hops/50 entities/100 claims are independent of construction limits.

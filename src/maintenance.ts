@@ -14,7 +14,7 @@ export class MaintenanceService {
     const [operations] = await this.operations
       .sql`SELECT count(*)::int AS count FROM knowledge_operations WHERE organization_id=${context.organizationId}`;
     const rows = await this.operations
-      .sql`SELECT j.kind,j.state,count(*)::int AS count FROM knowledge_jobs j JOIN knowledge_operations o ON o.id=j.operation_id WHERE o.organization_id=${context.organizationId} AND j.state NOT IN ('succeeded','superseded') GROUP BY j.kind,j.state ORDER BY j.kind,j.state`;
+      .sql`SELECT j.kind,j.state,count(*)::int AS count,min(o.created_at) AS oldest FROM knowledge_jobs j JOIN knowledge_operations o ON o.id=j.operation_id WHERE o.organization_id=${context.organizationId} AND j.state NOT IN ('succeeded','superseded') GROUP BY j.kind,j.state ORDER BY j.kind,j.state`;
     return {
       sampledAt: new Date().toISOString(),
       acceptedOperations: Number(operations!.count),
@@ -28,6 +28,7 @@ export class MaintenanceService {
         kind: String(row.kind),
         state: String(row.state),
         count: Number(row.count),
+        oldestAgeMs: Date.now() - new Date(row.oldest).getTime(),
       })),
     };
   }
@@ -43,7 +44,25 @@ export class MaintenanceService {
       FROM knowledge_jobs j LEFT JOIN wiki_work w ON w.job_id=j.id WHERE j.operation_id=${operationId} ORDER BY j.kind,j.id`;
     const requests = await this.operations
       .sql`SELECT a.* FROM wiki_model_attempts a JOIN knowledge_jobs j ON j.id=a.job_id WHERE j.operation_id=${operationId} ORDER BY a.started_at,a.job_id,a.unit_key,a.phase,a.attempt`;
+    const transport = await this.operations
+      .sql`SELECT id,operation_id,priority,state,queued_at,admitted_at,dispatched_at,settled_at,outcome,provider_request_id FROM model_requests WHERE parent_operation_id=${operationId} ORDER BY queued_at,id`;
+    const reuse = await this.operations
+      .sql`SELECT r.kind,count(*)::int AS count FROM maintenance_artifact_reuse r JOIN knowledge_jobs j ON j.id=r.job_id WHERE j.operation_id=${operationId} GROUP BY r.kind`;
     return {
+      transport: transport.map((row) => ({
+        ...row,
+        queueWaitMs: row.admitted_at
+          ? new Date(row.admitted_at).getTime() -
+            new Date(row.queued_at).getTime()
+          : null,
+        providerMs:
+          row.dispatched_at && row.settled_at
+            ? new Date(row.settled_at).getTime() -
+              new Date(row.dispatched_at).getTime()
+            : null,
+      })),
+      reusedArtifacts: reuse,
+      cost: { available: false, reason: "provider_usage_not_reported" },
       modelRequests: requests.map((row) => ({
         jobId: String(row.job_id),
         unit: String(row.unit_key),

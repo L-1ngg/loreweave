@@ -46,10 +46,16 @@ export function structureClaims(
       certificate.draft.claims
         .filter(
           (claim) =>
+            !(
+              claim.start === 0 &&
+              certificate.section &&
+              certificate.draft.text.slice(claim.start, claim.end) ===
+                `# ${page.descriptor.title}\n\n## ${certificate.section.purpose}`
+            ) &&
             claim.end >
-            (certificate.draft.text.indexOf("\n") < 0
-              ? certificate.draft.text.length
-              : certificate.draft.text.indexOf("\n")),
+              (certificate.draft.text.indexOf("\n") < 0
+                ? certificate.draft.text.length
+                : certificate.draft.text.indexOf("\n")),
         )
         .map((claim) => ({
           id: `${page.id}:${block}:${claim.id}`,

@@ -1,5 +1,7 @@
 # M03: Entity identity
 
+Runtime adoption: [Issue 28 contract](../issue-28-adoption.md) supersedes the conflicting online-answer, retrieval, admission and incremental-maintenance defaults below; unaffected invariants and historical records remain in force.
+
 M03 owns whether mentions denote the same knowledge entity. It is shared by
 Wiki and graph, so producing a Wiki does not depend on completed graph extraction.
 

@@ -1,0 +1,3481 @@
+{
+  "schemaVersion": 1,
+  "kind": "evaluation",
+  "createdAt": "2026-09-13T13:18:57.633Z",
+  "dataset": {
+    "schemaVersion": 1,
+    "version": "issue-25-agent-reviewed-v1",
+    "manifestSha256": "a8f9d104938851700c42f34920b3479e3ac95a2aaea64dd5f5e768520d93c7e5",
+    "cases": [
+      {
+        "id": "request-shape",
+        "question": "普通的阻塞式交互总线采用什么形状？为什么不直接调用 ui.confirm？",
+        "paraphraseGroup": "request-shape",
+        "complexity": "ordinary",
+        "category": "sufficient",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+            "passageId": "d85d9cf8-bc3b-40d8-a49a-2eb28c629329"
+          },
+          {
+            "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+            "passageId": "b9ee0368-771c-471f-8fab-0b284865e41d"
+          },
+          {
+            "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+            "passageId": "1c958fc9-66f1-4ec6-84b4-3fbd6bde21c1"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "双向 request/response async iterable",
+          "core 分配全局唯一、不复用 ID",
+          "不把响应者绑定为直接 UI 函数调用"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "headless",
+        "question": "headless 遇到 permission、question、oauth 请求时默认怎么处理，退出码分别是多少？",
+        "paraphraseGroup": "headless",
+        "complexity": "ordinary",
+        "category": "sufficient",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+            "passageId": "fea9d662-c7ac-4ac4-b39a-27fa3e5151da"
+          },
+          {
+            "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+            "passageId": "fea9d662-c7ac-4ac4-b39a-27fa3e5151da"
+          },
+          {
+            "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+            "passageId": "fea9d662-c7ac-4ac4-b39a-27fa3e5151da"
+          },
+          {
+            "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+            "passageId": "0096d2df-8d55-4f1f-8ced-9f4b3cfb2831"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "permission 默认 deny，退出码20",
+          "question 默认 cancel，退出码22",
+          "oauth 默认 cancel，退出码24"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "permission",
+        "question": "permission mode 有哪些？是否预留了 plan 模式？",
+        "paraphraseGroup": "permission",
+        "complexity": "ordinary",
+        "category": "sufficient",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "c7b15556-0b72-4d38-b7a3-ba95106dc6f2",
+            "passageId": "3451d4ae-6bd8-4cb7-8c1b-c5ad78cc64e3"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "枚举为 default、accept-edits、deny-all",
+          "不预留 plan 模式"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "dangerous",
+        "question": "记住 git push 的 always-allow 前缀后，会不会免除危险操作提示？",
+        "paraphraseGroup": "dangerous",
+        "complexity": "ordinary",
+        "category": "sufficient",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "c7b15556-0b72-4d38-b7a3-ba95106dc6f2",
+            "passageId": "3451d4ae-6bd8-4cb7-8c1b-c5ad78cc64e3"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "危险 git push 不认可记住的 always-allow 前缀",
+          "仍需要提示确认"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "isolation",
+        "question": "同进程创建多个 Agent 实例是否等于进程级故障隔离或安全沙箱？",
+        "paraphraseGroup": "isolation",
+        "complexity": "ordinary",
+        "category": "sufficient",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "08ec3812-5bc0-405c-aba9-36b1bce83487",
+            "passageId": "227f486c-e4fc-4c0d-997d-d5f5dc97fe73"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "同进程多实例不提供进程级故障隔离或安全沙箱",
+          "硬隔离由宿主选择进程或容器"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "reference",
+        "question": "视觉回归现在还要求编译 grok-build 生成参考吗？",
+        "paraphraseGroup": "reference",
+        "complexity": "ordinary",
+        "category": "sufficient",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+            "passageId": "dc3ed216-29c7-44ef-9bbb-bead0dfad5dc"
+          },
+          {
+            "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+            "passageId": "dc3ed216-29c7-44ef-9bbb-bead0dfad5dc"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "不再要求编译或运行 grok-build",
+          "参考为仓库内 FrameDump golden",
+          "不据此宣称与 grok-build 运行时逐 cell 一致"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "team",
+        "question": "Forge 的 SDK 是否内置 Team 编排？",
+        "paraphraseGroup": "team",
+        "complexity": "ordinary",
+        "category": "sufficient",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "08ec3812-5bc0-405c-aba9-36b1bce83487",
+            "passageId": "ddb618ab-47bd-459c-b528-85587b84dbbf"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "SDK 为单 Agent，可由宿主创建多个独立实例",
+          "不内置 Team，编排由外部宿主承担"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "release",
+        "question": "Forge 会发布 npm 包或可执行二进制吗？",
+        "paraphraseGroup": "release",
+        "complexity": "ordinary",
+        "category": "sufficient",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "bc65d4be-b0da-4d07-932a-ceb049c6b940",
+            "passageId": "51f4bf2a-dd04-4ffd-bea7-ad475911caa7"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "发布源码快照",
+          "包保持 private，不发布 npm 包或可执行二进制"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "draft-release",
+        "question": "预发布工作流检查通过后会自动公开发布 release 吗？",
+        "paraphraseGroup": "draft-release",
+        "complexity": "ordinary",
+        "category": "sufficient",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "bc65d4be-b0da-4d07-932a-ceb049c6b940",
+            "passageId": "90f254c4-daf5-4332-9a3f-604cd1d33220"
+          },
+          {
+            "version": "bc65d4be-b0da-4d07-932a-ceb049c6b940",
+            "passageId": "90f254c4-daf5-4332-9a3f-604cd1d33220"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "检查成功后仅创建 draft prerelease",
+          "公开发布是单独人工操作，不自动公开"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "clear",
+        "question": "TUI 的 /clear 会清除 Core 会话历史吗？",
+        "paraphraseGroup": "clear",
+        "complexity": "ordinary",
+        "category": "sufficient",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "e0d3df3a-0e02-457e-8d43-32366f054cad",
+            "passageId": "e9fead69-263c-4916-962d-ad1fb66dafbd"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "/clear 仅清屏",
+          "不修改 Core 会话历史"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "session-path",
+        "question": "当前 CLI 还保留 --session 和 config.sessionPath 吗？SDK storage 是否也被移除？",
+        "paraphraseGroup": "session-path",
+        "complexity": "ordinary",
+        "category": "sufficient",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "e0d3df3a-0e02-457e-8d43-32366f054cad",
+            "passageId": "bfb97c83-6953-4170-8ebe-d47a40328844"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "CLI --session 与 config.sessionPath 已移除",
+          "SDK storage 保留"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "storage",
+        "question": "逐步持久化过程中存储写入失败，实例会继续调度还是停用？",
+        "paraphraseGroup": "storage",
+        "complexity": "ordinary",
+        "category": "sufficient",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "173b754f-be13-4174-8588-db2df1c53500",
+            "passageId": "38a47af4-9f53-4b1d-8855-030d9037c0c2"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "停止新调度并停用实例",
+          "宿主核对实际存储状态后重建",
+          "抛错不代表零写入"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "manual-compact",
+        "question": "关闭自动压缩后，是否还能手动 compact？",
+        "paraphraseGroup": "manual-compact",
+        "complexity": "ordinary",
+        "category": "sufficient",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "4a8aa096-1fa3-458a-99e8-7e743abcdf36",
+            "passageId": "98721624-5fa6-4da8-a8c8-62cb0f74b998"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "关闭自动压缩仍可手动 compact",
+          "enabled=false 同时关闭主动压缩和 overflow/length 自动恢复"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "markdown",
+        "question": "当前 Markdown 解析器和代码高亮用什么依赖？是否因此替换了自有 compositor？",
+        "paraphraseGroup": "markdown",
+        "complexity": "ordinary",
+        "category": "sufficient",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "ec8306d4-9b9b-488d-8c76-bf46a44bae4c",
+            "passageId": "3edb79f7-fcec-420f-97a1-dc5df2f18d97"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "Markdown 使用 marked，代码高亮使用 lowlight",
+          "仍由自有 TerminalFrame compositor 绘制，禁止外部 TUI 框架"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "sla-missing",
+        "question": "Forge 商业版的 99.99% SLA 违约赔偿比例是多少？",
+        "paraphraseGroup": "sla-missing",
+        "complexity": "ordinary",
+        "category": "missing",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [],
+        "expectedGaps": [
+          "商业 SLA 的存在、99.99% 指标与赔偿比例均无材料支持"
+        ],
+        "requiredPoints": [
+          "明确材料不足，无法确定 SLA 违约赔偿比例",
+          "不编造百分比或承认问题中的商业 SLA 前提"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "revenue-missing",
+        "question": "Forge 在 2026 年 8 月的付费客户数量和营收是多少？",
+        "paraphraseGroup": "revenue-missing",
+        "complexity": "ordinary",
+        "category": "missing",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [],
+        "expectedGaps": [
+          "2026年8月的付费客户数量与营收数据缺失"
+        ],
+        "requiredPoints": [
+          "明确材料不足，无法确定指定月份付费客户与营收",
+          "不编造数值或将无数据说成零"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "core-evolution",
+        "question": "结合 ADR-009 与 ADR-015，当前“自有 Core”指完全原创执行算法吗？CLI/TUI 会被 Pi 一并替换吗？",
+        "paraphraseGroup": "core-evolution",
+        "complexity": "complex",
+        "category": "conflicting",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "9a35f5db-b668-4d26-b82a-af130567249f",
+            "passageId": "1ab2c145-adba-4369-a1fb-755f0c434ecf"
+          },
+          {
+            "version": "a7d89fe8-dc77-4b87-9430-b1f7fee84fb2",
+            "passageId": "f0652f23-1a78-4814-934d-0ed319c85ce3"
+          },
+          {
+            "version": "a7d89fe8-dc77-4b87-9430-b1f7fee84fb2",
+            "passageId": "f0652f23-1a78-4814-934d-0ed319c85ce3"
+          },
+          {
+            "version": "a7d89fe8-dc77-4b87-9430-b1f7fee84fb2",
+            "passageId": "b1704afe-fe25-4a0d-aeaa-81457452e7ec"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "ADR-009 自行实现方向被 ADR-015 的本地维护 Pi 源码基线取代",
+          "自有不等于原创算法",
+          "保留 Forge CLI/TUI，非整体移植 Pi 应用"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "context-evolution",
+        "question": "结合 ADR-012 与 ADR-014，当前还实行严格上下文硬准入 B/M、专用 read_context 原文找回及工具全文归档平台吗？",
+        "paraphraseGroup": "context-evolution",
+        "complexity": "complex",
+        "category": "conflicting",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "00f15e7e-3c84-4355-b760-940ed0f267e4",
+            "passageId": "37b1e321-f964-4c40-8efa-eb18ef562735"
+          },
+          {
+            "version": "4a8aa096-1fa3-458a-99e8-7e743abcdf36",
+            "passageId": "d872f835-bf7b-4e31-8817-3db5fba02192"
+          },
+          {
+            "version": "4a8aa096-1fa3-458a-99e8-7e743abcdf36",
+            "passageId": "6d5aa417-304b-4341-8356-269bd2a01a6a"
+          },
+          {
+            "version": "4a8aa096-1fa3-458a-99e8-7e743abcdf36",
+            "passageId": "6d5aa417-304b-4341-8356-269bd2a01a6a"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "ADR-014 取代 ADR-012 的当前方案入口",
+          "不设置普通任务硬准入 B/M",
+          "取消专用 read_context、持久分页引用和工具全文归档平台",
+          "原始记录供查看或导出，不保证模型自动找回遗漏"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "cancel-persistence",
+        "question": "结合 ADR-010、013、014，取消任务是否回滚已保存消息、已开始写入和工具副作用？",
+        "paraphraseGroup": "cancel-persistence",
+        "complexity": "complex",
+        "category": "conflicting",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "afa8f36e-86d1-4790-9800-272c7a7fc59b",
+            "passageId": "f8b85f3d-d5ca-4c09-9f70-b15b5462f19c"
+          },
+          {
+            "version": "173b754f-be13-4174-8588-db2df1c53500",
+            "passageId": "f3076460-67a8-4192-9f6a-64ca4e2eb34b"
+          },
+          {
+            "version": "173b754f-be13-4174-8588-db2df1c53500",
+            "passageId": "38a47af4-9f53-4b1d-8855-030d9037c0c2"
+          },
+          {
+            "version": "173b754f-be13-4174-8588-db2df1c53500",
+            "passageId": "38a47af4-9f53-4b1d-8855-030d9037c0c2"
+          },
+          {
+            "version": "4a8aa096-1fa3-458a-99e8-7e743abcdf36",
+            "passageId": "98721624-5fa6-4da8-a8c8-62cb0f74b998"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "旧整轮提交前取消不保存规则被 ADR-013/014 取代",
+          "停止新模型/工具调用并等待收尾",
+          "保留已保存消息和摘要，保存已形成最终结果",
+          "不保证取消已开始写入，不回滚工具外部副作用"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "render-evolution",
+        "question": "从 ADR-005/006/007 到 ADR-016，Markdown 与视觉回归的哪些旧要求被替代，哪些继续保留？",
+        "paraphraseGroup": "render-evolution",
+        "complexity": "complex",
+        "category": "conflicting",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "9a18b1b2-b778-43f3-b83c-29d04575e577",
+            "passageId": "41d56814-ac97-4049-8e71-360e9286e479"
+          },
+          {
+            "version": "567854c0-8e13-4eee-87cd-c7e0dd7772b1",
+            "passageId": "060f6ee4-57f6-489b-8017-0b02f27f5fa2"
+          },
+          {
+            "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+            "passageId": "dc3ed216-29c7-44ef-9bbb-bead0dfad5dc"
+          },
+          {
+            "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+            "passageId": "dc3ed216-29c7-44ef-9bbb-bead0dfad5dc"
+          },
+          {
+            "version": "ec8306d4-9b9b-488d-8c76-bf46a44bae4c",
+            "passageId": "cd56aecf-9dd2-4714-826d-c355f287708a"
+          },
+          {
+            "version": "ec8306d4-9b9b-488d-8c76-bf46a44bae4c",
+            "passageId": "3edb79f7-fcec-420f-97a1-dc5df2f18d97"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "ADR-016 替代 Markdown 自写限制，使用 marked/lowlight",
+          "继续自有 compositor",
+          "ADR-007 替代编译 grok-build 及运行时 cell 零差异要求，使用仓库内 golden",
+          "PNG 仅辅证，不作硬门禁"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "clear-paraphrase",
+        "question": "使用 /clear 清空终端后，再发一个问题，Core 保存的对话历史也被删除了吗？",
+        "paraphraseGroup": "clear",
+        "complexity": "ordinary",
+        "category": "sufficient",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "e0d3df3a-0e02-457e-8d43-32366f054cad",
+            "passageId": "e9fead69-263c-4916-962d-ad1fb66dafbd"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "/clear 仅清屏",
+          "不修改 Core 会话历史"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "sla-missing-paraphrase",
+        "question": "如果 Forge 没有达到 99.99% 可用性，商业客户能拿回多少比例的费用？",
+        "paraphraseGroup": "sla-missing",
+        "complexity": "ordinary",
+        "category": "missing",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [],
+        "expectedGaps": [
+          "商业 SLA 的存在、99.99% 指标与赔偿比例均无材料支持"
+        ],
+        "requiredPoints": [
+          "明确材料不足，无法确定 SLA 违约赔偿比例",
+          "不编造百分比或承认问题中的商业 SLA 前提"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "core-evolution-paraphrase",
+        "question": "Forge 说 Core 是自己拥有的，这是否表示循环算法完全原创，而且界面也换成 Pi 了？请结合早期与后续 ADR 判断。",
+        "paraphraseGroup": "core-evolution",
+        "complexity": "complex",
+        "category": "conflicting",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "9a35f5db-b668-4d26-b82a-af130567249f",
+            "passageId": "1ab2c145-adba-4369-a1fb-755f0c434ecf"
+          },
+          {
+            "version": "a7d89fe8-dc77-4b87-9430-b1f7fee84fb2",
+            "passageId": "f0652f23-1a78-4814-934d-0ed319c85ce3"
+          },
+          {
+            "version": "a7d89fe8-dc77-4b87-9430-b1f7fee84fb2",
+            "passageId": "f0652f23-1a78-4814-934d-0ed319c85ce3"
+          },
+          {
+            "version": "a7d89fe8-dc77-4b87-9430-b1f7fee84fb2",
+            "passageId": "b1704afe-fe25-4a0d-aeaa-81457452e7ec"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "ADR-009 自行实现方向被 ADR-015 的本地维护 Pi 源码基线取代",
+          "自有不等于原创算法",
+          "保留 Forge CLI/TUI，非整体移植 Pi 应用"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      },
+      {
+        "id": "context-evolution-paraphrase",
+        "question": "旧文档提出模型按引用翻页找回原文；按后来的上下文决策，严格 B/M 准入、专用 read_context 和工具全文归档还保留吗？",
+        "paraphraseGroup": "context-evolution",
+        "complexity": "complex",
+        "category": "conflicting",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "tags": [],
+        "references": [
+          {
+            "version": "00f15e7e-3c84-4355-b760-940ed0f267e4",
+            "passageId": "37b1e321-f964-4c40-8efa-eb18ef562735"
+          },
+          {
+            "version": "4a8aa096-1fa3-458a-99e8-7e743abcdf36",
+            "passageId": "d872f835-bf7b-4e31-8817-3db5fba02192"
+          },
+          {
+            "version": "4a8aa096-1fa3-458a-99e8-7e743abcdf36",
+            "passageId": "6d5aa417-304b-4341-8356-269bd2a01a6a"
+          },
+          {
+            "version": "4a8aa096-1fa3-458a-99e8-7e743abcdf36",
+            "passageId": "6d5aa417-304b-4341-8356-269bd2a01a6a"
+          }
+        ],
+        "expectedGaps": [],
+        "requiredPoints": [
+          "ADR-014 取代 ADR-012 的当前方案入口",
+          "不设置普通任务硬准入 B/M",
+          "取消专用 read_context、持久分页引用和工具全文归档平台",
+          "原始记录供查看或导出，不保证模型自动找回遗漏"
+        ],
+        "review": {
+          "kind": "agent",
+          "reviewer": "issue-25-independent-agent",
+          "reviewedAt": "2026-09-12T07:25:00.725Z"
+        }
+      }
+    ],
+    "split": "development",
+    "mode": "agent"
+  },
+  "manifest": {
+    "schemaVersion": 1,
+    "corpus": "forge-documentation-frozen",
+    "snapshot": "f3812030485d1a588bab7e0ac4488479260295bb8b0a00ca333b3c81d447da49",
+    "sources": [
+      {
+        "version": "d21208f0-8d5f-4063-960f-fb85f5f387af",
+        "sha256": "fc9e95b3fd2aaa5eed6f4ba2cf486324b10e7f252972fa098481771bce64383c",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+        "sha256": "81cb850efe1ef753089f7aa248f9c35e468502bf700a60fd3d4ad414dd3efda6",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "c7b15556-0b72-4d38-b7a3-ba95106dc6f2",
+        "sha256": "952f0c0b80b15271a45af79e20b51b7b6c54c9281a4ef671aafc73acf0684df0",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "08ec3812-5bc0-405c-aba9-36b1bce83487",
+        "sha256": "9031c182c1c8606cc1d16a8d4173443f6dc4f72a4fac711fb0846abf26d6edc8",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "9a18b1b2-b778-43f3-b83c-29d04575e577",
+        "sha256": "efab065266aef8148ebf502b84f4dd19fe08989eb7cc66ecff28a742c96afe55",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "567854c0-8e13-4eee-87cd-c7e0dd7772b1",
+        "sha256": "03477d07a7feefa812a4412ec335f26f43f31ec5f1228e703394c7c78d12ba64",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+        "sha256": "eeb96693004a62d26f8b04bb793b7507afb768618b8035a5305c1fcd14273061",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "439e5709-202e-4f77-ada2-cf617d2ac20f",
+        "sha256": "f87cefe4a2e41e5d8dee9512a63270e41d748a90eff4a40901cc72c24724dd76",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "9a35f5db-b668-4d26-b82a-af130567249f",
+        "sha256": "486b46d50e542ffd65aa7145c937271674d1bb4c9a7a9048e29a1e94f4a9ce9f",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "afa8f36e-86d1-4790-9800-272c7a7fc59b",
+        "sha256": "ae1651602df9c1e6b1d228e70c76efb3b77c133130348dd6e431f0ce47f6dc82",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "b38587f3-e99f-49e9-a346-511bae001135",
+        "sha256": "1e36cece28cc1230e1296c83d8a2b7dd74253fbd8c37e98c43ecc46c1f32be50",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "00f15e7e-3c84-4355-b760-940ed0f267e4",
+        "sha256": "20ab3bfee1c1f328791d09fc06079bfd33c6e427b6497a709c340991249c1708",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "173b754f-be13-4174-8588-db2df1c53500",
+        "sha256": "fb31796b5aef291e5978f5e6349ee8157bcbf5dea88b61dda9552dbd56f7667a",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "4a8aa096-1fa3-458a-99e8-7e743abcdf36",
+        "sha256": "dc2aa46107f731d9ae622d32fcdbc009c3c2107d4aeee8ce013e7e739bfb1901",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "a7d89fe8-dc77-4b87-9430-b1f7fee84fb2",
+        "sha256": "4120ba2188c0ac5bef337f00fd823a305cd87c8fd0f803664cf6b8728b23b2f1",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "ec8306d4-9b9b-488d-8c76-bf46a44bae4c",
+        "sha256": "ac8248327c63c7b5e9d017b7f4addb4ec354548902b5df4b80b6fe01f84bcffe",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "1ec84823-684b-4c76-98fd-d18dcbad9ae9",
+        "sha256": "1d1ccdfa61599b9d4333fc42b0f3455af3f1b80384ee4d0094b3576aa7ee66e0",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "374fdb54-cedb-40e4-a48d-9cce4b172303",
+        "sha256": "bc5e4851b9778cb63ea8b4c422d48618d8102764a23d5a752ffc03ae4ae3cc0b",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "bc65d4be-b0da-4d07-932a-ceb049c6b940",
+        "sha256": "b422ae5485ed3c72054892f1e17ced2c2ebafdadeb5af722af7efe379e76e2a7",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      },
+      {
+        "version": "e0d3df3a-0e02-457e-8d43-32366f054cad",
+        "sha256": "3c7779690a55fb4a8b89c2a126798255fac8204789d76d3c528657727d1a9fc2",
+        "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+        "parser": "markdown-it-15.0.1-tables-v1",
+        "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+      }
+    ]
+  },
+  "datasetSha256": "5ae784620d0de134fb9da5530d0ace0a259f4d36c6753c1f6643e4f998538fff",
+  "provenance": "independent-agent-review-required",
+  "configurations": {
+    "source": {
+      "status": "available",
+      "value": {
+        "profile": "source",
+        "wiki": true,
+        "graph": true,
+        "retrieval": "hybrid-rrf60-v1",
+        "context": "8000-16000-v1",
+        "deadlines": {
+          "ordinaryMs": 30000,
+          "complexMs": 60000,
+          "ordinaryReserveMs": 0,
+          "complexReserveMs": 0
+        },
+        "answeringModel": "openai-chat:deepseek-ai/DeepSeek-V4-Flash:knowledge-v1",
+        "policy": "direct-answer-v2",
+        "budgets": "3-agent-0-generation-0-review-v2"
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "request-shape",
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "outcome": "fail",
+      "reason": "budget_exhausted",
+      "elapsedMs": 18533.564129999955,
+      "citationChecks": [],
+      "referenceRecall": {
+        "numerator": 0,
+        "denominator": 3
+      },
+      "quality": {
+        "status": "unavailable",
+        "reason": "request_not_completed"
+      },
+      "requests": {
+        "status": "available",
+        "value": {
+          "model": 4,
+          "embedding": 2
+        }
+      },
+      "tokens": {
+        "status": "unavailable",
+        "reason": "provider usage unavailable"
+      },
+      "monetaryCost": {
+        "status": "unavailable",
+        "reason": "provider usage and pricing unavailable"
+      },
+      "run": {
+        "id": "bd5dd3b2-bfab-48f0-86f5-a329f34b0cea",
+        "scope": {
+          "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+          "includeShared": true
+        },
+        "counts": {
+          "review": 0,
+          "retrieval": 2,
+          "generation": 0,
+          "exploration": 4
+        },
+        "reason": "budget_exhausted",
+        "status": "timed_out",
+        "deadline": 1789305567736,
+        "settledAt": "2026-09-13T13:19:16.245Z",
+        "diagnostics": {
+          "gaps": [
+            "context_limit",
+            "retrieval_budget_exhausted",
+            "retrieval_budget_exhausted"
+          ],
+          "cache": "miss",
+          "queueMs": 51,
+          "elapsedMs": 18508,
+          "retrieved": [
+            {
+              "end": 15,
+              "text": "# docs/ — 文档系统\n",
+              "start": 0,
+              "title": "17-README.md",
+              "handle": "e18",
+              "routes": [
+                "source"
+              ],
+              "version": "1ec84823-684b-4c76-98fd-d18dcbad9ae9",
+              "passageId": "68e34503-0a70-44da-9580-0b9529aed33e",
+              "documentId": "f1d8ecfa-9616-4cdb-afd8-aad84afc061b",
+              "headingPath": [
+                "docs/ — 文档系统"
+              ]
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-05\n---\n",
+              "start": 0,
+              "title": "08-008-general-agent-positioning.md",
+              "handle": "e19",
+              "routes": [
+                "source"
+              ],
+              "version": "439e5709-202e-4f77-ada2-cf617d2ac20f",
+              "passageId": "eab94630-98ac-484f-b3b3-4c08c451fcbc",
+              "documentId": "8565f032-ad4c-441f-96be-f5e78efee3eb",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-08-31\n---\n",
+              "start": 0,
+              "title": "01-001-doc-system.md",
+              "handle": "e20",
+              "routes": [
+                "source"
+              ],
+              "version": "d21208f0-8d5f-4063-960f-fb85f5f387af",
+              "passageId": "5ea77967-ff0e-412b-a4bf-46091931f487",
+              "documentId": "8befd6fe-7677-4516-908b-452df697da22",
+              "headingPath": []
+            },
+            {
+              "end": 1438,
+              "text": "### M1 的具体协议形状\n",
+              "start": 1423,
+              "title": "02-002-request-bus-shape.md",
+              "handle": "e21",
+              "routes": [
+                "source"
+              ],
+              "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+              "passageId": "047d2074-6aed-43bd-8838-4a66a732e05e",
+              "documentId": "a84d2e56-57db-4038-9799-4c30321424b7",
+              "headingPath": [
+                "ADR-002: request 总线用双向事件流,不用 `Promise<Decision>`",
+                "决策",
+                "M1 的具体协议形状"
+              ]
+            }
+          ],
+          "retrievalMs": 528.5098010000074,
+          "reusedHandles": [
+            "e1",
+            "e2",
+            "e5",
+            "e4",
+            "e6",
+            "e3",
+            "e7",
+            "e11",
+            "e10",
+            "e12",
+            "e13",
+            "e14",
+            "e15"
+          ],
+          "routeOutcomes": {
+            "source": {
+              "status": "success",
+              "originals": 74,
+              "candidates": 100
+            }
+          },
+          "wikiCandidates": 0,
+          "graphCandidates": 0,
+          "requestedRoutes": [
+            "source"
+          ],
+          "retrievalProfile": "source",
+          "vectorCandidates": 50,
+          "embeddingRequests": 2,
+          "lexicalCandidates": 50
+        },
+        "intentContext": {},
+        "conversationId": "3e5426ee-01d7-4a2b-9af2-96b85ce8382e"
+      }
+    },
+    {
+      "id": "headless",
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "outcome": "pending_agent",
+      "reason": "independent_agent_review_required",
+      "elapsedMs": 15648.134227000002,
+      "citationChecks": [
+        {
+          "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+          "passageId": "fea9d662-c7ac-4ac4-b39a-27fa3e5151da",
+          "valid": true
+        },
+        {
+          "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+          "passageId": "0096d2df-8d55-4f1f-8ced-9f4b3cfb2831",
+          "valid": true
+        }
+      ],
+      "referenceRecall": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "quality": {
+        "status": "unavailable",
+        "reason": "request_not_completed"
+      },
+      "requests": {
+        "status": "available",
+        "value": {
+          "model": 2,
+          "embedding": 1
+        }
+      },
+      "tokens": {
+        "status": "unavailable",
+        "reason": "provider usage unavailable"
+      },
+      "monetaryCost": {
+        "status": "unavailable",
+        "reason": "provider usage and pricing unavailable"
+      },
+      "run": {
+        "id": "a1d46e23-4749-497e-9f5d-f525949149ec",
+        "scope": {
+          "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+          "includeShared": true
+        },
+        "answer": {
+          "text": "依据 ADR-002（02-002-request-bus-shape.md）的协议表，headless 对这些请求默认处理与退出码如下：\n- `permission`：默认结果为 `deny`（拒绝）；退出码 **20**。\n- `question`：默认结果为 `cancel`（取消）；退出码 **22**。\n- `oauth`：默认结果为 `cancel`（取消）；退出码 **24**。\n\n补充：其余同类请求中 `cancel_confirm` 默认 `cancel`（退出码 21）、`plan_approval` 默认 `reject`（退出码 23）。既有退出码 `1`/`2` 继续分别表示启动错误/参数错误。注意 `permission` 的默认值是 deny，而 `cancel_confirm`/`question`/`oauth` 的默认值是 cancel，`plan_approval` 是 reject。\n\n来源：[e12] [e13]",
+          "status": "answered",
+          "contract": "direct-answer-v2",
+          "citations": [
+            {
+              "id": "fea9d662-c7ac-4ac4-b39a-27fa3e5151da",
+              "end": 2113,
+              "text": "| kind | payload | response result | headless exit code |\n|---|---|---|---:|\n| `permission` | `toolCall`, `reason?`, `rememberRule?` | `allow_once` / `allow_always(scope)` / `deny` | 20 |\n| `cancel_confirm` | `action`, `consequence?` | `cancel` / `keep_running` | 21 |\n| `question` | `prompt`, `choices?`, `allowFreeText?`, `multiple?` | `answer(answers[])` / `cancel` | 22 |\n| `plan_approval` | `plan` | `approve` / `reject(feedback?)` | 23 |\n| `oauth` | `provider`, `authorizationUrl`, `instructions?` | `completed` / `cancel` | 24 |\n",
+              "start": 1577,
+              "title": "02-002-request-bus-shape.md",
+              "handle": "e12",
+              "routes": [
+                "source"
+              ],
+              "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+              "passageId": "fea9d662-c7ac-4ac4-b39a-27fa3e5151da",
+              "documentId": "a84d2e56-57db-4038-9799-4c30321424b7",
+              "headingPath": [
+                "ADR-002: request 总线用双向事件流,不用 `Promise<Decision>`",
+                "决策",
+                "M1 的具体协议形状"
+              ]
+            },
+            {
+              "id": "0096d2df-8d55-4f1f-8ced-9f4b3cfb2831",
+              "end": 2300,
+              "text": "`rememberRule` 是确认前展示给用户的规则原文;没有该字段时 UI 不得提供 Always allow。headless 的 permission 结果是 deny,cancel_confirm/question/oauth 是 cancel,plan_approval 是 reject。既有退出码 `1` / `2` 继续分别表示启动错误 / 参数错误。\n",
+              "start": 2114,
+              "title": "02-002-request-bus-shape.md",
+              "handle": "e13",
+              "routes": [
+                "source"
+              ],
+              "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+              "passageId": "0096d2df-8d55-4f1f-8ced-9f4b3cfb2831",
+              "documentId": "a84d2e56-57db-4038-9799-4c30321424b7",
+              "headingPath": [
+                "ADR-002: request 总线用双向事件流,不用 `Promise<Decision>`",
+                "决策",
+                "M1 的具体协议形状"
+              ]
+            }
+          ],
+          "validation": {
+            "kind": "citation-traceability",
+            "semanticReview": false
+          },
+          "validatedAt": "2026-09-13T13:19:31.907Z"
+        },
+        "counts": {
+          "review": 0,
+          "retrieval": 1,
+          "generation": 0,
+          "exploration": 2
+        },
+        "status": "answered",
+        "deadline": 1789305586271,
+        "settledAt": "2026-09-13T13:19:31.908Z",
+        "diagnostics": {
+          "gaps": [
+            "context_limit",
+            "specific_gap_required"
+          ],
+          "cache": "miss",
+          "queueMs": 28,
+          "elapsedMs": 15637,
+          "retrieved": [
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-01\n---\n",
+              "start": 0,
+              "title": "02-002-request-bus-shape.md",
+              "handle": "e1",
+              "routes": [
+                "source"
+              ],
+              "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+              "passageId": "590e314d-450a-4f3a-bba9-e62c1410d789",
+              "documentId": "a84d2e56-57db-4038-9799-4c30321424b7",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-01\n---\n",
+              "start": 0,
+              "title": "03-003-permission-rule-matching.md",
+              "handle": "e2",
+              "routes": [
+                "source"
+              ],
+              "version": "c7b15556-0b72-4d38-b7a3-ba95106dc6f2",
+              "passageId": "491badf4-b308-4c26-a7bd-f0b958388d03",
+              "documentId": "8fec27cc-25b1-491e-b377-bd6591352ed7",
+              "headingPath": []
+            },
+            {
+              "end": 9,
+              "text": "# SDK 接入\n",
+              "start": 0,
+              "title": "18-sdk.md",
+              "handle": "e3",
+              "routes": [
+                "source"
+              ],
+              "version": "374fdb54-cedb-40e4-a48d-9cce4b172303",
+              "passageId": "3bd31c68-d73c-4625-a93b-9a085abca259",
+              "documentId": "bcda1048-939d-48f3-ba9d-736f94177eb4",
+              "headingPath": [
+                "SDK 接入"
+              ]
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-05\n---\n",
+              "start": 0,
+              "title": "10-010-input-ownership-and-interruption.md",
+              "handle": "e4",
+              "routes": [
+                "source"
+              ],
+              "version": "afa8f36e-86d1-4790-9800-272c7a7fc59b",
+              "passageId": "838b6c50-7ce3-45ce-8a0b-f6347e4fe1fe",
+              "documentId": "e235d0ae-a0bc-4d73-8540-ea97c3233263",
+              "headingPath": []
+            },
+            {
+              "end": 43,
+              "text": "---\ndoc_kind: plan\ncreated: 2026-09-09\n---\n",
+              "start": 0,
+              "title": "20-session-management.md",
+              "handle": "e5",
+              "routes": [
+                "source"
+              ],
+              "version": "e0d3df3a-0e02-457e-8d43-32366f054cad",
+              "passageId": "9db2fb2d-0747-4527-8b4c-d8bcfe4b6179",
+              "documentId": "29909af2-cdfe-4c09-b9d4-79e0c28054b1",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-04\n---\n",
+              "start": 0,
+              "title": "06-006-tui-cell-parity.md",
+              "handle": "e6",
+              "routes": [
+                "source"
+              ],
+              "version": "567854c0-8e13-4eee-87cd-c7e0dd7772b1",
+              "passageId": "520389ef-5b65-4a16-bed8-c8f42dac5cab",
+              "documentId": "269f36e8-4c76-4f13-94b5-8e81771d9986",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-04\n---\n",
+              "start": 0,
+              "title": "05-005-tui-own-compositor.md",
+              "handle": "e7",
+              "routes": [
+                "source"
+              ],
+              "version": "9a18b1b2-b778-43f3-b83c-29d04575e577",
+              "passageId": "d556bbbb-ee04-4496-94e2-97dd8ebb7f6c",
+              "documentId": "a2f9a8cb-c839-4c8b-b39c-428bcbae1de9",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-08-31\n---\n",
+              "start": 0,
+              "title": "01-001-doc-system.md",
+              "handle": "e8",
+              "routes": [
+                "source"
+              ],
+              "version": "d21208f0-8d5f-4063-960f-fb85f5f387af",
+              "passageId": "5ea77967-ff0e-412b-a4bf-46091931f487",
+              "documentId": "8befd6fe-7677-4516-908b-452df697da22",
+              "headingPath": []
+            },
+            {
+              "end": 15,
+              "text": "# docs/ — 文档系统\n",
+              "start": 0,
+              "title": "17-README.md",
+              "handle": "e9",
+              "routes": [
+                "source"
+              ],
+              "version": "1ec84823-684b-4c76-98fd-d18dcbad9ae9",
+              "passageId": "68e34503-0a70-44da-9580-0b9529aed33e",
+              "documentId": "f1d8ecfa-9616-4cdb-afd8-aad84afc061b",
+              "headingPath": [
+                "docs/ — 文档系统"
+              ]
+            },
+            {
+              "end": 21,
+              "text": "# Source Prereleases\n",
+              "start": 0,
+              "title": "19-release.md",
+              "handle": "e10",
+              "routes": [
+                "source"
+              ],
+              "version": "bc65d4be-b0da-4d07-932a-ceb049c6b940",
+              "passageId": "7255b1b1-7230-4097-9cb9-dd17f130c7d1",
+              "documentId": "aba39992-f977-44d6-9c69-36b4295562bb",
+              "headingPath": [
+                "Source Prereleases"
+              ]
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-01\n---\n",
+              "start": 0,
+              "title": "04-004-single-process-protocol-isolation.md",
+              "handle": "e11",
+              "routes": [
+                "source"
+              ],
+              "version": "08ec3812-5bc0-405c-aba9-36b1bce83487",
+              "passageId": "0acb65d5-4f31-4ff5-9839-4fd1d7af99b1",
+              "documentId": "be039904-97df-49d7-8e62-6a7b6387fb16",
+              "headingPath": []
+            },
+            {
+              "end": 2113,
+              "text": "| kind | payload | response result | headless exit code |\n|---|---|---|---:|\n| `permission` | `toolCall`, `reason?`, `rememberRule?` | `allow_once` / `allow_always(scope)` / `deny` | 20 |\n| `cancel_confirm` | `action`, `consequence?` | `cancel` / `keep_running` | 21 |\n| `question` | `prompt`, `choices?`, `allowFreeText?`, `multiple?` | `answer(answers[])` / `cancel` | 22 |\n| `plan_approval` | `plan` | `approve` / `reject(feedback?)` | 23 |\n| `oauth` | `provider`, `authorizationUrl`, `instructions?` | `completed` / `cancel` | 24 |\n",
+              "start": 1577,
+              "title": "02-002-request-bus-shape.md",
+              "handle": "e12",
+              "routes": [
+                "source"
+              ],
+              "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+              "passageId": "fea9d662-c7ac-4ac4-b39a-27fa3e5151da",
+              "documentId": "a84d2e56-57db-4038-9799-4c30321424b7",
+              "headingPath": [
+                "ADR-002: request 总线用双向事件流,不用 `Promise<Decision>`",
+                "决策",
+                "M1 的具体协议形状"
+              ]
+            },
+            {
+              "end": 2300,
+              "text": "`rememberRule` 是确认前展示给用户的规则原文;没有该字段时 UI 不得提供 Always allow。headless 的 permission 结果是 deny,cancel_confirm/question/oauth 是 cancel,plan_approval 是 reject。既有退出码 `1` / `2` 继续分别表示启动错误 / 参数错误。\n",
+              "start": 2114,
+              "title": "02-002-request-bus-shape.md",
+              "handle": "e13",
+              "routes": [
+                "source"
+              ],
+              "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+              "passageId": "0096d2df-8d55-4f1f-8ced-9f4b3cfb2831",
+              "documentId": "a84d2e56-57db-4038-9799-4c30321424b7",
+              "headingPath": [
+                "ADR-002: request 总线用双向事件流,不用 `Promise<Decision>`",
+                "决策",
+                "M1 的具体协议形状"
+              ]
+            },
+            {
+              "end": 2385,
+              "text": "`allow_always` 的 `scope` 必须同时携带 `tool` 与 `argsPattern` 字符串;它表达具体被授权对象,不能退化成只按工具名记忆。\n",
+              "start": 2301,
+              "title": "02-002-request-bus-shape.md",
+              "handle": "e14",
+              "routes": [
+                "source"
+              ],
+              "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+              "passageId": "0bb71744-9cf2-4500-97d3-8c5db486cfd9",
+              "documentId": "a84d2e56-57db-4038-9799-4c30321424b7",
+              "headingPath": [
+                "ADR-002: request 总线用双向事件流,不用 `Promise<Decision>`",
+                "决策",
+                "M1 的具体协议形状"
+              ]
+            },
+            {
+              "end": 2392,
+              "text": "被否方案:\n",
+              "start": 2386,
+              "title": "02-002-request-bus-shape.md",
+              "handle": "e15",
+              "routes": [
+                "source"
+              ],
+              "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+              "passageId": "b3f88206-a6da-4257-a132-1410739ec3f3",
+              "documentId": "a84d2e56-57db-4038-9799-4c30321424b7",
+              "headingPath": [
+                "ADR-002: request 总线用双向事件流,不用 `Promise<Decision>`",
+                "决策",
+                "M1 的具体协议形状"
+              ]
+            },
+            {
+              "end": 523,
+              "text": "同一节 [#L328](../design-rationale.md) 给出了目标形状 —— 带 id 的信封,而不是函数调用:\n",
+              "start": 458,
+              "title": "02-002-request-bus-shape.md",
+              "handle": "e16",
+              "routes": [
+                "source"
+              ],
+              "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+              "passageId": "34d003ee-ccf5-4de3-8b53-5a8d213a5951",
+              "documentId": "a84d2e56-57db-4038-9799-4c30321424b7",
+              "headingPath": [
+                "ADR-002: request 总线用双向事件流,不用 `Promise<Decision>`",
+                "背景"
+              ]
+            }
+          ],
+          "retrievalMs": 247.17800099996384,
+          "reusedHandles": [],
+          "routeOutcomes": {
+            "source": {
+              "status": "success",
+              "originals": 80,
+              "candidates": 100
+            }
+          },
+          "wikiCandidates": 0,
+          "graphCandidates": 0,
+          "requestedRoutes": [
+            "source"
+          ],
+          "retrievalProfile": "source",
+          "vectorCandidates": 50,
+          "embeddingRequests": 1,
+          "lexicalCandidates": 50
+        },
+        "intentContext": {},
+        "conversationId": "28c18f41-8de4-4f10-baff-87713ced27e3"
+      }
+    },
+    {
+      "id": "permission",
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "outcome": "fail",
+      "reason": "budget_exhausted",
+      "elapsedMs": 30032.68145199999,
+      "citationChecks": [],
+      "referenceRecall": {
+        "numerator": 0,
+        "denominator": 1
+      },
+      "quality": {
+        "status": "unavailable",
+        "reason": "request_not_completed"
+      },
+      "requests": {
+        "status": "available",
+        "value": {
+          "model": 3,
+          "embedding": 1
+        }
+      },
+      "tokens": {
+        "status": "unavailable",
+        "reason": "provider usage unavailable"
+      },
+      "monetaryCost": {
+        "status": "unavailable",
+        "reason": "provider usage and pricing unavailable"
+      },
+      "run": {
+        "id": "1c149e9d-f22e-4ea6-8794-2d5c8b991174",
+        "scope": {
+          "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+          "includeShared": true
+        },
+        "counts": {
+          "review": 0,
+          "retrieval": 1,
+          "generation": 0,
+          "exploration": 3
+        },
+        "reason": "budget_exhausted",
+        "status": "timed_out",
+        "deadline": 1789305601933,
+        "settledAt": "2026-09-13T13:20:01.948Z",
+        "diagnostics": {
+          "gaps": [
+            "context_limit",
+            "specific_gap_required",
+            "specific_gap_required",
+            "specific_gap_required"
+          ],
+          "cache": "miss",
+          "queueMs": 25,
+          "elapsedMs": 30015,
+          "retrieved": [
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-01\n---\n",
+              "start": 0,
+              "title": "03-003-permission-rule-matching.md",
+              "handle": "e1",
+              "routes": [
+                "source"
+              ],
+              "version": "c7b15556-0b72-4d38-b7a3-ba95106dc6f2",
+              "passageId": "491badf4-b308-4c26-a7bd-f0b958388d03",
+              "documentId": "8fec27cc-25b1-491e-b377-bd6591352ed7",
+              "headingPath": []
+            },
+            {
+              "end": 9,
+              "text": "# SDK 接入\n",
+              "start": 0,
+              "title": "18-sdk.md",
+              "handle": "e2",
+              "routes": [
+                "source"
+              ],
+              "version": "374fdb54-cedb-40e4-a48d-9cce4b172303",
+              "passageId": "3bd31c68-d73c-4625-a93b-9a085abca259",
+              "documentId": "bcda1048-939d-48f3-ba9d-736f94177eb4",
+              "headingPath": [
+                "SDK 接入"
+              ]
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-01\n---\n",
+              "start": 0,
+              "title": "02-002-request-bus-shape.md",
+              "handle": "e3",
+              "routes": [
+                "source"
+              ],
+              "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+              "passageId": "590e314d-450a-4f3a-bba9-e62c1410d789",
+              "documentId": "a84d2e56-57db-4038-9799-4c30321424b7",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-04\n---\n",
+              "start": 0,
+              "title": "06-006-tui-cell-parity.md",
+              "handle": "e4",
+              "routes": [
+                "source"
+              ],
+              "version": "567854c0-8e13-4eee-87cd-c7e0dd7772b1",
+              "passageId": "520389ef-5b65-4a16-bed8-c8f42dac5cab",
+              "documentId": "269f36e8-4c76-4f13-94b5-8e81771d9986",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-05\n---\n",
+              "start": 0,
+              "title": "10-010-input-ownership-and-interruption.md",
+              "handle": "e5",
+              "routes": [
+                "source"
+              ],
+              "version": "afa8f36e-86d1-4790-9800-272c7a7fc59b",
+              "passageId": "838b6c50-7ce3-45ce-8a0b-f6347e4fe1fe",
+              "documentId": "e235d0ae-a0bc-4d73-8540-ea97c3233263",
+              "headingPath": []
+            },
+            {
+              "end": 15,
+              "text": "# docs/ — 文档系统\n",
+              "start": 0,
+              "title": "17-README.md",
+              "handle": "e6",
+              "routes": [
+                "source"
+              ],
+              "version": "1ec84823-684b-4c76-98fd-d18dcbad9ae9",
+              "passageId": "68e34503-0a70-44da-9580-0b9529aed33e",
+              "documentId": "f1d8ecfa-9616-4cdb-afd8-aad84afc061b",
+              "headingPath": [
+                "docs/ — 文档系统"
+              ]
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-01\n---\n",
+              "start": 0,
+              "title": "04-004-single-process-protocol-isolation.md",
+              "handle": "e7",
+              "routes": [
+                "source"
+              ],
+              "version": "08ec3812-5bc0-405c-aba9-36b1bce83487",
+              "passageId": "0acb65d5-4f31-4ff5-9839-4fd1d7af99b1",
+              "documentId": "be039904-97df-49d7-8e62-6a7b6387fb16",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-04\n---\n",
+              "start": 0,
+              "title": "05-005-tui-own-compositor.md",
+              "handle": "e8",
+              "routes": [
+                "source"
+              ],
+              "version": "9a18b1b2-b778-43f3-b83c-29d04575e577",
+              "passageId": "d556bbbb-ee04-4496-94e2-97dd8ebb7f6c",
+              "documentId": "a2f9a8cb-c839-4c8b-b39c-428bcbae1de9",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-07\n---\n",
+              "start": 0,
+              "title": "12-012-context-management-direction.md",
+              "handle": "e9",
+              "routes": [
+                "source"
+              ],
+              "version": "00f15e7e-3c84-4355-b760-940ed0f267e4",
+              "passageId": "b46ce478-f6f4-4e66-93b5-78d8e82ded2f",
+              "documentId": "83eb45a2-66c0-421b-8d9d-201e5d0305bf",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-08\n---\n",
+              "start": 0,
+              "title": "15-015-pi-core-source-migration.md",
+              "handle": "e10",
+              "routes": [
+                "source"
+              ],
+              "version": "a7d89fe8-dc77-4b87-9430-b1f7fee84fb2",
+              "passageId": "1b290394-43fd-483e-9420-e66ea318ef13",
+              "documentId": "d9aecc03-58eb-4a6a-9c93-4c2e9dbeed55",
+              "headingPath": []
+            },
+            {
+              "end": 43,
+              "text": "---\ndoc_kind: plan\ncreated: 2026-09-09\n---\n",
+              "start": 0,
+              "title": "20-session-management.md",
+              "handle": "e11",
+              "routes": [
+                "source"
+              ],
+              "version": "e0d3df3a-0e02-457e-8d43-32366f054cad",
+              "passageId": "9db2fb2d-0747-4527-8b4c-d8bcfe4b6179",
+              "documentId": "29909af2-cdfe-4c09-b9d4-79e0c28054b1",
+              "headingPath": []
+            },
+            {
+              "end": 171,
+              "text": "## 背景\n",
+              "start": 165,
+              "title": "03-003-permission-rule-matching.md",
+              "handle": "e12",
+              "routes": [
+                "source"
+              ],
+              "version": "c7b15556-0b72-4d38-b7a3-ba95106dc6f2",
+              "passageId": "0a0c9f04-097d-4f55-b08a-5d3b50b0eefa",
+              "documentId": "8fec27cc-25b1-491e-b377-bd6591352ed7",
+              "headingPath": [
+                "ADR-003: permission 规则匹配用显式前缀 / glob 规则表,不做 DSL",
+                "背景"
+              ]
+            },
+            {
+              "end": 840,
+              "text": "证据强度按 [SOP.md](../SOP.md) 引用纪律标注:`03-meta-rules.md` 声称 Skill 提供「强制执行」`[明述]`,而 `09` 的三层防御表自己写着「全是文字指令,无强制执行」`[自证]`;后果是两次真实的未授权合入(F11、F24)。也就是说,这条不是推断,是自证 + 事故。\n",
+              "start": 681,
+              "title": "03-003-permission-rule-matching.md",
+              "handle": "e13",
+              "routes": [
+                "source"
+              ],
+              "version": "c7b15556-0b72-4d38-b7a3-ba95106dc6f2",
+              "passageId": "1de21621-0979-4bac-af7d-c98e260a6cb1",
+              "documentId": "8fec27cc-25b1-491e-b377-bd6591352ed7",
+              "headingPath": [
+                "ADR-003: permission 规则匹配用显式前缀 / glob 规则表,不做 DSL",
+                "背景"
+              ]
+            },
+            {
+              "end": 5337,
+              "text": "## 权限\n",
+              "start": 5331,
+              "title": "18-sdk.md",
+              "handle": "e14",
+              "routes": [
+                "source"
+              ],
+              "version": "374fdb54-cedb-40e4-a48d-9cce4b172303",
+              "passageId": "01f0c384-0589-4dab-8ce5-9a32ddd0d510",
+              "documentId": "bcda1048-939d-48f3-ba9d-736f94177eb4",
+              "headingPath": [
+                "SDK 接入",
+                "权限"
+              ]
+            },
+            {
+              "end": 347,
+              "text": "Phase 2 的 M2([phases/phase-2.md#L86](../phases/phase-2.md))要落 permission 决策链:hooks → rules → 记住的授权 → 内置自动批准 → mode。「rules」那一层怎么表达,有两条路:写成配置语言(正则 / predicate DSL),还是写成一张显式规则表。\n",
+              "start": 172,
+              "title": "03-003-permission-rule-matching.md",
+              "handle": "e15",
+              "routes": [
+                "source"
+              ],
+              "version": "c7b15556-0b72-4d38-b7a3-ba95106dc6f2",
+              "passageId": "31787098-903e-4d9f-9ab8-284d6dbd6626",
+              "documentId": "8fec27cc-25b1-491e-b377-bd6591352ed7",
+              "headingPath": [
+                "ADR-003: permission 规则匹配用显式前缀 / glob 规则表,不做 DSL",
+                "背景"
+              ]
+            },
+            {
+              "end": 5596,
+              "text": "每实例默认有独立权限记忆和请求总线。CLI 为兼容现有 TUI 显式传入独占 RequestBus,交互模式允许无限等待;SDK dispose 会关闭该总线,不得跨实例共享。请求观察、授权与释放不依赖 pi 类型。\n",
+              "start": 5487,
+              "title": "18-sdk.md",
+              "handle": "e16",
+              "routes": [
+                "source"
+              ],
+              "version": "374fdb54-cedb-40e4-a48d-9cce4b172303",
+              "passageId": "07032e1a-2e66-454b-8bc4-0854833c81cc",
+              "documentId": "bcda1048-939d-48f3-ba9d-736f94177eb4",
+              "headingPath": [
+                "SDK 接入",
+                "权限"
+              ]
+            },
+            {
+              "end": 680,
+              "text": "> **教训:一条规则一个家,且选那个能说「不」的家。**\n",
+              "start": 650,
+              "title": "03-003-permission-rule-matching.md",
+              "handle": "e17",
+              "routes": [
+                "source"
+              ],
+              "version": "c7b15556-0b72-4d38-b7a3-ba95106dc6f2",
+              "passageId": "8b71f3e8-6fbb-4692-9498-08f0f199f5b7",
+              "documentId": "8fec27cc-25b1-491e-b377-bd6591352ed7",
+              "headingPath": [
+                "ADR-003: permission 规则匹配用显式前缀 / glob 规则表,不做 DSL",
+                "背景"
+              ]
+            }
+          ],
+          "retrievalMs": 256.0494999999646,
+          "reusedHandles": [],
+          "routeOutcomes": {
+            "source": {
+              "status": "success",
+              "originals": 79,
+              "candidates": 100
+            }
+          },
+          "wikiCandidates": 0,
+          "graphCandidates": 0,
+          "requestedRoutes": [
+            "source"
+          ],
+          "retrievalProfile": "source",
+          "vectorCandidates": 50,
+          "embeddingRequests": 1,
+          "lexicalCandidates": 50
+        },
+        "intentContext": {},
+        "conversationId": "9be41eaa-050e-4b9e-8092-9662c3031036"
+      }
+    },
+    {
+      "id": "dangerous",
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "outcome": "pending_agent",
+      "reason": "independent_agent_review_required",
+      "elapsedMs": 18445.222939,
+      "citationChecks": [
+        {
+          "version": "c7b15556-0b72-4d38-b7a3-ba95106dc6f2",
+          "passageId": "3451d4ae-6bd8-4cb7-8c1b-c5ad78cc64e3",
+          "valid": true
+        },
+        {
+          "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+          "passageId": "0096d2df-8d55-4f1f-8ced-9f4b3cfb2831",
+          "valid": true
+        },
+        {
+          "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+          "passageId": "0bb71744-9cf2-4500-97d3-8c5db486cfd9",
+          "valid": true
+        }
+      ],
+      "referenceRecall": {
+        "numerator": 1,
+        "denominator": 1
+      },
+      "quality": {
+        "status": "unavailable",
+        "reason": "request_not_completed"
+      },
+      "requests": {
+        "status": "available",
+        "value": {
+          "model": 2,
+          "embedding": 1
+        }
+      },
+      "tokens": {
+        "status": "unavailable",
+        "reason": "provider usage unavailable"
+      },
+      "monetaryCost": {
+        "status": "unavailable",
+        "reason": "provider usage and pricing unavailable"
+      },
+      "run": {
+        "id": "9e625b68-6408-42d9-81a2-71c479884321",
+        "scope": {
+          "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+          "includeShared": true
+        },
+        "answer": {
+          "text": "不会。根据本项目 ADR-003 决策，危险操作清单（`rm` / `chmod` / `kill` / `git push`）「从不认记住的前缀」，即使存在匹配的 always-allow 规则，仍然会提示。也就是说，对于 git push 这一类危险操作，记住其 always-allow 前缀并不能免除警告。同时，即便是普通操作，可记住的授权键也必须同时携带被授权的对象（工具 + 具体参数模式，如 `tool` 与 `argsPattern`），不能只记工具名；当没有任何可记住的规则能阻止再次提示时，UI 甚至不会提供 Always allow 行，而不是存一条不起作用的规则。\n\n来源：[e13] [e14] [e16]",
+          "status": "answered",
+          "contract": "direct-answer-v2",
+          "citations": [
+            {
+              "id": "3451d4ae-6bd8-4cb7-8c1b-c5ad78cc64e3",
+              "end": 1578,
+              "text": "1. 决策链是纯函数,可表驱动测试、可解释给用户看、可属性测试 —— 与 Phase 1 把 abort 抽成纯函数状态机是同一手法。\n2. 危险清单(`rm` / `chmod` / `kill` / `git push`)**从不认记住的前缀**,即使存在匹配的 always-allow 规则仍然提示。\n3. 记住的授权键必须含被授权的**对象**(工具 + 具体参数模式),不能只记工具名。丢作用域正是 F24 事故的形状 —— 「可以合入」是真的,只是说的是另一个 PR([cat-cafe.md](https://github.com/L-1ngg/forge-agent/blob/24750eb3d22d23d72d3c17fa589b1df425d28940/docs/cat-cafe.md) F.1 ③)。\n4. 当没有任何可记住的规则能阻止再次提示时,**不提供 Always allow 行**,而不是存一条不起作用的规则。\n5. mode 只有 `default` / `accept-edits` / `deny-all`;`plan` 不在枚举里预留。\n\n",
+              "start": 1084,
+              "title": "03-003-permission-rule-matching.md",
+              "handle": "e13",
+              "routes": [
+                "source"
+              ],
+              "version": "c7b15556-0b72-4d38-b7a3-ba95106dc6f2",
+              "passageId": "3451d4ae-6bd8-4cb7-8c1b-c5ad78cc64e3",
+              "documentId": "8fec27cc-25b1-491e-b377-bd6591352ed7",
+              "headingPath": [
+                "ADR-003: permission 规则匹配用显式前缀 / glob 规则表,不做 DSL",
+                "决策"
+              ]
+            },
+            {
+              "id": "0096d2df-8d55-4f1f-8ced-9f4b3cfb2831",
+              "end": 2300,
+              "text": "`rememberRule` 是确认前展示给用户的规则原文;没有该字段时 UI 不得提供 Always allow。headless 的 permission 结果是 deny,cancel_confirm/question/oauth 是 cancel,plan_approval 是 reject。既有退出码 `1` / `2` 继续分别表示启动错误 / 参数错误。\n",
+              "start": 2114,
+              "title": "02-002-request-bus-shape.md",
+              "handle": "e14",
+              "routes": [
+                "source"
+              ],
+              "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+              "passageId": "0096d2df-8d55-4f1f-8ced-9f4b3cfb2831",
+              "documentId": "a84d2e56-57db-4038-9799-4c30321424b7",
+              "headingPath": [
+                "ADR-002: request 总线用双向事件流,不用 `Promise<Decision>`",
+                "决策",
+                "M1 的具体协议形状"
+              ]
+            },
+            {
+              "id": "0bb71744-9cf2-4500-97d3-8c5db486cfd9",
+              "end": 2385,
+              "text": "`allow_always` 的 `scope` 必须同时携带 `tool` 与 `argsPattern` 字符串;它表达具体被授权对象,不能退化成只按工具名记忆。\n",
+              "start": 2301,
+              "title": "02-002-request-bus-shape.md",
+              "handle": "e16",
+              "routes": [
+                "source"
+              ],
+              "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+              "passageId": "0bb71744-9cf2-4500-97d3-8c5db486cfd9",
+              "documentId": "a84d2e56-57db-4038-9799-4c30321424b7",
+              "headingPath": [
+                "ADR-002: request 总线用双向事件流,不用 `Promise<Decision>`",
+                "决策",
+                "M1 的具体协议形状"
+              ]
+            }
+          ],
+          "validation": {
+            "kind": "citation-traceability",
+            "semanticReview": false
+          },
+          "validatedAt": "2026-09-13T13:20:20.406Z"
+        },
+        "counts": {
+          "review": 0,
+          "retrieval": 1,
+          "generation": 0,
+          "exploration": 2
+        },
+        "status": "answered",
+        "deadline": 1789305631968,
+        "diagnostics": {
+          "gaps": [
+            "context_limit",
+            "specific_gap_required"
+          ],
+          "cache": "miss",
+          "queueMs": 28,
+          "retrieved": [
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-01\n---\n",
+              "start": 0,
+              "title": "03-003-permission-rule-matching.md",
+              "handle": "e1",
+              "routes": [
+                "source"
+              ],
+              "version": "c7b15556-0b72-4d38-b7a3-ba95106dc6f2",
+              "passageId": "491badf4-b308-4c26-a7bd-f0b958388d03",
+              "documentId": "8fec27cc-25b1-491e-b377-bd6591352ed7",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-01\n---\n",
+              "start": 0,
+              "title": "02-002-request-bus-shape.md",
+              "handle": "e2",
+              "routes": [
+                "source"
+              ],
+              "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+              "passageId": "590e314d-450a-4f3a-bba9-e62c1410d789",
+              "documentId": "a84d2e56-57db-4038-9799-4c30321424b7",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-07\n---\n",
+              "start": 0,
+              "title": "12-012-context-management-direction.md",
+              "handle": "e3",
+              "routes": [
+                "source"
+              ],
+              "version": "00f15e7e-3c84-4355-b760-940ed0f267e4",
+              "passageId": "b46ce478-f6f4-4e66-93b5-78d8e82ded2f",
+              "documentId": "83eb45a2-66c0-421b-8d9d-201e5d0305bf",
+              "headingPath": []
+            },
+            {
+              "end": 9,
+              "text": "# SDK 接入\n",
+              "start": 0,
+              "title": "18-sdk.md",
+              "handle": "e4",
+              "routes": [
+                "source"
+              ],
+              "version": "374fdb54-cedb-40e4-a48d-9cce4b172303",
+              "passageId": "3bd31c68-d73c-4625-a93b-9a085abca259",
+              "documentId": "bcda1048-939d-48f3-ba9d-736f94177eb4",
+              "headingPath": [
+                "SDK 接入"
+              ]
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-05\n---\n",
+              "start": 0,
+              "title": "08-008-general-agent-positioning.md",
+              "handle": "e5",
+              "routes": [
+                "source"
+              ],
+              "version": "439e5709-202e-4f77-ada2-cf617d2ac20f",
+              "passageId": "eab94630-98ac-484f-b3b3-4c08c451fcbc",
+              "documentId": "8565f032-ad4c-441f-96be-f5e78efee3eb",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-05\n---\n",
+              "start": 0,
+              "title": "10-010-input-ownership-and-interruption.md",
+              "handle": "e6",
+              "routes": [
+                "source"
+              ],
+              "version": "afa8f36e-86d1-4790-9800-272c7a7fc59b",
+              "passageId": "838b6c50-7ce3-45ce-8a0b-f6347e4fe1fe",
+              "documentId": "e235d0ae-a0bc-4d73-8540-ea97c3233263",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-07\n---\n",
+              "start": 0,
+              "title": "14-014-pi-aligned-context-management.md",
+              "handle": "e7",
+              "routes": [
+                "source"
+              ],
+              "version": "4a8aa096-1fa3-458a-99e8-7e743abcdf36",
+              "passageId": "cb0465a0-a36e-474c-aa4f-b09fb1bd9d40",
+              "documentId": "63b3c56b-180c-4c1c-a506-f08739d05ea3",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-06\n---\n",
+              "start": 0,
+              "title": "11-011-forge-agent-github-delivery.md",
+              "handle": "e8",
+              "routes": [
+                "source"
+              ],
+              "version": "b38587f3-e99f-49e9-a346-511bae001135",
+              "passageId": "18083347-9bc1-4e9a-bf8d-f057b2dcf6cc",
+              "documentId": "eeef09f9-4c15-4a7e-87d9-87d29a694d9a",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-07\n---\n",
+              "start": 0,
+              "title": "13-013-incremental-session-persistence.md",
+              "handle": "e9",
+              "routes": [
+                "source"
+              ],
+              "version": "173b754f-be13-4174-8588-db2df1c53500",
+              "passageId": "f824e35d-b79e-4c8e-8187-5dfc97388b3c",
+              "documentId": "431741df-c745-4037-96be-497713fba01c",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-08\n---\n",
+              "start": 0,
+              "title": "15-015-pi-core-source-migration.md",
+              "handle": "e10",
+              "routes": [
+                "source"
+              ],
+              "version": "a7d89fe8-dc77-4b87-9430-b1f7fee84fb2",
+              "passageId": "1b290394-43fd-483e-9420-e66ea318ef13",
+              "documentId": "d9aecc03-58eb-4a6a-9c93-4c2e9dbeed55",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-05\n---\n",
+              "start": 0,
+              "title": "09-009-self-owned-agent-core.md",
+              "handle": "e11",
+              "routes": [
+                "source"
+              ],
+              "version": "9a35f5db-b668-4d26-b82a-af130567249f",
+              "passageId": "07010a76-b6dc-4c7b-b04e-25bb84fb6537",
+              "documentId": "04634e17-12de-40f3-a420-36aacf191ab5",
+              "headingPath": []
+            },
+            {
+              "end": 1584,
+              "text": "被否方案:\n",
+              "start": 1578,
+              "title": "03-003-permission-rule-matching.md",
+              "handle": "e12",
+              "routes": [
+                "source"
+              ],
+              "version": "c7b15556-0b72-4d38-b7a3-ba95106dc6f2",
+              "passageId": "0c1591bc-e049-45aa-a10d-79abdb80d0e9",
+              "documentId": "8fec27cc-25b1-491e-b377-bd6591352ed7",
+              "headingPath": [
+                "ADR-003: permission 规则匹配用显式前缀 / glob 规则表,不做 DSL",
+                "决策"
+              ]
+            },
+            {
+              "end": 1578,
+              "text": "1. 决策链是纯函数,可表驱动测试、可解释给用户看、可属性测试 —— 与 Phase 1 把 abort 抽成纯函数状态机是同一手法。\n2. 危险清单(`rm` / `chmod` / `kill` / `git push`)**从不认记住的前缀**,即使存在匹配的 always-allow 规则仍然提示。\n3. 记住的授权键必须含被授权的**对象**(工具 + 具体参数模式),不能只记工具名。丢作用域正是 F24 事故的形状 —— 「可以合入」是真的,只是说的是另一个 PR([cat-cafe.md](https://github.com/L-1ngg/forge-agent/blob/24750eb3d22d23d72d3c17fa589b1df425d28940/docs/cat-cafe.md) F.1 ③)。\n4. 当没有任何可记住的规则能阻止再次提示时,**不提供 Always allow 行**,而不是存一条不起作用的规则。\n5. mode 只有 `default` / `accept-edits` / `deny-all`;`plan` 不在枚举里预留。\n\n",
+              "start": 1084,
+              "title": "03-003-permission-rule-matching.md",
+              "handle": "e13",
+              "routes": [
+                "source"
+              ],
+              "version": "c7b15556-0b72-4d38-b7a3-ba95106dc6f2",
+              "passageId": "3451d4ae-6bd8-4cb7-8c1b-c5ad78cc64e3",
+              "documentId": "8fec27cc-25b1-491e-b377-bd6591352ed7",
+              "headingPath": [
+                "ADR-003: permission 规则匹配用显式前缀 / glob 规则表,不做 DSL",
+                "决策"
+              ]
+            },
+            {
+              "end": 2300,
+              "text": "`rememberRule` 是确认前展示给用户的规则原文;没有该字段时 UI 不得提供 Always allow。headless 的 permission 结果是 deny,cancel_confirm/question/oauth 是 cancel,plan_approval 是 reject。既有退出码 `1` / `2` 继续分别表示启动错误 / 参数错误。\n",
+              "start": 2114,
+              "title": "02-002-request-bus-shape.md",
+              "handle": "e14",
+              "routes": [
+                "source"
+              ],
+              "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+              "passageId": "0096d2df-8d55-4f1f-8ced-9f4b3cfb2831",
+              "documentId": "a84d2e56-57db-4038-9799-4c30321424b7",
+              "headingPath": [
+                "ADR-002: request 总线用双向事件流,不用 `Promise<Decision>`",
+                "决策",
+                "M1 的具体协议形状"
+              ]
+            },
+            {
+              "end": 1083,
+              "text": "配套约束(都属于「规则只有一个家」的同一条推论):\n",
+              "start": 1057,
+              "title": "03-003-permission-rule-matching.md",
+              "handle": "e15",
+              "routes": [
+                "source"
+              ],
+              "version": "c7b15556-0b72-4d38-b7a3-ba95106dc6f2",
+              "passageId": "3c6b113d-35ae-43b6-9880-f0d1e03f8084",
+              "documentId": "8fec27cc-25b1-491e-b377-bd6591352ed7",
+              "headingPath": [
+                "ADR-003: permission 规则匹配用显式前缀 / glob 规则表,不做 DSL",
+                "决策"
+              ]
+            },
+            {
+              "end": 2385,
+              "text": "`allow_always` 的 `scope` 必须同时携带 `tool` 与 `argsPattern` 字符串;它表达具体被授权对象,不能退化成只按工具名记忆。\n",
+              "start": 2301,
+              "title": "02-002-request-bus-shape.md",
+              "handle": "e16",
+              "routes": [
+                "source"
+              ],
+              "version": "cb2200c3-6f8a-423a-b1ca-078f2aec914c",
+              "passageId": "0bb71744-9cf2-4500-97d3-8c5db486cfd9",
+              "documentId": "a84d2e56-57db-4038-9799-4c30321424b7",
+              "headingPath": [
+                "ADR-002: request 总线用双向事件流,不用 `Promise<Decision>`",
+                "决策",
+                "M1 的具体协议形状"
+              ]
+            }
+          ],
+          "retrievalMs": 235.52650100004394,
+          "reusedHandles": [],
+          "routeOutcomes": {
+            "source": {
+              "status": "success",
+              "originals": 69,
+              "candidates": 77
+            }
+          },
+          "wikiCandidates": 0,
+          "graphCandidates": 0,
+          "requestedRoutes": [
+            "source"
+          ],
+          "retrievalProfile": "source",
+          "vectorCandidates": 50,
+          "embeddingRequests": 1,
+          "lexicalCandidates": 27
+        },
+        "intentContext": {},
+        "conversationId": "159a7b3a-6b28-4ba8-a5c2-d751907320b6"
+      }
+    },
+    {
+      "id": "isolation",
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "outcome": "fail",
+      "reason": "invalid_or_missing_citations",
+      "elapsedMs": 13579.163713000016,
+      "citationChecks": [],
+      "referenceRecall": {
+        "numerator": 0,
+        "denominator": 1
+      },
+      "quality": {
+        "status": "unavailable",
+        "reason": "request_not_completed"
+      },
+      "requests": {
+        "status": "available",
+        "value": {
+          "model": 1,
+          "embedding": 0
+        }
+      },
+      "tokens": {
+        "status": "unavailable",
+        "reason": "provider usage unavailable"
+      },
+      "monetaryCost": {
+        "status": "unavailable",
+        "reason": "provider usage and pricing unavailable"
+      },
+      "run": {
+        "id": "31eb80ec-768c-4332-b2e2-43fcb7a54067",
+        "scope": {
+          "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+          "includeShared": true
+        },
+        "answer": {
+          "text": "通识回答，未查询知识库\n\n不成立。同一进程内创建多个 Agent 实例，并不等于进程级故障隔离，也不构成安全沙箱。\n\n原因在于：\n\n1. **共享地址空间**：同一进程中的所有实例共享同一内存地址空间、堆、全局状态。某个实例因空指针、缓冲区溢出、内存越界等导致崩溃（如 segfault）时，整个进程都会退出，其他实例随之全部失效，不存在故障隔离。\n\n2. **无资源/负载隔离**：同一进程内各实例共享 CPU、内存配额。一个实例内存暴涨或死循环，会拖垮其余实例，进程级隔离通常依赖操作系统提供的资源限制（如 rlimit、cgroup）。\n\n3. **无安全边界**：进程是操作系统最小的隔离单位之一。真正“安全沙箱”需要内核级保护（如独立进程 + seccomp、容器、VM、WASM 沙箱等），同一进程内的实例之间没有边界，一个被攻陷的实例可直接读写其他实例的内存，缺乏权限与数据隔离。\n\n4. **进程间的隔离能力**：操作系统通过独立虚拟地址空间、独立文件描述符、IPC 边界等实现进程隔离。只有把各 Agent 拆成独立进程（或用容器/VM），才能获得此类隔离；其代价是更高的内存和调度开销。\n\n**结论**：同一进程内多实例只是**逻辑上的模块划分**（便于并发、共享缓存、降低开销），不是隔离手段。若目标是故障隔离或安全沙箱，必须使用独立的 OS 进程、容器或虚拟机等边界机制。",
+          "status": "answered",
+          "contract": "direct-answer-v2",
+          "citations": [],
+          "validation": {
+            "kind": "citation-traceability",
+            "semanticReview": false
+          },
+          "validatedAt": "2026-09-13T13:20:34.000Z"
+        },
+        "counts": {
+          "review": 0,
+          "retrieval": 0,
+          "generation": 0,
+          "exploration": 1
+        },
+        "status": "answered",
+        "deadline": 1789305650432,
+        "settledAt": "2026-09-13T13:20:34.001Z",
+        "diagnostics": {
+          "gaps": [],
+          "queueMs": 24,
+          "elapsedMs": 13568,
+          "retrievalMs": 0,
+          "vectorCandidates": 0,
+          "embeddingRequests": 0,
+          "lexicalCandidates": 0
+        },
+        "intentContext": {},
+        "conversationId": "6b1a1798-3489-433b-a0ee-89f97c225f11"
+      }
+    },
+    {
+      "id": "reference",
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "outcome": "pending_agent",
+      "reason": "independent_agent_review_required",
+      "elapsedMs": 26000.91365100001,
+      "citationChecks": [
+        {
+          "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+          "passageId": "34c38ed6-27bb-4d46-90ad-0251e32cc7aa",
+          "valid": true
+        },
+        {
+          "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+          "passageId": "5f29f771-50e0-4e65-8ce4-434e0a12bd03",
+          "valid": true
+        },
+        {
+          "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+          "passageId": "7b8cb0d6-777f-4864-8b4c-fc8fe7cf593d",
+          "valid": true
+        },
+        {
+          "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+          "passageId": "dc3ed216-29c7-44ef-9bbb-bead0dfad5dc",
+          "valid": true
+        }
+      ],
+      "referenceRecall": {
+        "numerator": 2,
+        "denominator": 2
+      },
+      "quality": {
+        "status": "unavailable",
+        "reason": "request_not_completed"
+      },
+      "requests": {
+        "status": "available",
+        "value": {
+          "model": 2,
+          "embedding": 1
+        }
+      },
+      "tokens": {
+        "status": "unavailable",
+        "reason": "provider usage unavailable"
+      },
+      "monetaryCost": {
+        "status": "unavailable",
+        "reason": "provider usage and pricing unavailable"
+      },
+      "run": {
+        "id": "fecdf2fb-993d-46c2-9925-667d5fb1265a",
+        "scope": {
+          "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+          "includeShared": true
+        },
+        "answer": {
+          "text": "不再要求。根据 ADR-007「视觉回归不再编译 grok-build 取 reference」（2026-09-04），该方案已在施工中被否定并正式废弃。原因：现场编译 grok-build 会拉起整棵 Rust workspace（protoc 及大量 crate），单次 `cargo run --release` 超过十分钟且易被环境中断，不适合作为日常门禁。\n\n新决策要点：\n1. 禁止把编译或运行 grok-build 当作 CI 或 `bun run check` 的前置，`scripts/grok-capture/` 已删除、不再维护。\n2. 视觉（cell）回归的参考答案改为本仓库锁定的 FrameDump golden（由 `paintScenario` / `tui-frame dump-scenarios` 生成并 check-in），锁的是仓库自身输出不漂，而非 grok 二进制。\n3. 与 grok 的对齐改为规格不变量（从 grok 源码及其单测转写，不运行其进程）。\n4. ADR-006 的「与 grok-build 运行时 dump 零差异」不再作为出口条件；视觉靠齐以规格、in-repo golden 与人工验收为准，旧 PNG 对照资产不保留。\n\n来源：[e1] [e13] [e14] [e16]",
+          "status": "answered",
+          "contract": "direct-answer-v2",
+          "citations": [
+            {
+              "id": "34c38ed6-27bb-4d46-90ad-0251e32cc7aa",
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-04\n---\n",
+              "start": 0,
+              "title": "07-007-no-compile-grok-reference.md",
+              "handle": "e1",
+              "routes": [
+                "source"
+              ],
+              "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+              "passageId": "34c38ed6-27bb-4d46-90ad-0251e32cc7aa",
+              "documentId": "a5f525ce-f3db-4fd8-a423-baf2130f3932",
+              "headingPath": []
+            },
+            {
+              "id": "5f29f771-50e0-4e65-8ce4-434e0a12bd03",
+              "end": 563,
+              "text": "现场编 grok-build 会拉起整棵 Rust workspace(protoc、大量 crate),单次 `cargo run --release` 超过十分钟且易被环境中断,不适合作为日常门禁。\n",
+              "start": 461,
+              "title": "07-007-no-compile-grok-reference.md",
+              "handle": "e13",
+              "routes": [
+                "source"
+              ],
+              "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+              "passageId": "5f29f771-50e0-4e65-8ce4-434e0a12bd03",
+              "documentId": "a5f525ce-f3db-4fd8-a423-baf2130f3932",
+              "headingPath": [
+                "ADR-007: 视觉回归不再编译 grok-build 取 reference",
+                "背景"
+              ]
+            },
+            {
+              "id": "7b8cb0d6-777f-4864-8b4c-fc8fe7cf593d",
+              "end": 441,
+              "text": "ADR-006 把视觉出口定为锁定环境内、myh `TerminalFrame` 与 grok-build 运行时 cell dump 零差异。实现路径是编译 `xai-grok-pager`、用 ratatui `Buffer` 导出 JSON。operator 在施工中否定该路径,原话:\n",
+              "start": 294,
+              "title": "07-007-no-compile-grok-reference.md",
+              "handle": "e14",
+              "routes": [
+                "source"
+              ],
+              "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+              "passageId": "7b8cb0d6-777f-4864-8b4c-fc8fe7cf593d",
+              "documentId": "a5f525ce-f3db-4fd8-a423-baf2130f3932",
+              "headingPath": [
+                "ADR-007: 视觉回归不再编译 grok-build 取 reference",
+                "背景"
+              ]
+            },
+            {
+              "id": "dc3ed216-29c7-44ef-9bbb-bead0dfad5dc",
+              "end": 1158,
+              "text": "1. **禁止把编译或运行 grok-build 当作 CI / `bun run check` 的前置。** `scripts/grok-capture/` 删除,不再维护。\n2. **cell 回归的参考答案改为本仓库锁定的 FrameDump golden**(由 `paintScenario` / `tui-frame dump-scenarios` 生成并 check-in)。同一 fixture 重跑 hash 必须一致;改 1 cell 必须变红。这锁的是**我们自己的输出不漂**,不是 grok 二进制。\n3. **与 grok 的对齐改为规格不变量**,从 grok 源码与其单测转写,不跑其进程。至少锁定:rail 列宽 1、左右 padding 2、content 起点列 3、collapsed 去 rail 字形但留列、timestamp 整留 10 列或整藏。\n4. **ADR-006 的「与 grok-build 运行时 dump 零差异」不再是出口条件。** 产品目标仍是 grok 的信息架构与交互;视觉靠齐以规格、in-repo golden 与人工验收为准。当前不保留旧 PNG 对照资产;今后人工截图仍可作辅证,不作为硬门禁。\n\n",
+              "start": 619,
+              "title": "07-007-no-compile-grok-reference.md",
+              "handle": "e16",
+              "routes": [
+                "source"
+              ],
+              "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+              "passageId": "dc3ed216-29c7-44ef-9bbb-bead0dfad5dc",
+              "documentId": "a5f525ce-f3db-4fd8-a423-baf2130f3932",
+              "headingPath": [
+                "ADR-007: 视觉回归不再编译 grok-build 取 reference",
+                "决策"
+              ]
+            }
+          ],
+          "validation": {
+            "kind": "citation-traceability",
+            "semanticReview": false
+          },
+          "validatedAt": "2026-09-13T13:21:00.000Z"
+        },
+        "counts": {
+          "review": 0,
+          "retrieval": 1,
+          "generation": 0,
+          "exploration": 2
+        },
+        "status": "answered",
+        "deadline": 1789305664014,
+        "diagnostics": {
+          "gaps": [
+            "context_limit",
+            "specific_gap_required"
+          ],
+          "cache": "miss",
+          "queueMs": 26,
+          "retrieved": [
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-04\n---\n",
+              "start": 0,
+              "title": "07-007-no-compile-grok-reference.md",
+              "handle": "e1",
+              "routes": [
+                "source"
+              ],
+              "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+              "passageId": "34c38ed6-27bb-4d46-90ad-0251e32cc7aa",
+              "documentId": "a5f525ce-f3db-4fd8-a423-baf2130f3932",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-04\n---\n",
+              "start": 0,
+              "title": "06-006-tui-cell-parity.md",
+              "handle": "e2",
+              "routes": [
+                "source"
+              ],
+              "version": "567854c0-8e13-4eee-87cd-c7e0dd7772b1",
+              "passageId": "520389ef-5b65-4a16-bed8-c8f42dac5cab",
+              "documentId": "269f36e8-4c76-4f13-94b5-8e81771d9986",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-04\n---\n",
+              "start": 0,
+              "title": "05-005-tui-own-compositor.md",
+              "handle": "e3",
+              "routes": [
+                "source"
+              ],
+              "version": "9a18b1b2-b778-43f3-b83c-29d04575e577",
+              "passageId": "d556bbbb-ee04-4496-94e2-97dd8ebb7f6c",
+              "documentId": "a2f9a8cb-c839-4c8b-b39c-428bcbae1de9",
+              "headingPath": []
+            },
+            {
+              "end": 9,
+              "text": "# SDK 接入\n",
+              "start": 0,
+              "title": "18-sdk.md",
+              "handle": "e4",
+              "routes": [
+                "source"
+              ],
+              "version": "374fdb54-cedb-40e4-a48d-9cce4b172303",
+              "passageId": "3bd31c68-d73c-4625-a93b-9a085abca259",
+              "documentId": "bcda1048-939d-48f3-ba9d-736f94177eb4",
+              "headingPath": [
+                "SDK 接入"
+              ]
+            },
+            {
+              "end": 43,
+              "text": "---\ndoc_kind: plan\ncreated: 2026-09-09\n---\n",
+              "start": 0,
+              "title": "20-session-management.md",
+              "handle": "e5",
+              "routes": [
+                "source"
+              ],
+              "version": "e0d3df3a-0e02-457e-8d43-32366f054cad",
+              "passageId": "9db2fb2d-0747-4527-8b4c-d8bcfe4b6179",
+              "documentId": "29909af2-cdfe-4c09-b9d4-79e0c28054b1",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-05\n---\n",
+              "start": 0,
+              "title": "09-009-self-owned-agent-core.md",
+              "handle": "e6",
+              "routes": [
+                "source"
+              ],
+              "version": "9a35f5db-b668-4d26-b82a-af130567249f",
+              "passageId": "07010a76-b6dc-4c7b-b04e-25bb84fb6537",
+              "documentId": "04634e17-12de-40f3-a420-36aacf191ab5",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-01\n---\n",
+              "start": 0,
+              "title": "03-003-permission-rule-matching.md",
+              "handle": "e7",
+              "routes": [
+                "source"
+              ],
+              "version": "c7b15556-0b72-4d38-b7a3-ba95106dc6f2",
+              "passageId": "491badf4-b308-4c26-a7bd-f0b958388d03",
+              "documentId": "8fec27cc-25b1-491e-b377-bd6591352ed7",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-01\n---\n",
+              "start": 0,
+              "title": "04-004-single-process-protocol-isolation.md",
+              "handle": "e8",
+              "routes": [
+                "source"
+              ],
+              "version": "08ec3812-5bc0-405c-aba9-36b1bce83487",
+              "passageId": "0acb65d5-4f31-4ff5-9839-4fd1d7af99b1",
+              "documentId": "be039904-97df-49d7-8e62-6a7b6387fb16",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-07\n---\n",
+              "start": 0,
+              "title": "13-013-incremental-session-persistence.md",
+              "handle": "e9",
+              "routes": [
+                "source"
+              ],
+              "version": "173b754f-be13-4174-8588-db2df1c53500",
+              "passageId": "f824e35d-b79e-4c8e-8187-5dfc97388b3c",
+              "documentId": "431741df-c745-4037-96be-497713fba01c",
+              "headingPath": []
+            },
+            {
+              "end": 47,
+              "text": "---\ndoc_kind: decision\ncreated: 2026-09-05\n---\n",
+              "start": 0,
+              "title": "08-008-general-agent-positioning.md",
+              "handle": "e10",
+              "routes": [
+                "source"
+              ],
+              "version": "439e5709-202e-4f77-ada2-cf617d2ac20f",
+              "passageId": "eab94630-98ac-484f-b3b3-4c08c451fcbc",
+              "documentId": "8565f032-ad4c-441f-96be-f5e78efee3eb",
+              "headingPath": []
+            },
+            {
+              "end": 293,
+              "text": "## 背景\n",
+              "start": 287,
+              "title": "07-007-no-compile-grok-reference.md",
+              "handle": "e11",
+              "routes": [
+                "source"
+              ],
+              "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+              "passageId": "546c514c-e1c7-4442-a0eb-1da37df368d9",
+              "documentId": "a5f525ce-f3db-4fd8-a423-baf2130f3932",
+              "headingPath": [
+                "ADR-007: 视觉回归不再编译 grok-build 取 reference",
+                "背景"
+              ]
+            },
+            {
+              "end": 460,
+              "text": "> 这样编译成本太高了,换一个方案\n",
+              "start": 442,
+              "title": "07-007-no-compile-grok-reference.md",
+              "handle": "e12",
+              "routes": [
+                "source"
+              ],
+              "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+              "passageId": "5f0e03b8-f978-4d8d-a942-aa6b34320b82",
+              "documentId": "a5f525ce-f3db-4fd8-a423-baf2130f3932",
+              "headingPath": [
+                "ADR-007: 视觉回归不再编译 grok-build 取 reference",
+                "背景"
+              ]
+            },
+            {
+              "end": 563,
+              "text": "现场编 grok-build 会拉起整棵 Rust workspace(protoc、大量 crate),单次 `cargo run --release` 超过十分钟且易被环境中断,不适合作为日常门禁。\n",
+              "start": 461,
+              "title": "07-007-no-compile-grok-reference.md",
+              "handle": "e13",
+              "routes": [
+                "source"
+              ],
+              "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+              "passageId": "5f29f771-50e0-4e65-8ce4-434e0a12bd03",
+              "documentId": "a5f525ce-f3db-4fd8-a423-baf2130f3932",
+              "headingPath": [
+                "ADR-007: 视觉回归不再编译 grok-build 取 reference",
+                "背景"
+              ]
+            },
+            {
+              "end": 441,
+              "text": "ADR-006 把视觉出口定为锁定环境内、myh `TerminalFrame` 与 grok-build 运行时 cell dump 零差异。实现路径是编译 `xai-grok-pager`、用 ratatui `Buffer` 导出 JSON。operator 在施工中否定该路径,原话:\n",
+              "start": 294,
+              "title": "07-007-no-compile-grok-reference.md",
+              "handle": "e14",
+              "routes": [
+                "source"
+              ],
+              "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+              "passageId": "7b8cb0d6-777f-4864-8b4c-fc8fe7cf593d",
+              "documentId": "a5f525ce-f3db-4fd8-a423-baf2130f3932",
+              "headingPath": [
+                "ADR-007: 视觉回归不再编译 grok-build 取 reference",
+                "背景"
+              ]
+            },
+            {
+              "end": 1686,
+              "text": "**变容易的:**\n",
+              "start": 1676,
+              "title": "06-006-tui-cell-parity.md",
+              "handle": "e15",
+              "routes": [
+                "source"
+              ],
+              "version": "567854c0-8e13-4eee-87cd-c7e0dd7772b1",
+              "passageId": "106dbd24-e27e-42e9-b3af-17f6bde9ddb6",
+              "documentId": "269f36e8-4c76-4f13-94b5-8e81771d9986",
+              "headingPath": [
+                "ADR-006: TUI 视觉出口升级为锁定环境内逐 cell 零差异",
+                "后果"
+              ]
+            },
+            {
+              "end": 1158,
+              "text": "1. **禁止把编译或运行 grok-build 当作 CI / `bun run check` 的前置。** `scripts/grok-capture/` 删除,不再维护。\n2. **cell 回归的参考答案改为本仓库锁定的 FrameDump golden**(由 `paintScenario` / `tui-frame dump-scenarios` 生成并 check-in)。同一 fixture 重跑 hash 必须一致;改 1 cell 必须变红。这锁的是**我们自己的输出不漂**,不是 grok 二进制。\n3. **与 grok 的对齐改为规格不变量**,从 grok 源码与其单测转写,不跑其进程。至少锁定:rail 列宽 1、左右 padding 2、content 起点列 3、collapsed 去 rail 字形但留列、timestamp 整留 10 列或整藏。\n4. **ADR-006 的「与 grok-build 运行时 dump 零差异」不再是出口条件。** 产品目标仍是 grok 的信息架构与交互;视觉靠齐以规格、in-repo golden 与人工验收为准。当前不保留旧 PNG 对照资产;今后人工截图仍可作辅证,不作为硬门禁。\n\n",
+              "start": 619,
+              "title": "07-007-no-compile-grok-reference.md",
+              "handle": "e16",
+              "routes": [
+                "source"
+              ],
+              "version": "6ec93a82-e72c-4ca6-9ccd-7cdf53bd2a20",
+              "passageId": "dc3ed216-29c7-44ef-9bbb-bead0dfad5dc",
+              "documentId": "a5f525ce-f3db-4fd8-a423-baf2130f3932",
+              "headingPath": [
+                "ADR-007: 视觉回归不再编译 grok-build 取 reference",
+                "决策"
+              ]
+            }
+          ],
+          "retrievalMs": 248.62770200002706,
+          "reusedHandles": [],
+          "routeOutcomes": {
+            "source": {
+              "status": "success",
+              "originals": 61,
+              "candidates": 100
+            }
+          },
+          "wikiCandidates": 0,
+          "graphCandidates": 0,
+          "requestedRoutes": [
+            "source"
+          ],
+          "retrievalProfile": "source",
+          "vectorCandidates": 50,
+          "embeddingRequests": 1,
+          "lexicalCandidates": 50
+        },
+        "intentContext": {},
+        "conversationId": "48ed2810-e856-41bf-81a5-e0558df303f1"
+      }
+    },
+    {
+      "id": "team",
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "outcome": "fail",
+      "reason": "budget_exhausted",
+      "elapsedMs": 30028.771647999994,
+      "citationChecks": [],
+      "referenceRecall": {
+        "numerator": 0,
+        "denominator": 1
+      },
+      "quality": {
+        "status": "unavailable",
+        "reason": "request_not_completed"
+      },
+      "requests": {
+        "status": "available",
+        "value": {
+          "model": 4,
+          "embedding": 2
+        }
+      },
+      "tokens": {
+        "status": "unavailable",
+        "reason": "provider usage unavailable"
+      },
+      "monetaryCost": {
+        "status": "unavailable",
+        "reason": "provider usage and pricing unavailable"
+      },
+      "run": {
+        "id": "c1037794-a4d9-4b30-85d5-e7b8f8b7a0d3",
+        "scope": {
+          "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+          "includeShared": true
+        },
+        "counts": {
+          "review": 0,
+          "retrieval": 2,
+          "generation": 0,
+          "exploration": 4
+        },
+        "reason": "budget_exhausted",
+        "status": "timed_out",
+        "deadline": 1789305690039,
+        "settledAt": "2026-09-13T13:21:30.048Z",
+        "diagnostics": {
+          "gaps": [
+            "context_limit",
+            "retrieval_budget_exhausted"
+          ],
+          "cache": "miss",
+          "queueMs": 24,
+          "elapsedMs": 30009,
+          "retrieved": [
+            {
+              "end": 1370,
+              "text": "1. **定位:**可独立运行、可分层复用、可派生定制的通用单 Agent 项目。完整 CLI/TUI、可嵌入内核/SDK、fork 定制三种方式并存。Coding 是已有能力,资料调研与报告是首个非 coding 验证场景。\n2. **底座(经 ADR-009 修订):**沿用 TypeScript + Bun、现有五包结构、`pi-ai` 和自有 compositor;执行内核改为自研,替换 `pi-agent-core`。实现与未验收边界见对应施工图。\n3. **单 Agent 边界:**负责执行、会话、上下文、工具、权限、取消与事件输出。支持多个实例互不串状态是 SDK 目标,不等于内置协作。Team 调度、消息路由、任务板、dashboard 归外部 multi-agent 项目;内置子 Agent 编排不进入当前路线。\n4. **分层复用:**SDK 提供创建、执行、观察、干预和释放 agent 的接入能力。宿主能装配工具、提示词、会话存储与权限交互,无需启动 TUI。独立 CLI/TUI 使用同一内核与公开接入层,不另建执行链路。\n5. **能力扩展:**工具承担执行,Skills 承担任务方法,知识源提供领域信息。具体业务不写死在公共内核;不预先建设通用 RAG 平台。MCP 是否作为外部工具接入方式留待具体需求评估,不由旧 coding 场景下的否决结论一概排除。\n6. **SDK 优先:**先完善本地嵌入,服务 API 后续单独设计。当前 Bun 基线不等于 Node.js/Python 兼容承诺;本轮不确定 npm 发布、远程认证、部署和长期版本兼容策略。\n7. **隔离责任:**同进程 SDK 不提供进程级沙箱。实例状态隔离由内核保障,工具权限由内核与宿主策略配合;进程、容器及部署隔离由宿主负责。外部 multi-agent 系统不受本项目单进程部署选择约束。\n\n",
+              "start": 563,
+              "title": "08-008-general-agent-positioning.md",
+              "handle": "e19",
+              "routes": [
+                "source"
+              ],
+              "version": "439e5709-202e-4f77-ada2-cf617d2ac20f",
+              "passageId": "9c72642a-2d57-4cb9-99d8-22b98340dc78",
+              "documentId": "8565f032-ad4c-441f-96be-f5e78efee3eb",
+              "headingPath": [
+                "ADR-008: 通用单 Agent 与分层复用",
+                "决策"
+              ]
+            },
+            {
+              "end": 555,
+              "text": "立项时 `core` 已能接收工具、提示词与历史消息,不依赖 TUI;但 `AgentRunner` 直接绑定本地 JSONL `SessionStore`,默认配置与 CLI 工具装配仍面向 coding,SDK 尚未实现。这是本决策的历史背景,不是当前代码状态。\n",
+              "start": 421,
+              "title": "08-008-general-agent-positioning.md",
+              "handle": "e20",
+              "routes": [
+                "source"
+              ],
+              "version": "439e5709-202e-4f77-ada2-cf617d2ac20f",
+              "passageId": "0f6fb73d-b3e3-43c1-98a2-c8c6ce1bb12b",
+              "documentId": "8565f032-ad4c-441f-96be-f5e78efee3eb",
+              "headingPath": [
+                "ADR-008: 通用单 Agent 与分层复用",
+                "背景"
+              ]
+            }
+          ],
+          "retrievalMs": 479.5797990000574,
+          "reusedHandles": [
+            "e3",
+            "e1",
+            "e12",
+            "e13",
+            "e2",
+            "e14",
+            "e4",
+            "e6",
+            "e7",
+            "e16",
+            "e17"
+          ],
+          "routeOutcomes": {
+            "source": {
+              "status": "success",
+              "originals": 74,
+              "candidates": 100
+            }
+          },
+          "wikiCandidates": 0,
+          "graphCandidates": 0,
+          "requestedRoutes": [
+            "source"
+          ],
+          "retrievalProfile": "source",
+          "vectorCandidates": 50,
+          "embeddingRequests": 2,
+          "lexicalCandidates": 50
+        },
+        "intentContext": {},
+        "conversationId": "d02dd264-9712-4147-aec0-e67d28ab1276"
+      }
+    },
+    {
+      "id": "release",
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "outcome": "fail",
+      "reason": "budget_exhausted",
+      "elapsedMs": 30005.05093700008,
+      "citationChecks": [],
+      "referenceRecall": {
+        "numerator": 0,
+        "denominator": 1
+      },
+      "quality": {
+        "status": "unavailable",
+        "reason": "request_not_completed"
+      },
+      "requests": {
+        "status": "available",
+        "value": {
+          "model": 1,
+          "embedding": 0
+        }
+      },
+      "tokens": {
+        "status": "unavailable",
+        "reason": "provider usage unavailable"
+      },
+      "monetaryCost": {
+        "status": "unavailable",
+        "reason": "provider usage and pricing unavailable"
+      },
+      "run": {
+        "id": "9bd64969-c269-4769-97ec-291cbe9262db",
+        "scope": {
+          "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+          "includeShared": true
+        },
+        "counts": {
+          "review": 0,
+          "retrieval": 0,
+          "generation": 0,
+          "exploration": 1
+        },
+        "reason": "budget_exhausted",
+        "status": "timed_out",
+        "deadline": 1789305720071,
+        "diagnostics": {
+          "gaps": [],
+          "queueMs": 28,
+          "retrievalMs": 0,
+          "vectorCandidates": 0,
+          "embeddingRequests": 0,
+          "lexicalCandidates": 0
+        },
+        "intentContext": {},
+        "conversationId": "faa69afa-87d0-47de-a5eb-ebffc27a861d"
+      }
+    },
+    {
+      "id": "draft-release",
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "outcome": "fail",
+      "reason": "budget_exhausted",
+      "elapsedMs": 30027.32387099997,
+      "citationChecks": [],
+      "referenceRecall": {
+        "numerator": 0,
+        "denominator": 2
+      },
+      "quality": {
+        "status": "unavailable",
+        "reason": "request_not_completed"
+      },
+      "requests": {
+        "status": "available",
+        "value": {
+          "model": 1,
+          "embedding": 0
+        }
+      },
+      "tokens": {
+        "status": "unavailable",
+        "reason": "provider usage unavailable"
+      },
+      "monetaryCost": {
+        "status": "unavailable",
+        "reason": "provider usage and pricing unavailable"
+      },
+      "run": {
+        "id": "ba950024-b1c7-4182-83bd-26920e48ff8e",
+        "scope": {
+          "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+          "includeShared": true
+        },
+        "counts": {
+          "review": 0,
+          "retrieval": 0,
+          "generation": 0,
+          "exploration": 1
+        },
+        "reason": "budget_exhausted",
+        "status": "timed_out",
+        "deadline": 1789305750085,
+        "settledAt": "2026-09-13T13:22:30.095Z",
+        "diagnostics": {
+          "gaps": [],
+          "queueMs": 28,
+          "elapsedMs": 30010,
+          "retrievalMs": 0,
+          "vectorCandidates": 0,
+          "embeddingRequests": 0,
+          "lexicalCandidates": 0
+        },
+        "intentContext": {},
+        "conversationId": "ea977dee-1088-472c-8d5d-0db9d50209e0"
+      }
+    },
+    {
+      "id": "clear",
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "outcome": "fail",
+      "reason": "budget_exhausted",
+      "elapsedMs": 30022.838238999946,
+      "citationChecks": [],
+      "referenceRecall": {
+        "numerator": 0,
+        "denominator": 1
+      },
+      "quality": {
+        "status": "unavailable",
+        "reason": "request_not_completed"
+      },
+      "requests": {
+        "status": "available",
+        "value": {
+          "model": 1,
+          "embedding": 0
+        }
+      },
+      "tokens": {
+        "status": "unavailable",
+        "reason": "provider usage unavailable"
+      },
+      "monetaryCost": {
+        "status": "unavailable",
+        "reason": "provider usage and pricing unavailable"
+      },
+      "run": {
+        "id": "857f1993-2043-4280-a96a-0c7b9d587781",
+        "scope": {
+          "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+          "includeShared": true
+        },
+        "counts": {
+          "review": 0,
+          "retrieval": 0,
+          "generation": 0,
+          "exploration": 1
+        },
+        "reason": "budget_exhausted",
+        "status": "timed_out",
+        "deadline": 1789305780116,
+        "settledAt": "2026-09-13T13:23:00.124Z",
+        "diagnostics": {
+          "gaps": [],
+          "queueMs": 27,
+          "elapsedMs": 30007,
+          "retrievalMs": 0,
+          "vectorCandidates": 0,
+          "embeddingRequests": 0,
+          "lexicalCandidates": 0
+        },
+        "intentContext": {},
+        "conversationId": "357edc00-d301-4b49-8c5f-27ffb1e6dfff"
+      }
+    },
+    {
+      "id": "session-path",
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "outcome": "fail",
+      "reason": "budget_exhausted",
+      "elapsedMs": 30017.559164000093,
+      "citationChecks": [],
+      "referenceRecall": {
+        "numerator": 0,
+        "denominator": 1
+      },
+      "quality": {
+        "status": "unavailable",
+        "reason": "request_not_completed"
+      },
+      "requests": {
+        "status": "available",
+        "value": {
+          "model": 1,
+          "embedding": 0
+        }
+      },
+      "tokens": {
+        "status": "unavailable",
+        "reason": "provider usage unavailable"
+      },
+      "monetaryCost": {
+        "status": "unavailable",
+        "reason": "provider usage and pricing unavailable"
+      },
+      "run": {
+        "id": "0867b4d0-19ca-43b7-976f-fefbf4913ff1",
+        "scope": {
+          "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+          "includeShared": true
+        },
+        "counts": {
+          "review": 0,
+          "retrieval": 0,
+          "generation": 0,
+          "exploration": 1
+        },
+        "reason": "budget_exhausted",
+        "status": "timed_out",
+        "deadline": 1789305810142,
+        "settledAt": "2026-09-13T13:23:30.154Z",
+        "diagnostics": {
+          "gaps": [],
+          "queueMs": 29,
+          "elapsedMs": 30011,
+          "retrievalMs": 0,
+          "vectorCandidates": 0,
+          "embeddingRequests": 0,
+          "lexicalCandidates": 0
+        },
+        "intentContext": {},
+        "conversationId": "8a927c7d-d2f2-47d5-b70e-e7533b7013ac"
+      }
+    },
+    {
+      "id": "storage",
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "outcome": "fail",
+      "reason": "budget_exhausted",
+      "elapsedMs": 30026.973883000086,
+      "citationChecks": [],
+      "referenceRecall": {
+        "numerator": 0,
+        "denominator": 1
+      },
+      "quality": {
+        "status": "unavailable",
+        "reason": "request_not_completed"
+      },
+      "requests": {
+        "status": "available",
+        "value": {
+          "model": 1,
+          "embedding": 0
+        }
+      },
+      "tokens": {
+        "status": "unavailable",
+        "reason": "provider usage unavailable"
+      },
+      "monetaryCost": {
+        "status": "unavailable",
+        "reason": "provider usage and pricing unavailable"
+      },
+      "run": {
+        "id": "267884ec-08c5-4e00-8df0-4711732b7662",
+        "scope": {
+          "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+          "includeShared": true
+        },
+        "counts": {
+          "review": 0,
+          "retrieval": 0,
+          "generation": 0,
+          "exploration": 1
+        },
+        "reason": "budget_exhausted",
+        "status": "timed_out",
+        "deadline": 1789305840163,
+        "settledAt": "2026-09-13T13:24:00.171Z",
+        "diagnostics": {
+          "gaps": [],
+          "queueMs": 30,
+          "elapsedMs": 30008,
+          "retrievalMs": 0,
+          "vectorCandidates": 0,
+          "embeddingRequests": 0,
+          "lexicalCandidates": 0
+        },
+        "intentContext": {},
+        "conversationId": "772e92e9-456a-4d9c-b279-2a0cdfce1b5b"
+      }
+    },
+    {
+      "id": "manual-compact",
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "outcome": "fail",
+      "reason": "budget_exhausted",
+      "elapsedMs": 30015.814989999984,
+      "citationChecks": [],
+      "referenceRecall": {
+        "numerator": 0,
+        "denominator": 1
+      },
+      "quality": {
+        "status": "unavailable",
+        "reason": "request_not_completed"
+      },
+      "requests": {
+        "status": "available",
+        "value": {
+          "model": 1,
+          "embedding": 0
+        }
+      },
+      "tokens": {
+        "status": "unavailable",
+        "reason": "provider usage unavailable"
+      },
+      "monetaryCost": {
+        "status": "unavailable",
+        "reason": "provider usage and pricing unavailable"
+      },
+      "run": {
+        "id": "7390e723-0b82-4ac6-8eb0-4abfce1d932b",
+        "scope": {
+          "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+          "includeShared": true
+        },
+        "counts": {
+          "review": 0,
+          "retrieval": 0,
+          "generation": 0,
+          "exploration": 1
+        },
+        "reason": "budget_exhausted",
+        "status": "timed_out",
+        "deadline": 1789305870193,
+        "settledAt": "2026-09-13T13:24:30.199Z",
+        "diagnostics": {
+          "gaps": [],
+          "queueMs": 28,
+          "elapsedMs": 30006,
+          "retrievalMs": 0,
+          "vectorCandidates": 0,
+          "embeddingRequests": 0,
+          "lexicalCandidates": 0
+        },
+        "intentContext": {},
+        "conversationId": "e6a3208c-0d2c-4116-9789-e7b4c739d60c"
+      }
+    },
+    {
+      "id": "markdown",
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "outcome": "fail",
+      "reason": "budget_exhausted",
+      "elapsedMs": 30023.27162600006,
+      "citationChecks": [],
+      "referenceRecall": {
+        "numerator": 0,
+        "denominator": 1
+      },
+      "quality": {
+        "status": "unavailable",
+        "reason": "request_not_completed"
+      },
+      "requests": {
+        "status": "available",
+        "value": {
+          "model": 1,
+          "embedding": 0
+        }
+      },
+      "tokens": {
+        "status": "unavailable",
+        "reason": "provider usage unavailable"
+      },
+      "monetaryCost": {
+        "status": "unavailable",
+        "reason": "provider usage and pricing unavailable"
+      },
+      "run": {
+        "id": "6aae8ba2-f422-4f97-8856-28bec4b6a1e5",
+        "scope": {
+          "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+          "includeShared": true
+        },
+        "counts": {
+          "review": 0,
+          "retrieval": 0,
+          "generation": 0,
+          "exploration": 1
+        },
+        "reason": "budget_exhausted",
+        "status": "timed_out",
+        "deadline": 1789305900213,
+        "settledAt": "2026-09-13T13:25:00.227Z",
+        "diagnostics": {
+          "gaps": [],
+          "queueMs": 28,
+          "elapsedMs": 30014,
+          "retrievalMs": 0,
+          "vectorCandidates": 0,
+          "embeddingRequests": 0,
+          "lexicalCandidates": 0
+        },
+        "intentContext": {},
+        "conversationId": "6321aca0-5594-4e65-9517-fd3893b8afc4"
+      }
+    },
+    {
+      "id": "sla-missing",
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "missing",
+      "outcome": "fail",
+      "reason": "budget_exhausted",
+      "elapsedMs": 30015.438297000015,
+      "citationChecks": [],
+      "referenceRecall": {
+        "numerator": 0,
+        "denominator": 0
+      },
+      "quality": {
+        "status": "unavailable",
+        "reason": "request_not_completed"
+      },
+      "requests": {
+        "status": "available",
+        "value": {
+          "model": 1,
+          "embedding": 0
+        }
+      },
+      "tokens": {
+        "status": "unavailable",
+        "reason": "provider usage unavailable"
+      },
+      "monetaryCost": {
+        "status": "unavailable",
+        "reason": "provider usage and pricing unavailable"
+      },
+      "run": {
+        "id": "f5190ccb-5a52-47a0-87c1-ad566d53f8fc",
+        "scope": {
+          "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+          "includeShared": true
+        },
+        "counts": {
+          "review": 0,
+          "retrieval": 0,
+          "generation": 0,
+          "exploration": 1
+        },
+        "reason": "budget_exhausted",
+        "status": "timed_out",
+        "deadline": 1789305930240,
+        "diagnostics": {
+          "gaps": [],
+          "queueMs": 49,
+          "retrievalMs": 0,
+          "vectorCandidates": 0,
+          "embeddingRequests": 0,
+          "lexicalCandidates": 0
+        },
+        "intentContext": {},
+        "conversationId": "52e9b792-4579-401a-a44d-a109dc8dfa8a"
+      }
+    },
+    {
+      "id": "revenue-missing",
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "missing",
+      "outcome": "fail",
+      "reason": "budget_exhausted",
+      "elapsedMs": 30031.225480000023,
+      "citationChecks": [],
+      "referenceRecall": {
+        "numerator": 0,
+        "denominator": 0
+      },
+      "quality": {
+        "status": "unavailable",
+        "reason": "request_not_completed"
+      },
+      "requests": {
+        "status": "available",
+        "value": {
+          "model": 1,
+          "embedding": 0
+        }
+      },
+      "tokens": {
+        "status": "unavailable",
+        "reason": "provider usage unavailable"
+      },
+      "monetaryCost": {
+        "status": "unavailable",
+        "reason": "provider usage and pricing unavailable"
+      },
+      "run": {
+        "id": "194144b4-e4f2-4f82-b90c-3c385bce676f",
+        "scope": {
+          "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+          "includeShared": true
+        },
+        "counts": {
+          "review": 0,
+          "retrieval": 0,
+          "generation": 0,
+          "exploration": 1
+        },
+        "reason": "budget_exhausted",
+        "status": "timed_out",
+        "deadline": 1789305960265,
+        "settledAt": "2026-09-13T13:26:00.285Z",
+        "diagnostics": {
+          "gaps": [],
+          "queueMs": 26,
+          "elapsedMs": 30020,
+          "retrievalMs": 0,
+          "vectorCandidates": 0,
+          "embeddingRequests": 0,
+          "lexicalCandidates": 0
+        },
+        "intentContext": {},
+        "conversationId": "3c7e30ed-e6f4-47e7-900f-241dcf087f79"
+      }
+    },
+    {
+      "id": "core-evolution",
+      "profile": "source",
+      "complexity": "complex",
+      "category": "conflicting",
+      "outcome": "fail",
+      "reason": "budget_exhausted",
+      "elapsedMs": 60032.05505199998,
+      "citationChecks": [],
+      "referenceRecall": {
+        "numerator": 0,
+        "denominator": 4
+      },
+      "quality": {
+        "status": "unavailable",
+        "reason": "request_not_completed"
+      },
+      "requests": {
+        "status": "available",
+        "value": {
+          "model": 1,
+          "embedding": 0
+        }
+      },
+      "tokens": {
+        "status": "unavailable",
+        "reason": "provider usage unavailable"
+      },
+      "monetaryCost": {
+        "status": "unavailable",
+        "reason": "provider usage and pricing unavailable"
+      },
+      "run": {
+        "id": "b5ff77e5-05ce-4045-add3-2148bff1e750",
+        "scope": {
+          "projectId": "27f4a91f-4037-4acc-8c83-494bc6f5adae",
+          "includeShared": true
+        },
+        "counts": {
+          "review": 0,
+          "retrieval": 0,
+          "generation": 0,
+          "exploration": 1
+        },
+        "reason": "budget_exhausted",
+        "status": "timed_out",
+        "deadline": 1789306020297,
+        "settledAt": "2026-09-13T13:27:00.312Z",
+        "diagnostics": {
+          "gaps": [],
+          "queueMs": 27,
+          "elapsedMs": 60015,
+          "retrievalMs": 0,
+          "vectorCandidates": 0,
+          "embeddingRequests": 0,
+          "lexicalCandidates": 0
+        },
+        "intentContext": {},
+        "conversationId": "b797a22e-2d01-4353-a948-96aac6265613"
+      }
+    }
+  ],
+  "categories": [
+    {
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "sufficient",
+      "passed": 0,
+      "failed": 11,
+      "pendingHuman": 0,
+      "pendingAgent": 3,
+      "unavailable": 0,
+      "total": 14,
+      "completed": 4,
+      "citations": {
+        "numerator": 9,
+        "denominator": 9
+      }
+    },
+    {
+      "profile": "source",
+      "complexity": "ordinary",
+      "category": "missing",
+      "passed": 0,
+      "failed": 2,
+      "pendingHuman": 0,
+      "pendingAgent": 0,
+      "unavailable": 0,
+      "total": 2,
+      "completed": 0,
+      "citations": {
+        "numerator": 0,
+        "denominator": 0
+      }
+    },
+    {
+      "profile": "source",
+      "complexity": "complex",
+      "category": "conflicting",
+      "passed": 0,
+      "failed": 1,
+      "pendingHuman": 0,
+      "pendingAgent": 0,
+      "unavailable": 0,
+      "total": 1,
+      "completed": 0,
+      "citations": {
+        "numerator": 0,
+        "denominator": 0
+      }
+    }
+  ],
+  "maintenance": {
+    "status": "unavailable",
+    "reason": "maintenance capture requires a separately installed adapter"
+  }
+}

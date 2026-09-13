@@ -1,7 +1,14 @@
 export interface EmbeddingAdapter {
+  readonly batchSize?: number;
+  readonly inputCounter?:
+    import("./embedding-tokenizer.ts").InputCounter | undefined;
   readonly profile: string;
   readonly dimensions: number;
-  embed(texts: string[], signal: AbortSignal): Promise<number[][]>;
+  embed(
+    texts: string[],
+    signal: AbortSignal,
+    checkpoint?: (indices: number[], vectors: number[][]) => Promise<void>,
+  ): Promise<number[][]>;
 }
 export function validateEmbeddings(
   vectors: number[][],

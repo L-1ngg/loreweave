@@ -11,6 +11,8 @@ import { resolveRetryPolicy, validateRequestLimits, type CompactionResult, type 
 import { randomUUID } from "node:crypto";
 
 export interface CreateAgentOptions extends InputQueueOptions {
+	/** Optional provider HTTP transport; covers request and response-stream lifetime. */
+	fetch?: typeof globalThis.fetch;
 	/** Host admission completes before each task/summary provider request. */
 	beforeModelRequest?: (request: { kind: "task" | "summary"; signal?: AbortSignal }) => void | Promise<void>;
 	toolHooks?: ToolHooks;
@@ -67,6 +69,7 @@ export async function createAgent(options: CreateAgentOptions, portFactory: (opt
 		const history = await storage.load();
 		const port = await portFactory({
 			sessionId: options.sessionId ?? randomUUID(),
+			...(options.fetch ? { fetch: options.fetch } : {}),
 			...(options.beforeModelRequest ? { beforeModelRequest: options.beforeModelRequest } : {}),
 			provider: options.provider,
 			model: options.model,

@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test";
+import type { EvidenceRoute } from "../src/evidence.ts";
 import { AccessService } from "../src/access.ts";
 import { SourceService } from "../src/sources.ts";
 import type { EmbeddingAdapter } from "../src/embeddings.ts";
@@ -573,17 +574,18 @@ test("Forge conversation answers from imported originals and records shared-budg
     expect(answer.status).toBe("answered");
     expect(answer.answer?.text).toContain("60 天");
     expect(answer.answer?.citations[0]!.version).toBe(operation.versionId);
-    expect(answer.answer?.certificate?.draftHash).toHaveLength(64);
-    expect(answer.counts.generation).toBe(1);
-    expect(answer.counts.review).toBe(1);
+    expect(answer.answer?.certificate).toBeUndefined();
+    expect(answer.answer?.contract).toBe("direct-answer-v2");
+    expect(answer.counts.generation).toBe(0);
+    expect(answer.counts.review).toBe(0);
     expect(answer.diagnostics?.embeddingRequests).toBe(1);
     expect(answer.diagnostics?.retrievalMs).toBeGreaterThanOrEqual(0);
     expect(
       provider.calls.filter((call) => call.phase === "generation"),
-    ).toHaveLength(1);
+    ).toHaveLength(0);
     expect(
       provider.calls.filter((call) => call.phase === "review"),
-    ).toHaveLength(1);
+    ).toHaveLength(0);
   } finally {
     await host.close();
     provider.stop();
@@ -666,7 +668,7 @@ test("a source revision activated during review invalidates the entire delivery 
   }
 });
 
-test("online review timeout obeys the host deadline and never publishes an unreviewed draft", async () => {
+test("online Agent timeout obeys the host deadline and never publishes provisional output", async () => {
   const { EvidenceService } = await import("../src/evidence.ts"),
     { KnowledgeHost } = await import("../src/host.ts"),
     { PostgresConversations } = await import("../src/conversations.ts"),
@@ -674,7 +676,7 @@ test("online review timeout obeys the host deadline and never publishes an unrev
     { startScriptedProvider } = await import("../src/development/provider.ts");
   const f = await fixture(),
     conversations = new PostgresConversations(url!),
-    provider = startScriptedProvider({ delays: { review: 1500 } });
+    provider = startScriptedProvider({ delayMs: 1500 });
   const host = new KnowledgeHost({
     access: f.access,
     conversations,
@@ -693,10 +695,10 @@ test("online review timeout obeys the host deadline and never publishes an unrev
     const result = await host.get(accepted.id, f.token);
     expect(result.status).toBe("timed_out");
     expect(result.answer).toBeUndefined();
-    expect(result.counts.review).toBe(1);
+    expect(result.counts.review).toBe(0);
     expect(
       provider.calls.filter((call) => call.phase === "review"),
-    ).toHaveLength(1);
+    ).toHaveLength(0);
     expect(result.diagnostics!.elapsedMs!).toBeLessThan(1200);
   } finally {
     await host.close();
@@ -825,7 +827,7 @@ test("failed query embedding remains an unavailable retrieval outcome with its a
   }
 });
 
-test("exploration retrieval aborts at its own cutoff and preserves finalization reserve", async () => {
+test("retrieval observes the original direct-answer deadline with no obsolete finalization reserve", async () => {
   const { EvidenceService } = await import("../src/evidence.ts"),
     { KnowledgeHost } = await import("../src/host.ts"),
     { PostgresConversations } = await import("../src/conversations.ts"),
@@ -874,7 +876,7 @@ test("exploration retrieval aborts at its own cutoff and preserves finalization 
     expect(embeddingStopped).toBe(1);
     expect(result.status).toBe("timed_out");
     expect(result.reason).toBe("budget_exhausted");
-    expect(result.diagnostics!.elapsedMs!).toBeLessThan(1800);
+    expect(result.diagnostics!.elapsedMs!).toBeLessThan(3800);
     expect(result.counts.generation).toBe(0);
     expect(result.counts.review).toBe(0);
     expect(result.diagnostics!.lexicalCandidates).toBe(0);
@@ -884,6 +886,136 @@ test("exploration retrieval aborts at its own cutoff and preserves finalization 
     provider.stop();
     await conversations.close();
     await gated.close();
+    await f.close();
+  }
+});
+
+test("AC04/05/25: targeted queries retain handles, reuse unchanged retrieval, and do not equate truncation with an answer gap", async () => {
+  const { EvidenceService } = await import("../src/evidence.ts");
+  const f = await fixture();
+  const service = new EvidenceService(f.sources);
+  const runId = crypto.randomUUID();
+  const signal = AbortSignal.timeout(10000);
+  let dispatched = 0;
+  try {
+    await f.importText(
+      "rule.md",
+      "日志保留 30 天。\n\nSKU-004 库存保留 90 天。",
+    );
+    const query = {
+      runId,
+      question: "日志保留",
+      routes: ["source" as const],
+      signal,
+      beforeRetrieval: async () => {
+        dispatched++;
+      },
+    };
+    const first = await service.retrieve(f.token, query);
+    const cached = await service.retrieve(f.token, query);
+    expect(dispatched).toBe(1);
+    expect(cached.diagnostics.cache).toBe("hit");
+    expect(cached.items).toEqual([]);
+    expect(cached.diagnostics.reusedHandles).toContain(first.items[0]!.handle);
+    await service.retrieve(f.token, { ...query, question: "SKU-004 库存" });
+    const answer = await service.finalizeDirect(
+      f.token,
+      runId,
+      {
+        basis: "source",
+        text: `日志保留 30 天 [${first.items[0]!.handle}]`,
+        citations: [first.items[0]!.handle],
+        gaps: [],
+        conflicts: [],
+      },
+      signal,
+    );
+    expect(answer.status).toBe("answered");
+    expect(answer.validation).toEqual({
+      kind: "citation-traceability",
+      semanticReview: false,
+    });
+    expect(answer.certificate).toBeUndefined();
+    await expect(
+      service.finalizeDirect(
+        f.token,
+        runId,
+        {
+          basis: "source",
+          text: "伪造 [e999]",
+          citations: ["e999"],
+          gaps: [],
+          conflicts: [],
+        },
+        signal,
+      ),
+    ).rejects.toThrow("invalid_citation");
+    await f.importText("new.md", "新日志规则补充说明。");
+    expect((await service.retrieve(f.token, query)).diagnostics.cache).toBe(
+      "miss",
+    );
+    expect(dispatched).toBe(3);
+  } finally {
+    service.release(runId);
+    await f.close();
+  }
+});
+
+test("AC21: Agent tool routes survive paraphrases and unavailable derived routes preserve originals", async () => {
+  const { EvidenceService } = await import("../src/evidence.ts");
+  const { KnowledgeHost } = await import("../src/host.ts");
+  const { PostgresConversations } = await import("../src/conversations.ts");
+  const { FixtureSources } = await import("../src/development/sources.ts");
+  const { startScriptedProvider } =
+    await import("../src/development/provider.ts");
+  const f = await fixture(),
+    conversations = new PostgresConversations(url!);
+  try {
+    const source = await f.importText(
+      "rule.md",
+      "数据库项目日志保留 30 天，由陈明批准。",
+    );
+    const choices: Array<{ question: string; routes: EvidenceRoute[] }> = [
+      { question: "数据库项目日志保留多久？", routes: ["source"] },
+      { question: "概述日志管理政策", routes: ["source", "wiki"] },
+      { question: "这项流程最后由哪位签字？", routes: ["source", "graph"] },
+      {
+        question: "汇总日志政策和签字责任",
+        routes: ["source", "wiki", "graph"],
+      },
+    ];
+    for (const choice of choices) {
+      const provider = startScriptedProvider({
+        toolArguments: { query: "日志保留", routes: choice.routes },
+      });
+      const host = new KnowledgeHost({
+        access: f.access,
+        conversations,
+        providerUrl: provider.url,
+        sources: new FixtureSources(),
+        evidence: new EvidenceService(f.sources),
+      });
+      try {
+        const run = await host.start({
+          credential: f.token,
+          question: choice.question,
+        });
+        await host.settled(run.id);
+        const result = await host.get(run.id, f.token);
+        expect(result.diagnostics?.requestedRoutes).toEqual(choice.routes);
+        expect(
+          result.answer?.citations.some((c) => c.version === source.versionId),
+        ).toBe(true);
+        expect(result.status).toBe("answered");
+        for (const route of choice.routes.filter((r) => r !== "source"))
+          expect(result.diagnostics?.gaps).toContain(`${route}_unavailable`);
+      } finally {
+        await host.close();
+        provider.stop();
+      }
+    }
+  } finally {
+    await conversations.close();
     await f.close();
   }
 });

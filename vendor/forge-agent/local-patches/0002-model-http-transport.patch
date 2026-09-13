@@ -1,0 +1,42 @@
+diff --git a/packages/core/src/agent.ts b/packages/core/src/agent.ts
+index 8485441..7ad2c8a 100644
+--- a/packages/core/src/agent.ts
++++ b/packages/core/src/agent.ts
+@@ -11,6 +11,8 @@ import { resolveRetryPolicy, validateRequestLimits, type CompactionResult, type
+ import { randomUUID } from "node:crypto";
+ 
+ export interface CreateAgentOptions extends InputQueueOptions {
++	/** Optional provider HTTP transport; covers request and response-stream lifetime. */
++	fetch?: typeof globalThis.fetch;
+ 	/** Host admission completes before each task/summary provider request. */
+ 	beforeModelRequest?: (request: { kind: "task" | "summary"; signal?: AbortSignal }) => void | Promise<void>;
+ 	toolHooks?: ToolHooks;
+@@ -67,6 +69,7 @@ export async function createAgent(options: CreateAgentOptions, portFactory: (opt
+ 		const history = await storage.load();
+ 		const port = await portFactory({
+ 			sessionId: options.sessionId ?? randomUUID(),
++			...(options.fetch ? { fetch: options.fetch } : {}),
+ 			...(options.beforeModelRequest ? { beforeModelRequest: options.beforeModelRequest } : {}),
+ 			provider: options.provider,
+ 			model: options.model,
+diff --git a/packages/core/src/pi-port.ts b/packages/core/src/pi-port.ts
+index 9fb58b4..66820e7 100644
+--- a/packages/core/src/pi-port.ts
++++ b/packages/core/src/pi-port.ts
+@@ -36,6 +36,7 @@ export type ToolHooks = Pick<RuntimeOptions, "beforeToolCall" | "afterToolCall"
+ 
+ export interface PiPortOptions extends InputQueueOptions {
+ 	/** Host admission completes before each task/summary provider request. */
++	fetch?: typeof globalThis.fetch;
+ 	beforeModelRequest?: (request: { kind: "task" | "summary"; signal?: AbortSignal }) => void | Promise<void>;
+ 	toolHooks?: ToolHooks;
+ 	sessionId?: string;
+@@ -157,7 +158,7 @@ async function resolveModelOptions(options: PiPortOptions): Promise<ModelPortOpt
+ 		settings?.signal?.throwIfAborted();
+ 		await options.beforeModelRequest?.({ kind: context.systemPrompt === SUMMARY_SYSTEM ? "summary" : "task", ...(settings?.signal ? { signal: settings.signal } : {}) });
+ 		settings?.signal?.throwIfAborted();
+-		return models.streamSimple(model, context, settings);
++		return models.streamSimple(model, context, { ...settings, ...(options.fetch ? { fetch: options.fetch } : {}) });
+ 	} };
+ }
+ 

@@ -121,72 +121,17 @@ test("selected-document HTTP updates preserve identity and prior evidence until 
   }
 });
 
-for (const phase of ["generation", "review"] as const) {
-  test(`activation during ${phase} settles obsolete work and refreshes once in the original allowance`, async () => {
-    let trigger!: () => void;
-    const dispatched = new Promise<void>((resolve) => {
-      trigger = resolve;
-    });
-    const f = await fixture({
-      delays: { [phase]: 1200 },
-      onRequest: (p) => {
-        if (p === phase) trigger();
-      },
-    });
-    try {
-      const original = await f.sources.submit(f.token, {
-        key: crypto.randomUUID(),
-        filename: "ops.md",
-        bytes: new TextEncoder().encode("生产日志保留 30 天。"),
-      });
-      await f.sources.workOne();
-      const run = await f.host.start({
-        credential: f.token,
-        question: "生产日志保留多久？",
-      });
-      await dispatched;
-      const update = await f.sources.submit(f.token, {
-        key: crypto.randomUUID(),
-        filename: "ops.md",
-        bytes: new TextEncoder().encode("生产日志保留 60 天。"),
-        documentId: original.documentId,
-        expectedPrior: original.versionId,
-      });
-      await f.sources.workOne();
-      await f.host.settled(run.id);
-      const result = await f.host.get(run.id, f.token);
-      expect(result.status).toBe("answered");
-      expect(result.refreshUsed).toBe(true);
-      expect(result.counts.retrieval).toBe(2);
-      expect(result.counts.generation).toBe(2);
-      expect(result.counts.review).toBe(phase === "generation" ? 1 : 2);
-      expect(result.supersededDraftIds).toHaveLength(1);
-      expect(result.answer?.text).toContain("60 天");
-      expect(
-        result.answer?.citations.every(
-          (item) => item.version === update.versionId,
-        ),
-      ).toBe(true);
-      expect(
-        f.provider.calls.filter((call) => call.phase === "generation"),
-      ).toHaveLength(2);
-    } finally {
-      await f.close();
-    }
-  });
-}
-
-test("a second activation during refreshed generation stops without a third retrieval or unreviewed answer", async () => {
-  const waits = [Promise.withResolvers<void>(), Promise.withResolvers<void>()];
-  let generations = 0;
+test("activation during a streamed direct answer rejects stale citations in persisted and HTTP results", async () => {
+  const dispatched = Promise.withResolvers<void>();
+  let tasks = 0;
   const f = await fixture({
-    delays: { generation: 1000 },
-    onRequest: (phase) => {
-      if (phase === "generation") waits[generations++]?.resolve();
+    delayMs: 500,
+    onRequest(phase) {
+      if (phase === "task" && ++tasks === 2) dispatched.resolve();
     },
   });
   try {
-    let current = await f.sources.submit(f.token, {
+    const original = await f.sources.submit(f.token, {
       key: crypto.randomUUID(),
       filename: "ops.md",
       bytes: new TextEncoder().encode("生产日志保留 30 天。"),
@@ -196,26 +141,27 @@ test("a second activation during refreshed generation stops without a third retr
       credential: f.token,
       question: "生产日志保留多久？",
     });
-    for (const [index, days] of [60, 90].entries()) {
-      await waits[index]!.promise;
-      current = await f.sources.submit(f.token, {
-        key: crypto.randomUUID(),
-        filename: "ops.md",
-        bytes: new TextEncoder().encode(`生产日志保留 ${days} 天。`),
-        documentId: current.documentId,
-        expectedPrior: current.versionId,
-      });
-      await f.sources.workOne();
-    }
+    await dispatched.promise;
+    await f.sources.submit(f.token, {
+      key: crypto.randomUUID(),
+      filename: "ops.md",
+      bytes: new TextEncoder().encode("生产日志保留 60 天。"),
+      documentId: original.documentId,
+      expectedPrior: original.versionId,
+    });
+    await f.sources.workOne();
     await f.host.settled(run.id);
     const result = await f.host.get(run.id, f.token);
     expect(result.status).toBe("failed");
     expect(result.reason).toBe("source_changed");
     expect(result.answer).toBeUndefined();
-    expect(result.counts.retrieval).toBe(2);
-    expect(result.counts.generation).toBe(2);
+    expect(result.counts.generation).toBe(0);
     expect(result.counts.review).toBe(0);
-    expect(result.supersededDraftIds).toHaveLength(2);
+    expect(
+      (await f.host.events(run.id, 0, f.token)).every(
+        (event) => !event.run.answer,
+      ),
+    ).toBe(true);
   } finally {
     await f.close();
   }

@@ -74,7 +74,7 @@ test("agent annotations stay separate from human grades and bind to the exact pu
   }
 }, 30000);
 for (const corrupt of [false, true]) {
-  test(`public answer evaluation reports ${corrupt ? "rejected wrong answers" : "valid answers"}, actual citations and unavailable controls`, async () => {
+  test(`public answer evaluation reports ${corrupt ? "independently detected wrong answers" : "valid answers"}, actual citations and unavailable controls`, async () => {
     const f = await evaluationFixture(url!, corrupt);
     try {
       const before = await f.sources.list(f.token);
@@ -96,6 +96,11 @@ for (const corrupt of [false, true]) {
       expect(source.monetaryCost.status).toBe("unavailable");
       expect(source.requests.status).toBe("available");
       expect(source.elapsedMs).toBeGreaterThan(0);
+      if (corrupt) {
+        expect(source.run?.status).toBe("answered");
+        expect(source.reason).toBe("fixture_rubric_failed");
+        expect(source.citationChecks.every((check) => check.valid)).toBe(true);
+      }
       if (!corrupt) {
         expect(source.citationChecks).toHaveLength(1);
         expect(source.citationChecks[0]!.valid).toBe(true);
@@ -259,7 +264,7 @@ for (const profile of ["source", "wiki", "graph", "combined"] as const) {
   }, 30000);
 }
 
-test("a reviewed gap-only answer reaches human scoring while missing responses remain failures", async () => {
+test("a traceable gap-only answer reaches human scoring while missing responses remain failures", async () => {
   const f = await evaluationFixture(url!);
   try {
     const existing = (await f.sources.list(f.token))[0]!;
@@ -295,7 +300,7 @@ test("a reviewed gap-only answer reaches human scoring while missing responses r
           category: "missing",
           requiredPoints: [],
           references: [],
-          expectedGaps: ["incomplete_support"],
+          expectedGaps: ["evidence_gap"],
           review: {
             kind: "human",
             reviewer: "gap reference reviewer",
@@ -319,7 +324,17 @@ test("a reviewed gap-only answer reaches human scoring while missing responses r
   }
 }, 30000);
 test("a failed provider response cannot pass a missing-evidence case on its error code alone", async () => {
-  const f = await evaluationFixture(url!, true);
+  const f = await evaluationFixture(url!, false, "source", false, {
+    answer: {
+      answer: {
+        basis: "source",
+        text: "unknown [e999]",
+        citations: ["e999"],
+        gaps: [],
+        conflicts: [],
+      },
+    },
+  });
   try {
     const dataset = {
       ...f.dataset,

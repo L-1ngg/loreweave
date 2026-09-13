@@ -374,3 +374,94 @@ test("negative and interrogative attachment instructions never accept an import"
     await access.close();
   }
 });
+
+test("AC11: concurrent accepted imports respect durable per-scope backlog limits and retries preserve receipts", async () => {
+  const { defaultImportLimits, SourceService } =
+    await import("../src/sources.ts");
+  const { ControlledEmbeddings } =
+    await import("../src/development/embeddings.ts");
+  const access = new AccessService(url!);
+  await access.migrate();
+  const account = {
+    organization: `backpressure-${crypto.randomUUID()}`,
+    username: "admin",
+    password: "source-test-password",
+  };
+  await access.bootstrap(account);
+  const { token } = await access.login(account);
+  const sources = new SourceService(url!, access, new ControlledEmbeddings(), {
+    ...defaultImportLimits,
+    organizationJobs: 1,
+    projectJobs: 1,
+  });
+  const inputs = [0, 1].map((index) => ({
+    key: `import-${index}`,
+    filename: `${index}.md`,
+    bytes: new TextEncoder().encode("durable original"),
+  }));
+  try {
+    const results = await Promise.allSettled(
+      inputs.map((input) => sources.submit(token, input)),
+    );
+    expect(
+      results.filter((result) => result.status === "fulfilled"),
+    ).toHaveLength(1);
+    const acceptedIndex = results.findIndex(
+      (result) => result.status === "fulfilled",
+    );
+    const accepted = results[acceptedIndex]!;
+    if (accepted.status !== "fulfilled") throw new Error("missing receipt");
+    expect((await sources.submit(token, inputs[acceptedIndex]!)).id).toBe(
+      accepted.value.id,
+    );
+    expect(await sources.list(token)).toHaveLength(1);
+    const rejected = results.find((result) => result.status === "rejected");
+    expect(rejected?.status === "rejected" && rejected.reason.message).toBe(
+      "import_overloaded",
+    );
+  } finally {
+    await sources.workOne();
+    await sources.close();
+    await access.close();
+  }
+});
+
+test("AC10: a durable batch manifest preserves independent outcomes and compatible retries", async () => {
+  const { SourceService } = await import("../src/sources.ts");
+  const { ControlledEmbeddings } =
+    await import("../src/development/embeddings.ts");
+  const { access, token } = await setup();
+  const sources = new SourceService(url!, access, new ControlledEmbeddings());
+  try {
+    const attachment = await sources.upload(token, {
+      filename: "batch.md",
+      bytes: new TextEncoder().encode("独立持久化的来源。"),
+    });
+    const input = {
+      key: crypto.randomUUID(),
+      entries: [
+        { attachmentId: attachment.id },
+        { attachmentId: crypto.randomUUID() },
+      ],
+    };
+    const manifest = await sources.submitBatch(token, input);
+    expect(manifest.entries).toHaveLength(2);
+    expect(manifest.entries[0]).toHaveProperty("operation.id");
+    expect(manifest.entries[1]).toMatchObject({
+      status: "rejected",
+      error: { reason: "not_found", retryable: false },
+    });
+    expect((await sources.submitBatch(token, input)).id).toBe(manifest.id);
+    expect((await sources.batch(token, manifest.id)).entries[0]).toEqual(
+      manifest.entries[0],
+    );
+    await expect(
+      sources.submitBatch(token, { ...input, entries: [input.entries[0]!] }),
+    ).rejects.toThrow("version_conflict");
+    expect(await sources.list(token)).toHaveLength(1);
+    await sources.workOne();
+  } finally {
+    await sources.close();
+    await access.close();
+  }
+});

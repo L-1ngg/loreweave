@@ -38,6 +38,9 @@ jobs:
       - run: bun run test:providers
       - run: bun run test:persistence
       - run: bun run test:access
+      - run: bun run prepare:tokenizer
+      - run: bun --no-env-file test tests/embedding-tokenizer.test.ts
+      - run: bun run test:ingestion
       - run: bun run test:sources
       - run: bun run test:evidence
       - run: bun run test:updates

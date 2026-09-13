@@ -1,3 +1,13 @@
+import { sourceChanges } from "./source-changes.ts";
+import { SearchIndexes } from "./search-indexes.ts";
+import {
+  PreparedEmbeddings,
+  preparedEmbeddingProfile,
+} from "./prepared-embeddings.ts";
+import { retrievalChunks } from "./retrieval-chunks.ts";
+import { controlledInputCounter } from "./embedding-tokenizer.ts";
+import { hash } from "./answer-validation.ts";
+import { currentModelWork, withModelWork } from "./model-admission.ts";
 import { graphReadiness } from "./graph-readiness.ts";
 import type { Transaction } from "./operations.ts";
 import { wikiReadiness } from "./wiki-readiness.ts";
@@ -12,6 +22,7 @@ import {
 import { lexicalText } from "./indexing.ts";
 import { validateEmbeddings, type EmbeddingAdapter } from "./embeddings.ts";
 export interface SourceCandidate {
+  contextHash?: string;
   documentId: string;
   version: string;
   passageId: string;
@@ -57,15 +68,137 @@ export interface SourceVersion {
   state: string;
   passages: Array<ParsedPassage & { id: string }>;
 }
+export interface ImportLimits {
+  organizationBytes: number;
+  projectBytes: number;
+  organizationJobs: number;
+  projectJobs: number;
+  organizationWork: number;
+  projectWork: number;
+}
+export const defaultImportLimits: ImportLimits = {
+  organizationBytes: 256 * 1024 * 1024,
+  projectBytes: 128 * 1024 * 1024,
+  organizationJobs: 2000,
+  projectJobs: 1000,
+  organizationWork: 524288,
+  projectWork: 262144,
+};
+export const defaultPreparationDeadlineMs = 30 * 60 * 1000;
+export const maxPreparationDeadlineMs = 24 * 60 * 60 * 1000;
 export class SourceService {
+  readonly indexes: SearchIndexes;
   private readonly operations: Operations;
   constructor(
     url: string,
     private readonly access: AccessService,
     private readonly embeddings: EmbeddingAdapter,
+    private readonly limits: ImportLimits = defaultImportLimits,
+    private readonly preparationDeadlineMs = defaultPreparationDeadlineMs,
   ) {
+    if (
+      Object.values(limits).some(
+        (limit) => !Number.isSafeInteger(limit) || limit < 1,
+      )
+    )
+      throw new Error("invalid_import_limits");
+    if (
+      !Number.isSafeInteger(preparationDeadlineMs) ||
+      preparationDeadlineMs < 1 ||
+      preparationDeadlineMs > maxPreparationDeadlineMs
+    )
+      throw new Error("invalid_preparation_deadline");
     this.operations = new Operations(url);
+    this.indexes = new SearchIndexes(url, access, embeddings);
   }
+  async submitBatch(
+    token: string,
+    input: {
+      key: string;
+      entries: Array<{ attachmentId: string; projectId?: string }>;
+    },
+  ) {
+    const context = await this.access.authorize(token, "import");
+    if (
+      !input.key ||
+      input.key.length > 200 ||
+      !input.entries.length ||
+      input.entries.length > 20
+    )
+      throw new Error("invalid_input");
+    const inputHash = hash(input.entries);
+    const id = await this.operations.sql.begin(async (tx) => {
+      await tx`SELECT pg_advisory_xact_lock(hashtextextended(${`import-batch:${context.organizationId}:${context.actorId}:${input.key}`},0))`;
+      const [existing] =
+        await tx`SELECT id,input_hash FROM import_manifests WHERE organization_id=${context.organizationId} AND actor_id=${context.actorId} AND manifest_key=${input.key}`;
+      if (existing) {
+        if (existing.input_hash !== inputHash)
+          throw new Error("version_conflict");
+        return String(existing.id);
+      }
+      const id = crypto.randomUUID();
+      await tx`INSERT INTO import_manifests(id,organization_id,actor_id,manifest_key,input_hash,entries) VALUES(${id},${context.organizationId},${context.actorId},${input.key},${inputHash},${tx.json(input.entries)})`;
+      return id;
+    });
+    // Each source has its own transaction/receipt. A crash can be retried by this manifest key.
+    for (const [index, entry] of input.entries.entries()) {
+      try {
+        await this.importAttachment(
+          token,
+          entry.attachmentId,
+          `batch:${id}:${index}`,
+          entry.projectId,
+        );
+        await this.operations
+          .sql`UPDATE import_manifests SET errors=errors-${String(index)} WHERE id=${id}`;
+      } catch (error) {
+        const reason =
+          error instanceof Error &&
+          [
+            "invalid_input",
+            "not_found",
+            "unauthorized",
+            "version_conflict",
+            "import_overloaded",
+          ].includes(error.message)
+            ? error.message
+            : "unavailable";
+        await this.operations
+          .sql`UPDATE import_manifests SET errors=jsonb_set(errors,ARRAY[${String(index)}],${this.operations.sql.json({ reason, retryable: ["import_overloaded", "unavailable"].includes(reason) })}::jsonb) WHERE id=${id}`;
+      }
+    }
+    return this.batch(token, id);
+  }
+  async batch(token: string, id: string) {
+    const context = await this.access.authorize(token, "read");
+    const [manifest] = await this.operations
+      .sql`SELECT * FROM import_manifests WHERE id=${id} AND organization_id=${context.organizationId} AND actor_id=${context.actorId}`;
+    if (!manifest) throw new Error("not_found");
+    const entries = [];
+    for (const [index, entry] of (
+      manifest.entries as Array<{ attachmentId: string; projectId?: string }>
+    ).entries()) {
+      const receipt = await this.operationByKey(token, `batch:${id}:${index}`);
+      entries.push({
+        ...entry,
+        index,
+        ...(receipt
+          ? { operation: await this.inspect(token, receipt.id) }
+          : {
+              status: manifest.errors[String(index)]
+                ? "rejected"
+                : "unsubmitted",
+              error: manifest.errors[String(index)] ?? null,
+            }),
+      });
+    }
+    return {
+      id,
+      createdAt: new Date(manifest.created_at).toISOString(),
+      entries,
+    };
+  }
+
   async upload(
     token: string,
     input: { filename: string; bytes: Uint8Array; projectId?: string },
@@ -203,6 +336,27 @@ export class SourceService {
     input: ImportInput,
     note?: { pageId?: string },
   ) {
+    await tx`SELECT pg_advisory_xact_lock(hashtextextended(${`loreweave:import:${context.organizationId}`},0))`;
+    const [backlog] =
+      await tx`SELECT count(*)::int AS jobs,coalesce(sum(octet_length(v.original)),0)::bigint AS bytes,
+      coalesce(sum(ceil(octet_length(v.original)/512.0)),0)::bigint AS work,
+      count(*) FILTER(WHERE d.project_id IS NOT DISTINCT FROM ${input.projectId ?? null}::uuid)::int AS project_jobs,
+      coalesce(sum(octet_length(v.original)) FILTER(WHERE d.project_id IS NOT DISTINCT FROM ${input.projectId ?? null}::uuid),0)::bigint AS project_bytes,
+      coalesce(sum(ceil(octet_length(v.original)/512.0)) FILTER(WHERE d.project_id IS NOT DISTINCT FROM ${input.projectId ?? null}::uuid),0)::bigint AS project_work
+      FROM source_versions v JOIN source_documents d ON d.id=v.document_id WHERE d.organization_id=${context.organizationId} AND v.state='preparing'`;
+    if (
+      Number(backlog!.jobs) + 1 > this.limits.organizationJobs ||
+      Number(backlog!.project_jobs) + 1 > this.limits.projectJobs ||
+      Number(backlog!.bytes) + input.bytes.length >
+        this.limits.organizationBytes ||
+      Number(backlog!.project_bytes) + input.bytes.length >
+        this.limits.projectBytes ||
+      Number(backlog!.work) + Math.ceil(input.bytes.length / 512) >
+        this.limits.organizationWork ||
+      Number(backlog!.project_work) + Math.ceil(input.bytes.length / 512) >
+        this.limits.projectWork
+    )
+      throw new Error("import_overloaded");
     const documentId = input.documentId ?? crypto.randomUUID(),
       versionId = crypto.randomUUID();
     if (input.documentId) {
@@ -213,7 +367,7 @@ export class SourceService {
         throw new Error("version_conflict");
     } else
       await tx`INSERT INTO source_documents(id,organization_id,project_id) VALUES(${documentId},${context.organizationId},${input.projectId ?? null})`;
-    await tx`INSERT INTO source_versions(id,document_id,operation_id,expected_prior,filename,original) VALUES(${versionId},${documentId},${operationId},${input.expectedPrior ?? null},${input.filename},${Buffer.from(input.bytes)})`;
+    await tx`INSERT INTO source_versions(id,document_id,operation_id,expected_prior,filename,original,preparation_deadline) VALUES(${versionId},${documentId},${operationId},${input.expectedPrior ?? null},${input.filename},${Buffer.from(input.bytes)},clock_timestamp()+${this.preparationDeadlineMs}*interval '1 millisecond')`;
     if (note) {
       if (note.pageId) {
         const [page] =
@@ -317,34 +471,103 @@ export class SourceService {
         })),
     }));
   }
-  async workOne(): Promise<boolean> {
+  async preparation(token: string, operationId: string) {
+    const context = await this.access.authorize(token, "read");
+    const [row] = await this.operations
+      .sql`SELECT v.state,v.preparation_deadline,p.profile,jsonb_array_length(p.manifest->'records') AS chunks,
+      (SELECT count(*)::int FROM source_embedding_batches b WHERE b.version_id=v.id) AS completed_batches
+      FROM source_versions v JOIN source_documents d ON d.id=v.document_id LEFT JOIN source_preparations p ON p.version_id=v.id
+      WHERE v.operation_id=${operationId} AND d.organization_id=${context.organizationId}`;
+    if (!row) throw new Error("not_found");
+    const [changes] = await this.operations
+      .sql`SELECT c.delta FROM source_changes c JOIN source_versions v ON v.id=c.version_id WHERE v.operation_id=${operationId}`;
+    return {
+      changes: changes?.delta ?? null,
+      state: String(row.state),
+      deadline: new Date(row.preparation_deadline).toISOString(),
+      profile: row.profile ?? null,
+      chunks: row.chunks === null ? null : Number(row.chunks),
+      completedBatches: Number(row.completed_batches),
+    };
+  }
+  async workOne(
+    options: {
+      leaseMs?: number;
+      organizationId?: string;
+      batchQuantum?: number;
+    } = {},
+  ): Promise<boolean> {
     return this.operations.execute(
-      { kinds: ["source.prepare"] },
+      { kinds: ["source.prepare"], ...options },
       async (job) => {
-        if (job.attempt > 3) throw new Error("preparation_attempts_exhausted");
+        let preparedBatches = 0;
         const [version] = await this.operations
           .sql`SELECT * FROM source_versions WHERE id=${String(job.payload.versionId)}`;
         if (!version) throw new Error("not_found");
+        const deadline = new Date(version.preparation_deadline).getTime();
+        if (Date.now() >= deadline) throw new Error("preparation_deadline");
         const parsed = parseMarkdown(version.original);
-        const records = parsed.passages.flatMap((passage) => {
-          // Chunk the derived index only; stable original block locators remain whole.
-          const points = Array.from(passage.text),
-            chunks = [];
-          for (let offset = 0; offset < points.length; offset += 2000)
-            chunks.push({
-              passage,
-              ordinal: chunks.length,
-              text: points.slice(offset, offset + 2000).join(""),
-            });
-          return chunks;
+        const [documentScope] = await this.operations
+          .sql`SELECT organization_id,project_id FROM source_documents WHERE id=${String(version.document_id)}`;
+        const partition = hash({
+          organization: documentScope!.organization_id,
+          project: documentScope!.project_id,
+          role: "document",
         });
-        const signal = this.operations.signal(job, AbortSignal.timeout(45000));
-        const vectors: number[][] = [];
-        for (let index = 0; index < records.length; index += 32) {
+        const preparation = new PreparedEmbeddings(
+          this.operations,
+          this.embeddings,
+        );
+        const counter = this.embeddings.inputCounter ?? controlledInputCounter;
+        const records = retrievalChunks(parsed, counter);
+        const profile = preparedEmbeddingProfile(this.embeddings);
+        const [priorManifest] = await this.operations
+          .sql`SELECT manifest FROM source_preparations WHERE version_id=${String(version.id)}`;
+        const batchSize = Number(
+          priorManifest?.manifest.batchSize ?? this.embeddings.batchSize ?? 32,
+        );
+        if (!Number.isSafeInteger(batchSize) || batchSize < 1 || batchSize > 32)
+          throw new Error("preparation_profile_changed");
+        const inputHash = hash(records);
+        await this.operations.checkpoint(job, async (tx) => {
+          const [existing] =
+            await tx`SELECT profile,input_hash FROM source_preparations WHERE version_id=${String(version.id)}`;
+          if (
+            existing &&
+            (existing.profile !== profile || existing.input_hash !== inputHash)
+          )
+            throw new Error("preparation_profile_changed");
+          await tx`INSERT INTO source_preparations(version_id,profile,manifest,input_hash) VALUES(${String(version.id)},${profile},${tx.json(JSON.parse(JSON.stringify({ parsed, records, batchSize })))},${inputHash}) ON CONFLICT DO NOTHING`;
+        });
+        const signal = this.operations.signal(
+          job,
+          AbortSignal.timeout(Math.max(1, deadline - Date.now())),
+        );
+        for (let index = 0; index < records.length; index += batchSize) {
           signal.throwIfAborted();
-          const batch = records.slice(index, index + 32);
-          const embedded = await this.embeddings.embed(
-            batch.map((record) => record.text),
+          const batch = records.slice(index, index + batchSize);
+          const batchHash = hash(batch.map((record) => record.text));
+          const [completed] = await this.operations
+            .sql`SELECT vectors,input_hash FROM source_embedding_batches WHERE version_id=${String(version.id)} AND profile=${profile} AND ordinal=${index}`;
+          if (completed) {
+            if (completed.input_hash !== batchHash)
+              throw new Error("preparation_profile_changed");
+            validateEmbeddings(
+              completed.vectors,
+              batch.length,
+              this.embeddings.dimensions,
+            );
+            continue;
+          }
+          const embedded = await preparation.batch(
+            job,
+            partition,
+            profile,
+            batch.map((record) => ({
+              text: record.text,
+              contextHash: record.contextHash,
+            })),
+            deadline,
             signal,
           );
           validateEmbeddings(
@@ -352,10 +575,21 @@ export class SourceService {
             batch.length,
             this.embeddings.dimensions,
           );
-          vectors.push(...embedded);
+          await this.operations.checkpoint(job, async (tx) => {
+            await tx`INSERT INTO source_embedding_batches(version_id,profile,ordinal,input_hash,vectors) VALUES(${String(version.id)},${profile},${index},${batchHash},${tx.json(embedded)}) ON CONFLICT DO NOTHING`;
+          });
+          if (
+            ++preparedBatches >= (options.batchQuantum ?? Infinity) &&
+            index + batchSize < records.length
+          ) {
+            await this.operations.commit(job, async () => "queued");
+            return;
+          }
         }
         signal.throwIfAborted();
         await this.operations.commit(job, async (tx) => {
+          await tx`SELECT pg_advisory_xact_lock(hashtextextended(${`source-index:${documentScope!.organization_id}`},0))`;
+          await tx`INSERT INTO source_search_heads(organization_id,embedding_profile,dimensions) VALUES(${documentScope!.organization_id},${this.embeddings.profile},${this.embeddings.dimensions}) ON CONFLICT DO NOTHING`;
           const [document] =
             await tx`SELECT active_version_id FROM source_documents WHERE id=${String(version.document_id)} FOR UPDATE`;
           if (
@@ -369,11 +603,41 @@ export class SourceService {
             passageIds.set(passage.ordinal, id);
             await tx`INSERT INTO source_passages(id,version_id,ordinal,kind,heading_path,start_offset,end_offset,original_text) VALUES(${id},${String(version.id)},${passage.ordinal},${passage.kind},${tx.json(passage.headingPath)},${passage.start},${passage.end},${passage.text})`;
           }
+          const previousRows = version.expected_prior
+            ? await tx`SELECT * FROM source_passages WHERE version_id=${version.expected_prior} ORDER BY ordinal`
+            : [];
+          const delta = sourceChanges(
+            previousRows.map((row) => ({
+              id: String(row.id),
+              ordinal: Number(row.ordinal),
+              kind: row.kind,
+              headingPath: row.heading_path,
+              text: String(row.original_text),
+              start: Number(row.start_offset),
+              end: Number(row.end_offset),
+            })),
+            parsed.passages.map((passage) => ({
+              ...passage,
+              id: passageIds.get(passage.ordinal)!,
+            })),
+          );
+          await tx`INSERT INTO source_changes(version_id,previous_version_id,delta) VALUES(${String(version.id)},${version.expected_prior},${tx.json(delta)})`;
           for (const [index, record] of records.entries())
-            await tx`INSERT INTO source_search_records(id,passage_id,ordinal,chunk_text,lexical_text,embedding) VALUES(${crypto.randomUUID()},${passageIds.get(record.passage.ordinal)!},${record.ordinal},${record.text},${lexicalText(record.text)},${JSON.stringify(vectors[index])}::vector)`;
+            for (const span of record.spans)
+              await tx`INSERT INTO source_search_records(id,passage_id,ordinal,chunk_text,lexical_text,embedding,original_text,start_offset,end_offset) VALUES(${crypto.randomUUID()},${passageIds.get(span.passage.ordinal)!},${index},${record.text},${lexicalText(record.text)},(SELECT (b.vectors->${index % batchSize}::int)::text::vector FROM source_embedding_batches b WHERE b.version_id=${String(version.id)} AND b.profile=${profile} AND b.ordinal=${Math.floor(index / batchSize) * batchSize}),${span.text},${span.start},${span.end})`;
           await tx`UPDATE source_versions SET state='superseded' WHERE id=${version.expected_prior}`;
           await tx`UPDATE source_versions SET decoded=${parsed.decoded},parser_profile=${parserProfile},embedding_profile=${this.embeddings.profile},dimensions=${this.embeddings.dimensions},state='active' WHERE id=${String(version.id)}`;
           await tx`UPDATE source_documents SET active_version_id=${String(version.id)} WHERE id=${String(version.document_id)}`;
+          const [indexHead] =
+            await tx`SELECT h.generation_id,g.embedding_profile,g.chunk_profile FROM source_search_heads h JOIN source_search_generations g ON g.id=h.generation_id WHERE h.organization_id=${documentScope!.organization_id}`;
+          if (indexHead)
+            await this.operations.enqueue(tx, job.operationId, "source.index", {
+              generationId: String(indexHead.generation_id),
+              organizationId: String(documentScope!.organization_id),
+              profile: String(indexHead.embedding_profile),
+              chunk: String(indexHead.chunk_profile),
+              deadline: new Date(version.preparation_deadline).getTime(),
+            });
           if (version.expected_prior)
             await this.operations.enqueue(
               tx,
@@ -418,6 +682,8 @@ export class SourceService {
           "invalid_embedding",
           "version_conflict",
           "preparation_attempts_exhausted",
+          "preparation_deadline",
+          "preparation_profile_changed",
         ].includes(reason)
           ? reason
           : "unavailable";
@@ -701,9 +967,15 @@ export class SourceService {
             row.version_id === item.version &&
             row.document_id === item.documentId &&
             row.filename === item.title &&
-            row.original_text === item.text &&
-            Number(row.start_offset) === item.start &&
-            Number(row.end_offset) === item.end &&
+            Number.isSafeInteger(item.start) &&
+            Number.isSafeInteger(item.end) &&
+            item.start >= Number(row.start_offset) &&
+            item.end <= Number(row.end_offset) &&
+            item.end > item.start &&
+            String(row.original_text).slice(
+              item.start - Number(row.start_offset),
+              item.end - Number(row.start_offset),
+            ) === item.text &&
             JSON.stringify(row.heading_path) ===
               JSON.stringify(item.headingPath),
         ),
@@ -723,6 +995,25 @@ export class SourceService {
           : new Date().toISOString(),
     };
   }
+  async retrievalSnapshot(token: string, projectId?: string): Promise<string> {
+    const context = await this.access.authorize(token, "read", projectId);
+    const sql = this.operations.sql;
+    const [row] = await sql`SELECT
+      (SELECT md5(coalesce(jsonb_agg(to_jsonb(d) ORDER BY d.id)::text,'')) FROM source_documents d WHERE d.organization_id=${context.organizationId}) AS sources,
+      (SELECT md5(coalesce(jsonb_agg(jsonb_build_array(m.id,m.current_revision_id) ORDER BY m.id)::text,'')) FROM identity_mentions m WHERE m.organization_id=${context.organizationId}) AS identities,
+      (SELECT md5(coalesce(jsonb_agg(to_jsonb(p) ORDER BY p.id)::text,'')) FROM wiki_pages p WHERE p.organization_id=${context.organizationId}) AS wiki,
+      (SELECT md5(coalesce(jsonb_agg(to_jsonb(g) ORDER BY g.id)::text,'')) FROM graph_generations g WHERE g.organization_id=${context.organizationId}) AS graph,
+      (SELECT to_jsonb(h) FROM source_search_heads h WHERE h.organization_id=${context.organizationId}) AS search`;
+    return JSON.stringify({
+      actor: context.actorId,
+      organization: context.organizationId,
+      scope: context.scope,
+      profile: this.embeddings.profile,
+      dimensions: this.embeddings.dimensions,
+      ...row,
+    });
+  }
+
   async candidates(
     token: string,
     input: {
@@ -731,13 +1022,37 @@ export class SourceService {
       signal: AbortSignal;
       beforeEmbedding?: () => Promise<void>;
     },
-  ): Promise<{ lexical: SourceCandidate[]; vector: SourceCandidate[] }> {
+  ): Promise<{
+    lexical: SourceCandidate[];
+    vector: SourceCandidate[];
+    degradation?: string;
+  }> {
     const context = await this.access.authorize(token, "read", input.projectId);
     input.signal.throwIfAborted();
-    await input.beforeEmbedding?.();
+    const counter = this.embeddings.inputCounter ?? controlledInputCounter;
+    if (counter.count(input.question) > counter.maxInput)
+      throw new Error("embedding_input_limit");
+    const [head] = await this.operations
+      .sql`SELECT * FROM source_search_heads WHERE organization_id=${context.organizationId}`;
+    const [coverage] = await this.operations
+      .sql`SELECT count(*)::int AS missing FROM source_documents d JOIN source_versions v ON v.id=d.active_version_id WHERE d.organization_id=${context.organizationId} AND (${input.projectId ?? null}::uuid IS NULL OR d.project_id IS NULL OR d.project_id=${input.projectId ?? null}) AND NOT EXISTS(SELECT 1 FROM source_search_coverage c WHERE c.generation_id=${head?.generation_id ?? null} AND c.version_id=v.id) AND (v.embedding_profile IS DISTINCT FROM ${head?.embedding_profile ?? this.embeddings.profile} OR v.dimensions IS DISTINCT FROM ${head?.dimensions ?? this.embeddings.dimensions})`;
+    const compatible =
+      !head ||
+      (head.embedding_profile === this.embeddings.profile &&
+        Number(head.dimensions) === this.embeddings.dimensions);
+    if (compatible) await input.beforeEmbedding?.();
     input.signal.throwIfAborted();
-    const vectors = await this.embeddings.embed([input.question], input.signal);
-    validateEmbeddings(vectors, 1, this.embeddings.dimensions);
+    const vectors = compatible
+      ? await withModelWork(
+          currentModelWork() ?? {
+            operationId: `query:${crypto.randomUUID()}`,
+            priority: "interactive",
+            deadline: Date.now() + 30000,
+          },
+          () => this.embeddings.embed([input.question], input.signal),
+        )
+      : [];
+    if (compatible) validateEmbeddings(vectors, 1, this.embeddings.dimensions);
     input.signal.throwIfAborted();
     const query = lexicalText(input.question)
       .split(/\s+/)
@@ -745,16 +1060,16 @@ export class SourceService {
       .map((term) => `'${term.replaceAll("'", "''")}'`)
       .join(" | ");
     const base = this.operations
-      .sql`SELECT d.id AS document_id,v.id AS version,p.id AS passage_id,v.filename,p.original_text,p.heading_path,p.start_offset,p.end_offset,
+      .sql`SELECT d.id AS document_id,v.id AS version,p.id AS passage_id,v.filename,r.original_text,p.heading_path,r.start_offset,r.end_offset,
       r.lexical @@ to_tsquery('simple',${query}) AS lexical_match,
       ts_rank_cd(r.lexical,to_tsquery('simple',${query})) AS lexical_score,
-      CASE WHEN v.embedding_profile=${this.embeddings.profile} AND v.dimensions=${this.embeddings.dimensions} THEN r.embedding <=> ${JSON.stringify(vectors[0])}::vector ELSE NULL END AS distance
-      FROM source_search_records r JOIN source_passages p ON p.id=r.passage_id JOIN source_versions v ON v.id=p.version_id JOIN source_documents d ON d.active_version_id=v.id
-      WHERE d.organization_id=${context.organizationId} AND (${input.projectId ?? null}::uuid IS NULL OR d.project_id IS NULL OR d.project_id=${input.projectId ?? null})`;
+      CASE WHEN h.embedding_profile=${this.embeddings.profile} AND h.dimensions=${this.embeddings.dimensions} AND vector_dims(r.embedding)=${this.embeddings.dimensions} AND (r.generation_id=h.generation_id OR (r.generation_id IS NULL AND v.embedding_profile=h.embedding_profile AND v.dimensions=h.dimensions)) THEN r.embedding <=> ${vectors[0] ? JSON.stringify(vectors[0]) : null}::vector ELSE NULL END AS distance
+      FROM source_search_records r JOIN source_passages p ON p.id=r.passage_id JOIN source_versions v ON v.id=p.version_id JOIN source_documents d ON d.active_version_id=v.id JOIN source_search_heads h ON h.organization_id=d.organization_id
+      WHERE r.generation_id IS NOT DISTINCT FROM (CASE WHEN EXISTS(SELECT 1 FROM source_search_coverage c WHERE c.generation_id=h.generation_id AND c.version_id=v.id) THEN h.generation_id ELSE NULL END) AND d.organization_id=${context.organizationId} AND (${input.projectId ?? null}::uuid IS NULL OR d.project_id IS NULL OR d.project_id=${input.projectId ?? null})`;
     const lexicalQuery = this.operations
-      .sql`WITH candidates AS (${base}), passages AS (SELECT DISTINCT ON(passage_id) * FROM candidates WHERE lexical_match ORDER BY passage_id,lexical_score DESC) SELECT * FROM passages ORDER BY lexical_score DESC,passage_id LIMIT 50`;
+      .sql`WITH candidates AS (${base}), passages AS (SELECT DISTINCT ON(passage_id,start_offset,end_offset) * FROM candidates WHERE lexical_match ORDER BY passage_id,start_offset,end_offset,lexical_score DESC) SELECT * FROM passages ORDER BY lexical_score DESC,passage_id LIMIT 50`;
     const vectorQuery = this.operations
-      .sql`WITH candidates AS (${base}), passages AS (SELECT DISTINCT ON(passage_id) * FROM candidates WHERE distance IS NOT NULL ORDER BY passage_id,distance) SELECT * FROM passages ORDER BY distance,passage_id LIMIT 50`;
+      .sql`WITH candidates AS (${base}), passages AS (SELECT DISTINCT ON(passage_id,start_offset,end_offset) * FROM candidates WHERE distance IS NOT NULL ORDER BY passage_id,start_offset,end_offset,distance) SELECT * FROM passages ORDER BY distance,passage_id LIMIT 50`;
     const cancel = () => {
       lexicalQuery.cancel();
       vectorQuery.cancel();
@@ -772,12 +1087,18 @@ export class SourceService {
       return {
         lexical: lexical.map(sourceCandidate),
         vector: vector.map(sourceCandidate),
+        ...(!compatible
+          ? { degradation: "lexical_only:profile_unavailable" }
+          : Number(coverage!.missing)
+            ? { degradation: "partial_lexical_only:index_pending" }
+            : {}),
       };
     } finally {
       input.signal.removeEventListener("abort", cancel);
     }
   }
   async close() {
+    await this.indexes.close();
     await this.operations.close();
   }
 }

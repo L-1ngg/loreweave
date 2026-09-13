@@ -218,7 +218,7 @@ test("pending source work without running derived maintenance cannot establish u
   );
 }, 30000);
 
-test("reviewed gap-only delivery counts toward capacity when its expected reason is delivered", async () => {
+test("traceable gap-only delivery counts toward capacity when its expected reason is delivered", async () => {
   const { measureCapacity } = await import("../src/evaluation/capacity.ts");
   const { digest } = await import("../src/evaluation/schema.ts");
   const f = await evaluationFixture(url!, false, "combined", true);
@@ -262,7 +262,7 @@ test("reviewed gap-only delivery counts toward capacity when its expected reason
         category: "missing",
         references: [],
         requiredPoints: [],
-        expectedGaps: ["incomplete_support"],
+        expectedGaps: ["evidence_gap"],
       })),
     };
     const report = await measureCapacity({
@@ -285,9 +285,9 @@ test("reviewed gap-only delivery counts toward capacity when its expected reason
         },
       },
     });
-    expect(
-      report.rows.every((row) => row.run?.reason === "incomplete_support"),
-    ).toBe(true);
+    expect(report.rows.every((row) => row.run?.reason === "evidence_gap")).toBe(
+      true,
+    );
     expect(report.summary.ordinary.withinTarget).toBe(4);
     expect(report.summary.complex.withinTarget).toBe(1);
   } finally {

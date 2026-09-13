@@ -6,6 +6,13 @@ export function credential(context: Context): string {
 }
 export function accessError(context: Context, error: unknown) {
   const message = error instanceof Error ? error.message : "unavailable";
+  if (message === "import_overloaded") {
+    context.header("Retry-After", "5");
+    return context.json(
+      { error: message, retryable: true, retryAfterSeconds: 5 },
+      503,
+    );
+  }
   if (message === "unauthorized") return context.json({ error: message }, 401);
   if (message === "invalid_input") return context.json({ error: message }, 400);
   if (

@@ -4,7 +4,7 @@ import type { MaintenanceService } from "../maintenance.ts";
 import { PublicAnswers } from "./client.ts";
 import { MaintenanceDiagnostics } from "./maintenance.ts";
 import { assertAcceptanceDistribution } from "./preparation.ts";
-import { verifySnapshot, expectedGap } from "./runner.ts";
+import { verifySnapshot, expectedGap, validatedDelivery } from "./runner.ts";
 import {
   datasetSchema,
   sourceManifestSchema,
@@ -49,7 +49,7 @@ export interface LoadRow {
   startedAt: string;
   finishedAt: string;
   elapsedMs: number;
-  reviewedDelivery: boolean;
+  validatedDelivery: boolean;
   run?: RunSnapshot;
   error?: string;
 }
@@ -83,10 +83,11 @@ function summarize(rows: LoadRow[], complexity: LoadRow["complexity"]) {
   return {
     total: selected.length,
     withinTarget: selected.filter(
-      (row) => row.reviewedDelivery && row.elapsedMs <= target,
+      (row) => row.validatedDelivery && row.elapsedMs <= target,
     ).length,
-    reviewedDeliveries: selected.filter((row) => row.reviewedDelivery).length,
-    failedOrUnreviewed: selected.filter((row) => !row.reviewedDelivery).length,
+    validatedDeliveries: selected.filter((row) => row.validatedDelivery).length,
+    failedOrUnvalidated: selected.filter((row) => !row.validatedDelivery)
+      .length,
     timeouts: selected.filter(
       (row) =>
         row.run?.status === "timed_out" || row.error?.includes("Timeout"),
@@ -255,7 +256,7 @@ export async function measureCapacity(input: {
             startedAt: new Date().toISOString(),
             finishedAt: "",
             elapsedMs: 0,
-            reviewedDelivery: false,
+            validatedDelivery: false,
           };
           unfinished++;
           maxUnfinished = Math.max(maxUnfinished, unfinished);
@@ -287,14 +288,13 @@ export async function measureCapacity(input: {
           }
           try {
             row.run = await answer;
-            row.reviewedDelivery =
+            row.validatedDelivery =
               (row.run.status === "answered" || expectedGap(row.run, item)) &&
               Boolean(
                 row.run.answer?.text.trim() &&
-                row.run.answer.certificate &&
+                validatedDelivery(row.run) &&
                 (row.run.answer.citations.length > 0 ||
-                  row.run.status === "partial") &&
-                row.run.counts.review > 0,
+                  row.run.status === "partial"),
               );
           } catch (error) {
             row.error =
@@ -430,7 +430,7 @@ export async function measureCapacity(input: {
     ),
   );
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     kind: "capacity",
     plan,
     startedAt,

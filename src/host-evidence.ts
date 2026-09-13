@@ -1,3 +1,4 @@
+import { parseDirectAnswer, noRetrievalLabel } from "./direct-answer.ts";
 import type { TrustedContext } from "./access.ts";
 import type {
   EvidenceService,
@@ -10,29 +11,22 @@ type CheckedAnswer = Omit<GroundedAnswer, "citations"> & {
   citations: Evidence[];
 };
 
-type FinalPhase = "generation" | "review";
-
-/** Evidence decisions use Host admission; this pipeline owns no run budget or lifecycle. */
+/** Host owns the logical deadline and retrieval budget; M06 owns citation validation. */
 export interface EvidenceRunPolicy {
   signal: AbortSignal;
   authorize(): Promise<TrustedContext | undefined>;
+  beforeRetrieval(): Promise<void>;
   beforeEmbedding(signal: AbortSignal): Promise<void>;
-  remaining(phase: FinalPhase): number;
-  request(
-    phase: FinalPhase,
-    input: object,
-    signal?: AbortSignal,
-  ): Promise<unknown>;
-  refresh(): Promise<boolean>;
-  refreshed(): Promise<void>;
   diagnostics(pack: EvidencePack): Promise<void>;
-  retrievalFailed(): Promise<void>;
+  retrievalFailed(reason: string): Promise<void>;
 }
 
 export class HostEvidence {
   private evidence?: Evidence;
   private pack?: EvidencePack;
   private retrievalError?: unknown;
+  private rounds = 0;
+  private noGain = false;
 
   constructor(
     private readonly options: {
@@ -51,140 +45,131 @@ export class HostEvidence {
     return Boolean(this.pack || this.evidence);
   }
 
+  failed(): void {
+    this.retrievalError = new Error("retrieval_unavailable");
+  }
   assertRetrieval(): void {
     if (!this.pack && this.retrievalError) throw this.retrievalError;
   }
 
-  async search(signal: AbortSignal) {
+  async search(
+    signal: AbortSignal,
+    query?: string,
+    routes?: import("./evidence.ts").EvidenceRoute[],
+    graph?: import("./graph-queries.ts").GraphSearchOptions,
+    gap?: string,
+  ) {
     const context = await this.policy.authorize();
     signal.throwIfAborted();
     if (this.options.service) {
       try {
-        this.pack = await this.retrieve(signal, context);
+        this.pack = await this.retrieve(
+          signal,
+          context,
+          query,
+          routes,
+          graph,
+          gap,
+        );
       } catch (error) {
         this.retrievalError = error;
-        await this.policy.retrievalFailed();
+        await this.policy.retrievalFailed(
+          error instanceof Error &&
+            [
+              "specific_gap_required",
+              "retrieval_no_gain",
+              "retrieval_budget_exhausted",
+            ].includes(error.message)
+            ? error.message
+            : "retrieval_unavailable",
+        );
         throw error;
       }
+      if (
+        this.pack.diagnostics.cache === "miss" &&
+        this.rounds > 1 &&
+        !this.pack.items.length
+      )
+        this.noGain = true;
       await this.policy.diagnostics(this.pack);
       return {
         content: [{ type: "text" as const, text: JSON.stringify(this.pack) }],
         details: this.pack,
       };
     }
-    this.evidence = this.options.sources.read(context);
+    await this.policy.beforeRetrieval();
+    this.evidence = { ...this.options.sources.read(context), handle: "e1" };
     return {
-      content: [{ type: "text" as const, text: this.evidence.text }],
+      content: [{ type: "text" as const, text: JSON.stringify(this.evidence) }],
       details: this.evidence,
     };
   }
 
-  private retrieve(signal: AbortSignal, context?: TrustedContext) {
+  private retrieve(
+    signal: AbortSignal,
+    context?: TrustedContext,
+    query?: string,
+    routes?: import("./evidence.ts").EvidenceRoute[],
+    graph?: import("./graph-queries.ts").GraphSearchOptions,
+    gap?: string,
+  ) {
     signal.throwIfAborted();
     return this.options.service!.retrieve(this.options.credential, {
       runId: this.options.runId,
-      question: this.options.question,
+      question: query ?? this.options.question,
+      ...(routes ? { routes } : {}),
+      ...(graph ? { graph } : {}),
       complex: this.options.complex,
       ...(context?.scope.projectId
         ? { projectId: context.scope.projectId }
         : {}),
       signal,
+      beforeRetrieval: async () => {
+        if (this.rounds && (!gap?.trim() || gap.trim() === "context_limit"))
+          throw new Error("specific_gap_required");
+        if (this.noGain) throw new Error("retrieval_no_gain");
+        await this.policy.beforeRetrieval();
+        this.rounds++;
+      },
       beforeEmbedding: () => this.policy.beforeEmbedding(signal),
     });
   }
 
-  async finalize(): Promise<CheckedAnswer> {
-    if (this.pack) return this.finalizePack(this.pack);
-    if (this.retrievalError) throw this.retrievalError;
-    if (!this.evidence) throw new Error("insufficient_evidence");
-    return this.finalizeFixture(this.evidence);
+  async finalizeDirect(text: string): Promise<CheckedAnswer> {
+    await this.policy.authorize();
+    this.policy.signal.throwIfAborted();
+    const answer = parseDirectAnswer(text);
+    if (this.options.service && this.pack)
+      return this.options.service.finalizeDirect(
+        this.options.credential,
+        this.options.runId,
+        answer,
+        this.policy.signal,
+      );
+    if (answer.citations.some((handle) => handle !== "e1" || !this.evidence))
+      throw new Error("invalid_citation");
+    if (this.evidence && !this.options.sources.current(this.evidence))
+      throw new Error("source_changed");
+    if (
+      answer.basis !== "general" &&
+      !answer.citations.length &&
+      !answer.gaps.length
+    )
+      throw new Error("invalid_citation");
+    if (answer.basis === "general" && this.available)
+      throw new Error("invalid_draft");
+    const gaps = [...answer.gaps, ...answer.conflicts];
+    return {
+      status: gaps.length ? "partial" : "answered",
+      text:
+        (this.available ? "" : noRetrievalLabel + "\n\n") +
+        answer.text +
+        (gaps.length ? "\n\n" + gaps.join("\n") : ""),
+      citations: answer.citations.length ? [this.evidence!] : [],
+      validatedAt: new Date().toISOString(),
+      contract: "direct-answer-v2",
+      validation: { kind: "citation-traceability", semanticReview: false },
+      ...(gaps.length ? { reason: "evidence_gap" } : {}),
+    };
   }
-
-  private async finalizePack(initial: EvidencePack): Promise<CheckedAnswer> {
-    const service = this.options.service!;
-    let pack = initial;
-    for (;;) {
-      try {
-        return await service.finalize(this.options.credential, pack, {
-          signal: this.policy.signal,
-          model: this.options.model,
-          remaining: (phase) => this.policy.remaining(phase),
-          request: (phase, input, signal) =>
-            this.policy.request(phase, input, signal),
-        });
-      } catch (error) {
-        this.policy.signal.throwIfAborted();
-        if (!(error instanceof Error) || error.message !== "source_changed")
-          throw error;
-        if (!(await this.policy.refresh())) {
-          const subset = await service.supportedSubset(
-            this.options.credential,
-            this.options.runId,
-            this.policy.signal,
-          );
-          if (subset) return { ...subset, reason: "source_changed" };
-          throw error;
-        }
-        const context = await this.policy.authorize();
-        pack = await this.retrieve(this.policy.signal, context);
-        await this.policy.diagnostics(pack);
-        await this.policy.refreshed();
-      }
-    }
-  }
-
-  private async finalizeFixture(initial: Evidence): Promise<CheckedAnswer> {
-    let evidence = initial;
-    for (;;) {
-      if (
-        this.policy.remaining("generation") <= 0 ||
-        this.policy.remaining("review") <= 0
-      )
-        throw new Error("budget_exhausted");
-      try {
-        const draft = await this.policy.request("generation", {
-          question: this.options.question,
-          evidence,
-        });
-        if (!this.options.sources.current(evidence))
-          throw new Error("source_changed");
-        if (!isRecord(draft) || typeof draft.text !== "string")
-          throw new Error("invalid_draft");
-        const review = await this.policy.request("review", { draft, evidence });
-        if (!this.options.sources.current(evidence))
-          throw new Error("source_changed");
-        if (!isRecord(review) || review.supported !== true)
-          throw new Error("insufficient_evidence");
-        return {
-          status: "answered",
-          text: draft.text,
-          citations: [evidence],
-          validatedAt: new Date().toISOString(),
-        };
-      } catch (error) {
-        this.policy.signal.throwIfAborted();
-        if (this.options.sources.current(evidence)) {
-          if (
-            error instanceof Error &&
-            ["invalid_draft", "insufficient_evidence"].includes(
-              error.message,
-            ) &&
-            this.policy.remaining("generation") > 0 &&
-            this.policy.remaining("review") > 0
-          )
-            continue;
-          throw error;
-        }
-        if (!(await this.policy.refresh())) throw new Error("source_changed");
-        const context = await this.policy.authorize();
-        this.policy.signal.throwIfAborted();
-        evidence = this.options.sources.read(context);
-        await this.policy.refreshed();
-      }
-    }
-  }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

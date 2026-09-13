@@ -1,3 +1,4 @@
+import { parseDirectAnswer, type DirectAnswer } from "./direct-answer.ts";
 import type { WikiService } from "./wiki.ts";
 import { setTimeout as pause } from "node:timers/promises";
 import {
@@ -11,9 +12,14 @@ import {
 } from "./answer-validation.ts";
 import { SourceService, type SourceCandidate } from "./sources.ts";
 import type { GraphService } from "./graph.ts";
+export type EvidenceRoute = "source" | "wiki" | "graph";
 export type RetrievalProfile = "source" | "wiki" | "graph" | "combined";
+const spanKey = (item: SourceCandidate) =>
+  `${item.version}:${item.passageId}:${item.start}:${item.end}`;
+
 export interface EvidenceItem extends SourceCandidate {
   handle: string;
+  routes?: EvidenceRoute[];
 }
 export interface EvidencePack {
   runId: string;
@@ -21,8 +27,17 @@ export interface EvidencePack {
   items: EvidenceItem[];
   hash: string;
   diagnostics: {
+    routeOutcomes?: Partial<
+      Record<
+        EvidenceRoute,
+        { status: string; candidates: number; originals: number }
+      >
+    >;
+    cache?: "hit" | "miss";
+    reusedHandles?: string[];
     wikiCandidates?: number;
     graphCandidates?: number;
+    graph?: unknown;
     retrieved?: SourceCandidate[];
     retrievalProfile?: RetrievalProfile | "default";
     requestedRoutes?: string[];
@@ -32,6 +47,17 @@ export interface EvidencePack {
     embeddingRequests: number;
     gaps: string[];
   };
+}
+export interface RetrievalInput {
+  runId: string;
+  question: string;
+  routes?: EvidenceRoute[];
+  graph?: import("./graph-queries.ts").GraphSearchOptions;
+  projectId?: string;
+  signal: AbortSignal;
+  complex?: boolean;
+  beforeEmbedding?: () => Promise<void>;
+  beforeRetrieval?: () => Promise<void>;
 }
 export interface FinalizationRuntime {
   signal: AbortSignal;
@@ -55,6 +81,8 @@ export interface AnswerCertificate {
   checkedAt: string;
 }
 export interface GroundedAnswer {
+  contract?: "direct-answer-v2";
+  validation?: { kind: "citation-traceability"; semanticReview: false };
   status: "answered" | "partial";
   text: string;
   citations: Array<EvidenceItem & { id: string }>;
@@ -71,6 +99,14 @@ export interface GroundedAnswer {
   reason?: string;
 }
 export class EvidenceService {
+  private readonly dependencies = new Map<string, Map<string, string>>();
+  private readonly retrievals = new Map<string, Promise<unknown>>();
+  private readonly cache = new Map<string, Map<string, EvidencePack>>();
+  private readonly owners = new Map<
+    string,
+    { token: string; projectId?: string }
+  >();
+  private readonly views = new Map<string, EvidencePack>();
   private readonly packs = new Map<string, EvidencePack>();
   private readonly reviewed = new Map<
     string,
@@ -97,105 +133,211 @@ export class EvidenceService {
       context: "8000-16000-v1",
     };
   }
-  async retrieve(
-    token: string,
-    input: {
-      runId: string;
-      question: string;
-      projectId?: string;
-      signal: AbortSignal;
-      complex?: boolean;
-      beforeEmbedding?: () => Promise<void>;
-    },
-  ): Promise<EvidencePack> {
-    const started = performance.now();
-    let candidates: Awaited<ReturnType<SourceService["candidates"]>>;
+  async retrieve(token: string, input: RetrievalInput): Promise<EvidencePack> {
+    const previous = this.retrievals.get(input.runId) ?? Promise.resolve();
+    const current = previous
+      .catch(() => {})
+      .then(() => this.retrieveOnce(token, input));
+    this.retrievals.set(input.runId, current);
     try {
-      candidates = await this.sources.candidates(token, input);
-    } catch (error) {
-      input.signal.throwIfAborted();
-      if (error instanceof Error && error.message === "unauthorized")
-        throw error;
-      throw new Error("retrieval_unavailable");
+      return await current;
+    } finally {
+      if (this.retrievals.get(input.runId) === current)
+        this.retrievals.delete(input.runId);
     }
+  }
+  private async retrieveOnce(
+    token: string,
+    input: RetrievalInput,
+  ): Promise<EvidencePack> {
+    input.signal.throwIfAborted();
+    const started = performance.now();
+    const routes =
+      input.routes ??
+      (this.profile === "combined"
+        ? ["source", "wiki", "graph"]
+        : this.profile === "wiki"
+          ? ["source", "wiki"]
+          : this.profile === "graph"
+            ? ["source", "graph"]
+            : ["source"]);
+    if (
+      !routes.length ||
+      routes.some((route) => !["source", "wiki", "graph"].includes(route))
+    )
+      throw new Error("invalid_input");
+    const snapshot = await this.sources.retrievalSnapshot(
+      token,
+      input.projectId,
+    );
+    const owner = JSON.stringify({ token, projectId: input.projectId });
+    if (
+      this.owners.has(input.runId) &&
+      JSON.stringify(this.owners.get(input.runId)) !== owner
+    )
+      throw new Error("unauthorized");
+    this.owners.set(input.runId, {
+      token,
+      ...(input.projectId ? { projectId: input.projectId } : {}),
+    });
+    const key = hash({
+      snapshot,
+      question: input.question,
+      routes: [...routes].sort(),
+      graph: input.graph,
+      complex: input.complex,
+      configuration: this.configuration(),
+    });
+    const cached = this.cache.get(input.runId)?.get(key);
+    if (cached)
+      return {
+        ...structuredClone(cached),
+        items: [],
+        diagnostics: {
+          ...cached.diagnostics,
+          cache: "hit",
+          reusedHandles: cached.items.map((item) => item.handle),
+          embeddingRequests: 0,
+          retrievalMs: performance.now() - started,
+        },
+      };
+    await input.beforeRetrieval?.();
+    input.signal.throwIfAborted();
+    let candidates: Awaited<ReturnType<SourceService["candidates"]>> = {
+      lexical: [],
+      vector: [],
+    };
     const gaps: string[] = [];
     let wikiCandidates = 0,
       wikiOriginals: SourceCandidate[] = [];
     let graphCandidates = 0;
+    let graphDetails: unknown;
     let graphOriginals: SourceCandidate[] = [];
-    const useWiki =
-      !this.profile || ["wiki", "combined"].includes(this.profile);
-    const useGraph = this.profile
-      ? ["graph", "combined"].includes(this.profile)
-      : /依赖|关系|项目|数据库|负责|属于|连接|dependency|relationship/i.test(
-          input.question,
-        );
-    if (useWiki && this.wiki) {
+    const useWiki = routes.includes("wiki");
+    const useGraph = routes.includes("graph");
+    const sourceTask = async () => {
+      if (!routes.includes("source")) return;
       try {
-        const result = await this.wiki.search(token, input);
-        wikiCandidates = result.pages;
-        wikiOriginals = result.originals;
-        if (result.truncated) gaps.push("wiki_original_limit");
-      } catch {
+        candidates = await this.sources.candidates(token, input);
+        if (candidates.degradation) gaps.push(candidates.degradation);
+      } catch (error) {
         input.signal.throwIfAborted();
-        gaps.push("wiki_unavailable");
+        if (error instanceof Error && error.message === "unauthorized")
+          throw error;
+        gaps.push("source_unavailable");
       }
-    } else if (useWiki) gaps.push("wiki_unavailable");
-    if (useGraph && this.graph) {
-      try {
-        const result = await this.graph.search(
-          token,
-          input.question,
-          input.projectId,
-          input.signal,
-        );
-        graphCandidates = result.claims.length;
-        if (result.truncated) gaps.push("graph_claim_limit");
-        if (result.pending) gaps.push("graph_pending");
-        gaps.push(...result.gaps);
-        const refs = [
-          ...new Map(
-            result.claims
-              .flatMap((claim) => claim.support)
-              .map((support) => [
-                `${support.version}:${support.passageId}`,
-                support,
-              ]),
-          ).values(),
-        ];
-        const resolved = await this.sources.resolveMany(
-          token,
-          refs,
-          input.signal,
-        );
-        for (const claim of result.claims) {
-          for (const support of claim.support) {
-            try {
-              const passage = resolved.get(
-                `${support.version}:${support.passageId}`,
-              );
-              if (!passage) throw new Error("not_found");
-              graphOriginals.push({
-                documentId: passage.documentId,
-                version: support.version,
-                passageId: support.passageId,
-                title: passage.title,
-                text: passage.text,
-                headingPath: passage.headingPath,
-                start: passage.start,
-                end: passage.end,
-              });
-            } catch {
-              gaps.push("graph_support_unavailable");
+    };
+    const wikiTask = async () => {
+      if (useWiki && this.wiki) {
+        try {
+          const result = await this.wiki.search(token, input);
+          wikiCandidates = result.pages;
+          wikiOriginals = result.originals;
+          if (result.truncated) gaps.push("wiki_original_limit");
+          if (result.pending) gaps.push("wiki_pending");
+          if (result.incomplete) gaps.push("wiki_incomplete");
+          if (result.pageLevelMapping) gaps.push("wiki_page_level_mapping");
+        } catch (error) {
+          input.signal.throwIfAborted();
+          if (error instanceof Error && error.message === "unauthorized")
+            throw error;
+          gaps.push("wiki_unavailable");
+        }
+      } else if (useWiki) gaps.push("wiki_unavailable");
+    };
+    const graphTask = async () => {
+      if (useGraph && this.graph) {
+        try {
+          const result = await this.graph.search(
+            token,
+            input.question,
+            input.projectId,
+            input.signal,
+            input.graph,
+          );
+          const bounded = {
+            ...result,
+            orderedPaths: [...result.orderedPaths],
+            claims: [...result.claims],
+            entities: [...result.entities],
+            ambiguity: [...result.ambiguity],
+          };
+          const graphBytes = (input.complex ? 16000 : 8000) / 4;
+          while (
+            new TextEncoder().encode(JSON.stringify(bounded)).length >
+              graphBytes &&
+            (bounded.claims.length ||
+              bounded.entities.length ||
+              bounded.ambiguity.length ||
+              bounded.orderedPaths.length)
+          ) {
+            if (bounded.orderedPaths.length) bounded.orderedPaths.pop();
+            else if (bounded.claims.length) bounded.claims.pop();
+            else if (bounded.ambiguity.length) bounded.ambiguity.pop();
+            else bounded.entities.pop();
+            bounded.truncated = true;
+          }
+          if (bounded.truncated && !result.truncated)
+            gaps.push("graph_metadata_limit");
+          graphDetails = bounded;
+          graphCandidates = result.claims.length;
+          if (result.truncated) gaps.push("graph_claim_limit");
+          if (result.pending) gaps.push("graph_pending");
+          gaps.push(...result.gaps);
+          const refs = [
+            ...new Map(
+              result.claims
+                .flatMap((claim) => claim.support)
+                .map((support) => [
+                  `${support.version}:${support.passageId}`,
+                  support,
+                ]),
+            ).values(),
+          ];
+          const resolved = await this.sources.resolveMany(
+            token,
+            refs,
+            input.signal,
+          );
+          for (const claim of result.claims) {
+            for (const support of claim.support) {
+              try {
+                const passage = resolved.get(
+                  `${support.version}:${support.passageId}`,
+                );
+                if (!passage) throw new Error("not_found");
+                graphOriginals.push({
+                  documentId: passage.documentId,
+                  version: support.version,
+                  passageId: support.passageId,
+                  title: passage.title,
+                  text: passage.text,
+                  headingPath: passage.headingPath,
+                  start: passage.start,
+                  end: passage.end,
+                });
+              } catch {
+                gaps.push("graph_support_unavailable");
+              }
             }
           }
+        } catch (error) {
+          input.signal.throwIfAborted();
+          if (error instanceof Error && error.message === "unauthorized")
+            throw error;
+          gaps.push("graph_unavailable");
         }
-      } catch {
-        input.signal.throwIfAborted();
-        gaps.push("graph_unavailable");
       }
-    }
-    if (useGraph && !this.graph) gaps.push("graph_unavailable");
+      if (useGraph && !this.graph) gaps.push("graph_unavailable");
+    };
+    const outcomes = await Promise.allSettled([
+      sourceTask(),
+      wikiTask(),
+      graphTask(),
+    ]);
+    for (const outcome of outcomes)
+      if (outcome.status === "rejected") throw outcome.reason;
+    input.signal.throwIfAborted();
     const ranked = new Map<
       string,
       { candidate: SourceCandidate; score: number }
@@ -209,7 +351,7 @@ export class EvidenceService {
       const seen = new Set<string>();
       let rank = 0;
       for (const candidate of route) {
-        const id = `${candidate.version}:${candidate.passageId}`;
+        const id = spanKey(candidate);
         if (seen.has(id)) continue;
         seen.add(id);
         rank++;
@@ -220,6 +362,19 @@ export class EvidenceService {
         });
       }
     }
+    if (!ranked.size && gaps.some((gap) => gap.endsWith("unavailable")))
+      throw new Error("retrieval_unavailable");
+    const registry = this.packs.get(input.runId)?.items ?? [];
+    const provenance = new Map<string, EvidenceRoute[]>();
+    for (const [route, originals] of [
+      ["source", [...candidates.lexical, ...candidates.vector]],
+      ["wiki", wikiOriginals],
+      ["graph", graphOriginals],
+    ] as Array<[EvidenceRoute, SourceCandidate[]]>)
+      for (const item of originals)
+        provenance.set(spanKey(item), [
+          ...new Set([...(provenance.get(spanKey(item)) ?? []), route]),
+        ]);
     const items: EvidenceItem[] = [];
     let remaining = (input.complex ? 16000 : 8000) - 2;
     const ordered = [...ranked.values()]
@@ -235,15 +390,25 @@ export class EvidenceService {
       input.signal,
     );
     const included = new Set<string>();
-    for (const candidate of ordered) {
-      for (const item of [
-        candidate,
-        ...(surrounding.get(candidate.passageId) ?? []),
-      ]) {
-        const key = `${item.version}:${item.passageId}`;
+    const context = ordered.flatMap(
+      (candidate) => surrounding.get(candidate.passageId) ?? [],
+    );
+    const requiredContext = context.filter((item) => item.start === 0);
+    for (const group of [requiredContext, ordered, context]) {
+      for (const item of group) {
+        const key = spanKey(item);
         if (included.has(key)) continue;
         // UTF-8 bytes conservatively bound tokens without assuming a model tokenizer.
-        const entry = { ...item, handle: `e${items.length + 1}` };
+        const existing = registry.find(
+          (previous) => spanKey(previous) === spanKey(item),
+        );
+        const entry = {
+          ...item,
+          routes: provenance.get(key) ?? ["source" as const],
+          handle:
+            existing?.handle ??
+            `e${registry.length + items.filter((item) => !registry.some((previous) => previous.handle === item.handle)).length + 1}`,
+        };
         const cost = new TextEncoder().encode(JSON.stringify(entry)).length + 1;
         if (cost > remaining) {
           if (!gaps.includes("context_limit")) gaps.push("context_limit");
@@ -257,34 +422,164 @@ export class EvidenceService {
     if (!items.length) gaps.push("insufficient_evidence");
     const pack = {
       runId: input.runId,
-      question: input.question,
+      question: input.question.slice(0, 512),
       items,
       hash: hash(items),
       diagnostics: {
+        routeOutcomes: Object.fromEntries(
+          routes.map((route) => {
+            const count =
+              route === "source"
+                ? candidates.lexical.length + candidates.vector.length
+                : route === "wiki"
+                  ? wikiCandidates
+                  : graphCandidates;
+            const originals =
+              route === "source"
+                ? new Set(
+                    [...candidates.lexical, ...candidates.vector].map(spanKey),
+                  ).size
+                : route === "wiki"
+                  ? wikiOriginals.length
+                  : graphOriginals.length;
+            return [
+              route,
+              {
+                status: gaps.includes(`${route}_unavailable`)
+                  ? "unavailable"
+                  : gaps.includes(`${route}_pending`)
+                    ? "pending"
+                    : gaps.includes(`${route}_incomplete`)
+                      ? "unavailable"
+                      : gaps.some(
+                            (gap) =>
+                              gap.startsWith(route + "_") &&
+                              gap.endsWith("limit"),
+                          )
+                        ? "truncated"
+                        : count
+                          ? "success"
+                          : "empty",
+                candidates: count,
+                originals,
+              },
+            ];
+          }),
+        ),
+        cache: "miss" as const,
         wikiCandidates,
         graphCandidates,
-        requestedRoutes: [
-          "source",
-          ...(useWiki ? ["wiki"] : []),
-          ...(useGraph ? ["graph"] : []),
-        ],
+        graph: graphDetails,
+        requestedRoutes: [...routes],
         retrievalProfile: this.profile ?? ("default" as const),
         lexicalCandidates: candidates.lexical.length,
         vectorCandidates: candidates.vector.length,
         retrievalMs: performance.now() - started,
-        embeddingRequests: 1,
+        embeddingRequests: routes.includes("source") ? 1 : 0,
         gaps,
       },
     };
-    this.packs.set(input.runId, structuredClone(pack));
-    return pack;
+    const cap = (input.complex ? 16000 : 8000) - 512;
+    while (
+      new TextEncoder().encode(JSON.stringify(pack)).length > cap &&
+      items.length
+    ) {
+      if (!gaps.includes("context_limit")) gaps.push("context_limit");
+      items.pop();
+    }
+    pack.hash = hash(items);
+    const dependencies =
+      this.dependencies.get(input.runId) ?? new Map<string, string>();
+    for (const item of items)
+      if (!item.routes?.includes("source"))
+        dependencies.set(item.handle, snapshot);
+      else dependencies.delete(item.handle);
+    this.dependencies.set(input.runId, dependencies);
+    const union = [
+      ...registry,
+      ...items.filter(
+        (item) => !registry.some((previous) => previous.handle === item.handle),
+      ),
+    ];
+    this.packs.set(
+      input.runId,
+      structuredClone({ ...pack, items: union, hash: hash(union) }),
+    );
+    const cache =
+      this.cache.get(input.runId) ?? new Map<string, EvidencePack>();
+    cache.set(key, structuredClone(pack));
+    this.cache.set(input.runId, cache);
+    const view = {
+      ...pack,
+      items: items.filter(
+        (item) => !registry.some((previous) => previous.handle === item.handle),
+      ),
+      diagnostics: {
+        ...pack.diagnostics,
+        reusedHandles: items
+          .filter((item) =>
+            registry.some((previous) => previous.handle === item.handle),
+          )
+          .map((item) => item.handle),
+      },
+    };
+    this.views.set(input.runId, structuredClone(view));
+    return view;
   }
+  async finalizeDirect(
+    token: string,
+    runId: string,
+    answer: DirectAnswer,
+    signal: AbortSignal,
+  ): Promise<GroundedAnswer> {
+    signal.throwIfAborted();
+    answer = parseDirectAnswer(JSON.stringify(answer));
+    if (this.owners.get(runId)?.token !== token)
+      throw new Error("unauthorized");
+    const pack = this.packs.get(runId);
+    if (!pack || answer.basis === "general") throw new Error("invalid_draft");
+    const citations = answer.citations.map((handle) => {
+      const item = pack.items.find((item) => item.handle === handle);
+      if (!item) throw new Error("invalid_citation");
+      return { ...item, id: item.passageId };
+    });
+    if (!citations.length && !answer.gaps.length)
+      throw new Error("invalid_citation");
+    const snapshot = await this.sources.retrievalSnapshot(
+      token,
+      this.owners.get(runId)?.projectId,
+    );
+    if (
+      citations.some((item) => {
+        const dependency = this.dependencies.get(runId)?.get(item.handle);
+        return dependency && dependency !== snapshot;
+      })
+    )
+      throw new Error("source_changed");
+    const validatedAt = await this.validateSources(
+      token,
+      { ...pack, items: citations },
+      signal,
+    );
+    signal.throwIfAborted();
+    const gaps = [...answer.gaps, ...answer.conflicts];
+    return {
+      contract: "direct-answer-v2",
+      validation: { kind: "citation-traceability", semanticReview: false },
+      status: gaps.length ? "partial" : "answered",
+      text: answer.text + (gaps.length ? "\n\n" + gaps.join("\n") : ""),
+      citations,
+      validatedAt,
+      ...(gaps.length ? { reason: "evidence_gap" } : {}),
+    };
+  }
+
   async finalize(
     token: string,
     supplied: EvidencePack,
     runtime: FinalizationRuntime,
   ): Promise<GroundedAnswer> {
-    const pack = this.packs.get(supplied.runId);
+    const pack = this.views.get(supplied.runId);
     if (!pack || hash(pack) !== hash(supplied))
       throw new Error("invalid_evidence_pack");
     const stop = new AbortController();
@@ -532,6 +827,10 @@ export class EvidenceService {
     return result.checkedAt;
   }
   release(runId: string) {
+    this.views.delete(runId);
+    this.cache.delete(runId);
+    this.dependencies.delete(runId);
+    this.owners.delete(runId);
     this.packs.delete(runId);
     this.reviewed.delete(runId);
   }

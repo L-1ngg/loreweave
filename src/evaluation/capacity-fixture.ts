@@ -19,8 +19,21 @@ export async function capacityFixture(
   corrupt = false,
   options: { runUpdateMaintenance?: boolean } = {},
 ) {
-  const f = await evaluationFixture(database, corrupt, "combined", true, {
-    answer: { delayMs: 150 },
+  const f = await evaluationFixture(database, false, "combined", true, {
+    answer: {
+      delayMs: 150,
+      ...(corrupt
+        ? {
+            answer: {
+              basis: "source",
+              text: "unknown [e999]",
+              citations: ["e999"],
+              gaps: [],
+              conflicts: [],
+            },
+          }
+        : {}),
+    },
     wiki: new ObservableMaintenance(),
     graph: new ObservableMaintenance(),
   });

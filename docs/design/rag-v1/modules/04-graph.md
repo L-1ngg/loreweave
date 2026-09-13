@@ -1,5 +1,7 @@
 # M04: Graph
 
+Runtime adoption: [Issue 28 contract](../issue-28-adoption.md) supersedes the conflicting online-answer, retrieval, admission and incremental-maintenance defaults below; unaffected invariants and historical records remain in force.
+
 M04 stores qualified claims between entities and retrieves useful neighborhoods.
 It answers which supported relationships to inspect; final cited answers belong
 to M06.

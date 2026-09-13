@@ -1,5 +1,7 @@
 # M05: Wiki
 
+Runtime adoption: [Issue 28 contract](../issue-28-adoption.md) supersedes the conflicting online-answer, retrieval, admission and incremental-maintenance defaults below; unaffected invariants and historical records remain in force.
+
 M05 maintains readable cross-document topic pages, their publication state and
 recoverable edits. It preserves the user's organization/correction intent.
 

@@ -1,3 +1,5 @@
+import { loadEmbeddingTokenizer } from "../embedding-tokenizer.ts";
+import { ModelAdmission } from "../model-admission.ts";
 import { MaintenanceService } from "../maintenance.ts";
 import { ExternalKnowledge } from "../external-knowledge.ts";
 import { WikiService } from "../wiki.ts";
@@ -20,16 +22,21 @@ import { createLifecycle } from "../lifecycle.ts";
 
 export function createRuntime(config: RuntimeConfig) {
   return createLifecycle(async ({ signal, defer }) => {
-    const real = config.provider;
-    const embeddings = real
-      ? new OpenAIEmbeddings(real.embedding)
-      : new ControlledEmbeddings();
-    const knowledgeModel = real
-      ? new OpenAIKnowledgeModel(real.chat)
-      : new ScriptedWikiModel();
-
     const databaseUrl = config.databaseUrl;
     if (!databaseUrl) throw new Error("missing_config:DATABASE_URL");
+    const admission = new ModelAdmission(databaseUrl);
+    defer(() => admission.close());
+    const real = config.provider;
+    const embeddings = real
+      ? new OpenAIEmbeddings(
+          { ...real.embedding, fetch: admission.fetch },
+          await loadEmbeddingTokenizer(real.embedding.model),
+        )
+      : new ControlledEmbeddings();
+    const knowledgeModel = real
+      ? new OpenAIKnowledgeModel({ ...real.chat, fetch: admission.fetch })
+      : new ScriptedWikiModel();
+
     const access = new AccessService(databaseUrl);
     defer(() => access.close());
     const conversations = new PostgresConversations(databaseUrl);
@@ -40,7 +47,13 @@ export function createRuntime(config: RuntimeConfig) {
     let provider: ReturnType<typeof startScriptedProvider> | undefined;
     let server: ReturnType<typeof Bun.serve> | undefined;
 
-    const imports = new SourceService(databaseUrl, access, embeddings);
+    const imports = new SourceService(
+      databaseUrl,
+      access,
+      embeddings,
+      config.importLimits,
+      config.preparationDeadlineMs,
+    );
     defer(() => imports.close());
     const identities = new IdentityService(databaseUrl, access, imports);
     defer(() => identities.close());
@@ -59,36 +72,43 @@ export function createRuntime(config: RuntimeConfig) {
       imports,
       identities,
       knowledgeModel,
+      { packetQuantum: 1 },
     );
     defer(() => graph.close());
     let worker: Promise<void> | undefined;
-    async function prepareSources() {
+    async function lane(name: string, workOne: () => Promise<unknown>) {
       while (!signal.aborted) {
         try {
-          if (
-            !(await imports.workOne()) &&
-            !signal.aborted &&
-            !(await identities.workOne()) &&
-            !signal.aborted &&
-            !(await wiki.workOne()) &&
-            !signal.aborted &&
-            !(await graph.workOne())
-          )
-            await Bun.sleep(200);
+          if (!(await workOne())) await Bun.sleep(200);
         } catch (error) {
           console.error(
-            "Source worker unavailable",
+            `${name} worker unavailable`,
             error instanceof Error ? error.name : "error",
           );
           await Bun.sleep(1000);
         }
       }
     }
+    async function prepareSources() {
+      await Promise.all([
+        lane("source", () => imports.workOne({ batchQuantum: 1 })),
+        lane("search-index", () => imports.indexes.workOne()),
+        lane("identity", () => identities.workOne()),
+        lane("wiki", () => wiki.workOne()),
+        lane("wiki-peer", () => wiki.workOne()),
+        lane("graph", () => graph.workOne()),
+      ]);
+    }
     await access.migrate();
     signal.throwIfAborted();
     const organization = config.organization;
     if (config.bootstrap) {
       await access.bootstrap({ organization, ...config.bootstrap });
+    }
+    if (config.role === "worker") {
+      defer(() => worker);
+      worker = prepareSources();
+      return;
     }
     const sources = new FixtureSources({
       organizationId: await access.organization(organization),
@@ -106,6 +126,7 @@ export function createRuntime(config: RuntimeConfig) {
     const evidence = new EvidenceService(imports, wiki, graph, profile);
     host = new KnowledgeHost({
       wiki,
+      modelFetch: admission.fetch,
       providerUrl: real?.chat.baseUrl ?? provider!.url,
       ...(real
         ? {
@@ -141,6 +162,6 @@ export function createRuntime(config: RuntimeConfig) {
       fetch: (request) => app.fetch(request),
     });
     defer(() => server!.stop(true));
-    worker = prepareSources();
+    if (config.role !== "api") worker = prepareSources();
   });
 }

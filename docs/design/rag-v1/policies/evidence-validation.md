@@ -1,5 +1,7 @@
 # Evidence validation and final-answer admission
 
+Runtime adoption: [Issue 28 contract](../issue-28-adoption.md) supersedes the conflicting online-answer, retrieval, admission and incremental-maintenance defaults below; unaffected invariants and historical records remain in force.
+
 Status: design defaults selected on 2026-09-10 to close the whole-design review.
 M06 owns answer validation; M05/M04 use the same support semantics for publication.
 Model-based review is fallible. Passing checks is not proof of real-world truth.

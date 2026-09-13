@@ -1,5 +1,7 @@
 # Identity proof validity and source-change propagation
 
+Runtime adoption: [Issue 28 contract](../issue-28-adoption.md) supersedes the conflicting online-answer, retrieval, admission and incremental-maintenance defaults below; unaffected invariants and historical records remain in force.
+
 Status: design defaults selected on 2026-09-10. M03 owns this policy behind its
 existing identity resolution/validation interface; no new public module is added.
 

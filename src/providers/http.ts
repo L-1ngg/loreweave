@@ -1,4 +1,5 @@
 export interface ProviderConfig {
+  fetch?: typeof globalThis.fetch;
   baseUrl: string;
   apiKey: string;
   model: string;
@@ -14,7 +15,7 @@ export async function providerJSON(
 ): Promise<unknown> {
   signal.throwIfAborted();
   try {
-    const response = await fetch(
+    const response = await (config.fetch ?? fetch)(
       `${config.baseUrl.replace(/\/$/, "")}/${path}`,
       {
         method: "POST",
@@ -26,17 +27,28 @@ export async function providerJSON(
         body: JSON.stringify({ model: config.model, ...body }),
         signal: AbortSignal.any([
           signal,
-          AbortSignal.timeout(config.timeoutMs),
+          ...(!config.fetch ? [AbortSignal.timeout(config.timeoutMs)] : []),
         ]),
       },
     );
-    if (!response.ok) throw new Error(`provider_http_${response.status}`);
+    if (!response.ok) {
+      await response.arrayBuffer();
+      throw new Error(`provider_http_${response.status}`);
+    }
     const result = await response.json();
     signal.throwIfAborted();
     return result;
   } catch (error) {
     signal.throwIfAborted();
-    if (error instanceof Error && /^provider_http_\d+$/.test(error.message))
+    if (
+      error instanceof Error &&
+      (/^provider_http_\d+$/.test(error.message) ||
+        [
+          "provider_uncertain",
+          "missing_model_work",
+          "model_authority_lost",
+        ].includes(error.message))
+    )
       throw error;
     // Provider bodies and fetch errors can contain credentials or source text.
     throw new Error("provider_unavailable");

@@ -1,5 +1,7 @@
 # LoreWeave: First-Version Construction Blueprint
 
+Runtime adoption: [Issue 28 contract](design/rag-v1/issue-28-adoption.md) supersedes the conflicting online-answer, retrieval, admission and incremental-maintenance defaults below; unaffected invariants and historical records remain in force.
+
 Product name: **LoreWeave**. Repository slug: **`loreweave`**.
 An agent-powered knowledge base with a living wiki, graph-assisted retrieval,
 and source-backed answers. Naming is confirmed in

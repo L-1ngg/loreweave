@@ -1,5 +1,7 @@
 # M02: Sources
 
+Runtime adoption: [Issue 28 contract](../issue-28-adoption.md) supersedes the conflicting online-answer, retrieval, admission and incremental-maintenance defaults below; unaffected invariants and historical records remain in force.
+
 M02 makes supplied Markdown a versioned, addressable source of evidence. It owns
 activation; identity, Wiki and graph jobs consume the resulting revision event.
 

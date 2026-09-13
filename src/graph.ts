@@ -1,3 +1,4 @@
+import { graphExtraction } from "./graph-extraction-cache.ts";
 import { GraphQueries } from "./graph-queries.ts";
 import {
   graphOriginals,
@@ -15,7 +16,6 @@ import {
 } from "./operations.ts";
 import { SourceService } from "./sources.ts";
 import { WikiModelRuntime } from "./wiki-model-runtime.ts";
-import { BackgroundAdmission } from "./background-admission.ts";
 import type {
   GraphClaimView,
   GraphModel,
@@ -64,17 +64,16 @@ export class GraphService {
     private readonly sources: SourceService,
     private readonly identities: IdentityService,
     private readonly model: GraphModel,
-    private readonly execution: { leaseMs?: number } = {},
+    private readonly execution: {
+      leaseMs?: number;
+      packetQuantum?: number;
+    } = {},
   ) {
     this.operations = new Operations(url);
-    this.runtime = new WikiModelRuntime(
-      this.operations,
-      model,
-      new BackgroundAdmission(url),
-    );
+    this.runtime = new WikiModelRuntime(this.operations, model);
   }
   private profile() {
-    return `graph-v3:${this.model.profile}:${normalizationProfile}:vocabulary-v1`;
+    return `graph-v4:${this.model.profile}:${normalizationProfile}:vocabulary-v1`;
   }
   async workOne(token?: string) {
     const context = token
@@ -151,14 +150,6 @@ export class GraphService {
     const pack = await this.sourcePack(job, versionId);
     const identitySnapshot = await this.operations
       .sql`SELECT m.id,m.current_revision_id FROM identity_mentions m WHERE m.version_id=${versionId} ORDER BY m.id`;
-    // A compact monotonic revision snapshot catches identity events consumed while
-    // the model is still discovering previously unknown cross-source endpoints.
-    const epoch = async (tx: Transaction) => {
-      const [row] =
-        await tx`SELECT count(*)::text AS mentions,COALESCE(sum(r.revision),0)::text AS revisions
-        FROM identity_mentions m JOIN identity_revisions r ON r.id=m.current_revision_id WHERE m.organization_id=${org}`;
-      return row!;
-    };
     const generationId = await this.operations.checkpoint(job, async (tx) => {
       const [existing] =
         await tx`SELECT id,coverage,profile,source_version_id FROM graph_generations WHERE trigger_job_id=${job.id} FOR UPDATE`;
@@ -174,7 +165,7 @@ export class GraphService {
         return String(existing.id);
       }
       const id = crypto.randomUUID();
-      await tx`INSERT INTO graph_generations(id,organization_id,document_id,source_version_id,profile,state,trigger_operation_id,trigger_job_id,coverage) VALUES(${id},${org},${pack.source.id},${pack.source.version},${this.profile()},'staged',${job.operationId},${job.id},${tx.json({ sourceHash: pack.hash, identitySnapshot, identityEpoch: await epoch(tx) })})`;
+      await tx`INSERT INTO graph_generations(id,organization_id,document_id,source_version_id,profile,state,trigger_operation_id,trigger_job_id,coverage) VALUES(${id},${org},${pack.source.id},${pack.source.version},${this.profile()},'staged',${job.operationId},${job.id},${tx.json({ sourceHash: pack.hash, identitySnapshot })})`;
       return id;
     });
     const packets = graphPackets(pack.items);
@@ -191,8 +182,9 @@ export class GraphService {
     await this.operations.checkpoint(job, async (tx) => {
       for (const packet of manifest)
         await tx`INSERT INTO graph_packets(generation_id,packet_key,source_locators,state) VALUES(${generationId},${packet.key},${tx.json(packet.locators)},'pending') ON CONFLICT(generation_id,packet_key) DO NOTHING`;
-      await tx`UPDATE graph_generations SET coverage=coverage||${tx.json({ packetManifest: manifest, contextPolicy: "utf8-byte-bound+adjacent-and-anchor-v3", normalizationProfile })}::jsonb WHERE id=${generationId}`;
+      await tx`UPDATE graph_generations SET coverage=coverage||${tx.json({ packetManifest: manifest, contextPolicy: "utf8-byte-bound+obligations-v4", normalizationProfile })}::jsonb WHERE id=${generationId}`;
     });
+    let processedPackets = 0;
     for (const packet of packets) {
       const [completed] = await this.operations
         .sql`SELECT state,identity_dependencies,exclusions FROM graph_packets WHERE generation_id=${generationId} AND packet_key=${packet.key}`;
@@ -201,30 +193,53 @@ export class GraphService {
         job.operationId,
         [...new Set(packet.items.map((item) => item.passageId))],
       );
-      const raw = await this.runtime.request(
+      const shape = (items: GraphOriginal[]) =>
+        hash(
+          items.map((item) => ({
+            text: item.text,
+            context: item.context,
+            heading: item.headingPath,
+          })),
+        );
+      const ambiguous =
+        packets.filter((other) => shape(other.items) === shape(packet.items))
+          .length > 1;
+      const [extractionStart] = await this.operations
+        .sql`SELECT clock_timestamp() AS at`;
+      const extraction = await graphExtraction(
+        this.operations,
         job,
-        packet.key,
-        "graph_extraction",
-        2,
-        {
-          pack: {
-            runId: job.id,
-            question: "graph",
-            items: packet.items,
-            hash: hash(packet.items),
-            diagnostics: {
-              lexicalCandidates: 0,
-              vectorCandidates: 0,
-              retrievalMs: 0,
-              embeddingRequests: 0,
-              gaps: [],
+        pack.source.id,
+        this.profile() + (ambiguous ? `:${versionId}:${packet.key}` : ""),
+        packet.items,
+        mentions,
+        () =>
+          this.runtime.request(
+            job,
+            packet.key,
+            "graph_extraction",
+            2,
+            {
+              pack: {
+                runId: job.id,
+                question: "graph",
+                items: packet.items,
+                hash: hash(packet.items),
+                diagnostics: {
+                  lexicalCandidates: 0,
+                  vectorCandidates: 0,
+                  retrievalMs: 0,
+                  embeddingRequests: 0,
+                  gaps: [],
+                },
+              },
+              vocabulary: [...predicates],
+              mentions,
             },
-          },
-          vocabulary: [...predicates],
-          mentions,
-        },
-        (value) => validatePacket(value, packet.items),
+            (value) => validatePacket(value, packet.items),
+          ),
       );
+      const raw = validatePacket(extraction.raw, packet.items);
       // Register all endpoint inputs before resolving them. Identity events then see
       // exclusion-only references even when the referenced mention belongs elsewhere.
       await this.operations.checkpoint(job, async (tx) => {
@@ -243,14 +258,11 @@ export class GraphService {
         // before this epoch check or after these reverse dependencies are visible.
         await tx`SELECT id FROM identity_mentions WHERE organization_id=${org} AND id::text IN ${tx(endpoints.length ? endpoints : [""])} ORDER BY id FOR SHARE`;
         await tx`UPDATE graph_packets SET endpoint_mentions=${tx.json(endpoints)} WHERE generation_id=${generationId} AND packet_key=${packet.key}`;
-        const [generation] =
-          await tx`SELECT coverage FROM graph_generations WHERE id=${generationId}`;
-        if (hash(generation!.coverage.identityEpoch) !== hash(await epoch(tx)))
-          throw new Error(
-            job.payload.identityRetry
-              ? "needs_attention:identity_changed"
-              : "identity_changed",
-          );
+        const [changedEndpoint] =
+          await tx`SELECT m.id FROM identity_mentions m JOIN identity_revisions r ON r.id=m.current_revision_id WHERE m.organization_id=${org} AND m.id::text IN ${tx(endpoints.length ? endpoints : [""])} AND r.created_at>${extractionStart!.at} LIMIT 1`;
+        if (changedEndpoint && raw.exclusions.length)
+          throw new Error("identity_changed");
+        await tx`UPDATE graph_packets SET extraction_reused=${extraction.reused} WHERE generation_id=${generationId} AND packet_key=${packet.key}`;
       });
       const bindings: Array<{
         mentionId: string;
@@ -315,6 +327,13 @@ export class GraphService {
       await this.operations.checkpoint(job, async (tx) => {
         await tx`UPDATE graph_packets SET state='reviewed',relations=${tx.json(jsonValue(raw.relations))},exclusions=${tx.json(jsonValue(exclusions))} WHERE generation_id=${generationId} AND packet_key=${packet.key}`;
       });
+      if (
+        ++processedPackets >= (this.execution.packetQuantum ?? Infinity) &&
+        packet !== packets.at(-1)
+      ) {
+        await this.operations.commit(job, async () => "queued");
+        return;
+      }
     }
     await this.operations.commit(job, async (tx) => {
       await this.publish(tx, job, org, generationId, pack.source.id, versionId);
@@ -434,12 +453,14 @@ export class GraphService {
     question: string,
     projectId?: string,
     signal?: AbortSignal,
+    options?: import("./graph-queries.ts").GraphSearchOptions,
   ) {
     return new GraphQueries(this.operations, this.access).search(
       token,
       question,
       projectId,
       signal,
+      options,
     );
   }
   async inspect(token: string, operationId: string) {

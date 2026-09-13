@@ -1,5 +1,7 @@
 # M07: Agent Host
 
+Runtime adoption: [Issue 28 contract](../issue-28-adoption.md) supersedes the conflicting online-answer, retrieval, admission and incremental-maintenance defaults below; unaffected invariants and historical records remain in force.
+
 M07 adapts the pinned Forge SDK to a bounded Knowledge Agent run. It owns product
 orchestration; it does not fork a second model/tool loop.
 

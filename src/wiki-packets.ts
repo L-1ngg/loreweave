@@ -8,7 +8,12 @@ export function makePack(
 ): WikiPack {
   const items = sources
     .flatMap((source) =>
-      source.passages.map((passage) => ({
+      source.passages.map((passage, index) => ({
+        contextHash: hash({
+          heading: passage.headingPath,
+          previous: source.passages[index - 1]?.text,
+          next: source.passages[index + 1]?.text,
+        }),
         documentId: source.id,
         version: source.version,
         passageId: passage.id,

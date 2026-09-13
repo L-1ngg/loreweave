@@ -6,6 +6,30 @@ import { credential } from "./http-common.ts";
 import { SourceService } from "./sources.ts";
 export function sourceRoutes(sources: SourceService) {
   const app = new Hono();
+  app.post("/search-indexes", async (c) => {
+    const input = await jsonInput(c);
+    if (
+      !input ||
+      typeof input !== "object" ||
+      !("key" in input) ||
+      typeof input.key !== "string" ||
+      Object.keys(input).length !== 1
+    )
+      throw new Error("invalid_input");
+    return c.json(await sources.indexes.rebuild(credential(c), input.key), 202);
+  });
+  app.get("/search-indexes/:id", async (c) => {
+    if (!isUuid(c.req.param("id"))) throw new Error("invalid_input");
+    return c.json(
+      await sources.indexes.inspect(credential(c), c.req.param("id")),
+    );
+  });
+  app.post("/search-indexes/:id/rollback", async (c) => {
+    if (!isUuid(c.req.param("id"))) throw new Error("invalid_input");
+    return c.json(
+      await sources.indexes.rollback(credential(c), c.req.param("id")),
+    );
+  });
   app.get("/sources/inventory", async (c) => {
     const after = c.req.query("after");
     if (after && !isUuid(after)) throw new Error("invalid_input");
@@ -39,6 +63,40 @@ export function sourceRoutes(sources: SourceService) {
       }),
       201,
     );
+  });
+  app.post("/import-batches", async (c) => {
+    const input = await jsonInput(c);
+    if (
+      !input ||
+      typeof input !== "object" ||
+      !("key" in input) ||
+      typeof input.key !== "string" ||
+      !("entries" in input) ||
+      !Array.isArray(input.entries) ||
+      Object.keys(input).some((key) => !["key", "entries"].includes(key)) ||
+      input.entries.some(
+        (entry) =>
+          !entry ||
+          typeof entry !== "object" ||
+          !isUuid(entry.attachmentId) ||
+          (entry.projectId !== undefined && !isUuid(entry.projectId)) ||
+          Object.keys(entry).some(
+            (key) => !["attachmentId", "projectId"].includes(key),
+          ),
+      )
+    )
+      throw new Error("invalid_input");
+    return c.json(
+      await sources.submitBatch(credential(c), {
+        key: input.key,
+        entries: input.entries,
+      }),
+      202,
+    );
+  });
+  app.get("/import-batches/:id", async (c) => {
+    if (!isUuid(c.req.param("id"))) throw new Error("invalid_input");
+    return c.json(await sources.batch(credential(c), c.req.param("id")));
   });
   app.post("/imports", async (c) => {
     const input: unknown = await jsonInput(c);
@@ -87,6 +145,10 @@ export function sourceRoutes(sources: SourceService) {
     const projectId = c.req.query("projectId");
     if (projectId && !isUuid(projectId)) throw new Error("invalid_input");
     return c.json({ operations: await sources.list(credential(c), projectId) });
+  });
+  app.get("/imports/:id/preparation", async (c) => {
+    if (!isUuid(c.req.param("id"))) throw new Error("invalid_input");
+    return c.json(await sources.preparation(credential(c), c.req.param("id")));
   });
   app.get("/imports/:id", async (c) => {
     if (!isUuid(c.req.param("id"))) throw new Error("invalid_input");

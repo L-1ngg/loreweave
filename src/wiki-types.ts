@@ -1,6 +1,7 @@
 import type { EvidencePack, EvidenceItem } from "./evidence.ts";
 import type { Draft, Review } from "./answer-validation.ts";
 export type WikiPhase =
+  | "sections"
   | "structure"
   | "structure_review"
   | "graph_extraction"
@@ -13,6 +14,7 @@ export type WikiPhase =
   | "generation"
   | "review";
 export interface WikiModel {
+  readonly admittedTransport?: boolean;
   request(
     phase: WikiPhase,
     input: Record<string, unknown>,
@@ -41,6 +43,16 @@ export interface TopicExtraction {
   }>;
 }
 export interface WikiCertificate {
+  publishedRanges?: Array<{
+    draftStart: number;
+    draftEnd: number;
+    publishedStart: number;
+    publishedEnd: number;
+  }>;
+  section?: import("./wiki-sections.ts").WikiSection;
+  continuation?: number;
+  generationReused?: boolean;
+  contextHash?: string;
   draft: Draft;
   evidence: EvidenceItem[];
   offset: number;
@@ -53,6 +65,7 @@ export interface WikiCertificate {
   checkedAt: string;
 }
 export interface WikiPage {
+  sections?: import("./wiki-sections.ts").WikiSection[];
   currentVersion?: string;
   projectId?: string;
   id: string;

@@ -1,5 +1,7 @@
 # Shared construction contracts
 
+Runtime adoption: [Issue 28 contract](issue-28-adoption.md) supersedes the conflicting online-answer, retrieval, admission and incremental-maintenance defaults below; unaffected invariants and historical records remain in force.
+
 These contracts implement the confirmed goals and delegated design choices.
 Interface names are design vocabulary, not existing exports. Transport DTOs and
 database schemas may differ internally while preserving these meanings.

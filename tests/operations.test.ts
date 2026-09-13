@@ -287,3 +287,44 @@ test("authenticated operation status reconciles a known outcome and rejects a re
     await f.close();
   }
 }, 30000);
+
+test("AC07/14: an eligible project progresses ahead of an older flood after the busy scope receives a turn", async () => {
+  const f = await fixture();
+  try {
+    const accepted: string[] = [];
+    for (const projectId of ["busy", "busy", "busy", "other"]) {
+      const id = await f.operations.accept(
+        f.context,
+        crypto.randomUUID(),
+        projectId,
+        async (tx, id) => {
+          await f.operations.enqueue(tx, id, "fairness.packet", { projectId });
+        },
+      );
+      accepted.push(id);
+    }
+    const first = (await f.operations.claim(
+      ["fairness.packet"],
+      60000,
+      f.context.organizationId,
+    ))!;
+    expect(first.operationId).toBe(accepted[0]!);
+    await f.operations.commit(first, async () => {});
+    const second = (await f.operations.claim(
+      ["fairness.packet"],
+      60000,
+      f.context.organizationId,
+    ))!;
+    expect(second.operationId).toBe(accepted[3]!);
+    await f.operations.commit(second, async () => {});
+    const third = (await f.operations.claim(
+      ["fairness.packet"],
+      60000,
+      f.context.organizationId,
+    ))!;
+    expect(third.operationId).toBe(accepted[1]!);
+    await f.operations.commit(third, async () => {});
+  } finally {
+    await f.close();
+  }
+});

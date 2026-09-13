@@ -99,32 +99,16 @@ export async function evaluationFixture(
         },
       ],
     });
-    const provider = startScriptedProvider(models.answer);
+    const provider = startScriptedProvider({
+      ...models.answer,
+      ...(corruptDraft
+        ? {
+            transformAnswer: (answer: unknown) =>
+              JSON.parse(JSON.stringify(answer).replaceAll("30", "99")),
+          }
+        : {}),
+    });
     defer(() => provider.stop());
-    const faulty = corruptDraft
-      ? Bun.serve({
-          hostname: "127.0.0.1",
-          port: 0,
-          async fetch(request) {
-            const body = (await request.json()) as { phase?: string };
-            const response = await fetch(
-              new URL(new URL(request.url).pathname, provider.url),
-              {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify(body),
-              },
-            );
-            if (body.phase !== "generation") return response;
-            // A real provider boundary sends a wrong numeric fact; product review rejects it.
-            const text = await response.text();
-            return new Response(text.replaceAll("30", "99"), {
-              headers: { "content-type": "application/json" },
-            });
-          },
-        })
-      : undefined;
-    if (faulty) defer(() => faulty.stop(true));
     const identities = derived
       ? new IdentityService(url, access, sources)
       : undefined;
@@ -159,7 +143,13 @@ export async function evaluationFixture(
       conversations,
       sources: fixtureSources,
       evidence: new EvidenceService(sources, wiki, graph, profile),
-      providerUrl: faulty ? String(faulty.url) : provider.url,
+      evaluationRoutes:
+        profile === "combined"
+          ? ["source", "wiki", "graph"]
+          : profile === "source"
+            ? ["source"]
+            : ["source", profile],
+      providerUrl: provider.url,
     });
     defer(() => host.close(), "settlement");
     const app = createApp(host, fixtureSources, {
@@ -189,7 +179,11 @@ export async function evaluationFixture(
         conversations,
         sources: fixtureSources,
         evidence: new EvidenceService(sources, wiki, graph, route),
-        providerUrl: faulty ? String(faulty.url) : provider.url,
+        evaluationRoutes:
+          route === "combined"
+            ? ["source", "wiki", "graph"]
+            : ["source", route],
+        providerUrl: provider.url,
       });
       defer(() => routeHost.close(), "settlement");
       const routeApp = createApp(routeHost, fixtureSources, {

@@ -1,9 +1,18 @@
 import {
+  defaultImportLimits,
+  defaultPreparationDeadlineMs,
+  maxPreparationDeadlineMs,
+  type ImportLimits,
+} from "./sources.ts";
+import {
   providerConfig,
   type ProviderRuntimeConfig,
 } from "./providers/config.ts";
 
 export type RuntimeConfig = {
+  role?: "all" | "api" | "worker";
+  importLimits?: ImportLimits;
+  preparationDeadlineMs?: number;
   databaseUrl?: string;
   testDatabaseUrl?: string;
   providerMode: "scripted" | "real";
@@ -32,8 +41,32 @@ export function loadConfig(
   const retrievalProfile = env.LOREWEAVE_RETRIEVAL_PROFILE ?? "source";
   if (!["source", "wiki", "graph", "combined"].includes(retrievalProfile))
     throw new Error("invalid_config:LOREWEAVE_RETRIEVAL_PROFILE");
+  const role = env.LOREWEAVE_ROLE ?? "all";
+  if (!["all", "api", "worker"].includes(role))
+    throw new Error("invalid_config:LOREWEAVE_ROLE");
+  const importLimits = { ...defaultImportLimits };
+  for (const key of Object.keys(importLimits) as Array<keyof ImportLimits>) {
+    const name = `LOREWEAVE_IMPORT_${key.replace(/[A-Z]/g, (letter) => "_" + letter).toUpperCase()}`;
+    const value = Number(env[name] ?? importLimits[key]);
+    if (!Number.isSafeInteger(value) || value < 1)
+      throw new Error(`invalid_config:${name}`);
+    importLimits[key] = value;
+  }
+  const preparationSeconds = Number(
+    env.LOREWEAVE_SOURCE_PREPARATION_SECONDS ??
+      defaultPreparationDeadlineMs / 1000,
+  );
+  if (
+    !Number.isSafeInteger(preparationSeconds) ||
+    preparationSeconds < 1 ||
+    preparationSeconds > maxPreparationDeadlineMs / 1000
+  )
+    throw new Error("invalid_config:LOREWEAVE_SOURCE_PREPARATION_SECONDS");
   const password = env.LOREWEAVE_BOOTSTRAP_PASSWORD?.trim();
   return {
+    role: role as "all" | "api" | "worker",
+    importLimits,
+    preparationDeadlineMs: preparationSeconds * 1000,
     ...(env.DATABASE_URL?.trim()
       ? { databaseUrl: env.DATABASE_URL.trim() }
       : {}),

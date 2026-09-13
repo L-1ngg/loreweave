@@ -17,6 +17,7 @@ async function fixture(model = new ScriptedWikiModel()) {
   };
   await access.bootstrap(account);
   const { token } = await access.login(account);
+  const { organizationId } = await access.authorize(token, "read");
   const embeddings = new ControlledEmbeddings(),
     sources = new SourceService(url!, access, embeddings),
     identities = new IdentityService(url!, access, sources),
@@ -30,6 +31,7 @@ async function fixture(model = new ScriptedWikiModel()) {
     );
   return {
     access,
+    organizationId,
     account,
     identities,
     token,
@@ -53,7 +55,7 @@ async function fixture(model = new ScriptedWikiModel()) {
           ? { documentId: prior.documentId, expectedPrior: prior.versionId }
           : {}),
       });
-      await sources.workOne();
+      await sources.workOne({ organizationId });
       return operation;
     },
   };
@@ -192,7 +194,7 @@ test("a correction activated during structural review prevents the entire stale 
       text: "生产日志保留 90 天。",
     });
     expect(note.status).toBe("accepted");
-    await f.sources.workOne();
+    await f.sources.workOne({ organizationId: f.organizationId });
     model.release.resolve();
     await work;
     expect((await f.wiki.page(f.token, page.id)).version).toBe(page.version);

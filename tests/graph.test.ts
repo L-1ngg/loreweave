@@ -250,7 +250,9 @@ test("lost Graph ownership cancels started work and waits for its termination be
 
 for (const waiting of [true, false])
   test(`renewal failure stops Graph admission and preserves recovery budgets (waiting=${waiting})`, async () => {
-    const model = new ScriptedWikiModel();
+    const model = Object.assign(new ScriptedWikiModel(), {
+      admittedTransport: waiting,
+    });
     const request = model.request.bind(model);
     const entered = Promise.withResolvers<void>();
     const f = await fixture(model, 900);
@@ -261,7 +263,7 @@ for (const waiting of [true, false])
     let dispatches = 0;
     let work: Promise<boolean> | undefined;
     model.request = async (phase, input, signal) => {
-      dispatches++;
+      if (!waiting || !fail) dispatches++;
       entered.resolve();
       if (fail) {
         await new Promise<void>((resolve) =>
@@ -273,8 +275,7 @@ for (const waiting of [true, false])
     };
     try {
       const operation = await f.source("No relationships are stated.");
-      if (waiting)
-        await sql`SELECT pg_advisory_lock(hashtextextended('loreweave:background-model',0))`;
+
       // A real database error on this operation's renewal, without breaking claim,
       // inspection, checkpoints or a replacement worker's fence increment.
       await sql.unsafe(
@@ -315,6 +316,7 @@ for (const waiting of [true, false])
       ).toBeNull();
       await sql.unsafe(`DROP TRIGGER ${faultName} ON knowledge_jobs`);
       fail = false;
+      model.admittedTransport = false;
       // Expiry after settlement permits recovery; no abandoned heartbeat retains it.
       await Bun.sleep(1000);
       expect(await f.graph.workOne(f.token)).toBe(true);
@@ -686,6 +688,17 @@ test("neighborhood stops at the requested hop and retains unknown qualifiers", a
     ).toHaveLength(2);
     expect(
       (await f.graph.search(f.token, "系统甲依赖什么？")).claims,
+    ).toHaveLength(1);
+    expect(
+      (
+        await f.graph.search(
+          f.token,
+          "系统甲的间接依赖？",
+          undefined,
+          undefined,
+          { hops: 2, indirectNeed: "查明间接依赖路径" },
+        )
+      ).claims,
     ).toHaveLength(2);
   } finally {
     await f.close();
@@ -815,7 +828,10 @@ test("dense neighborhoods expose truncation without exceeding fifty entities or 
         passageId: passage.id,
         label: `Node${String(index).padStart(2, "0")}`,
       });
-      rows.push(relation(root.id, mention.id, passage.id));
+      rows.push({
+        ...relation(root.id, mention.id, passage.id),
+        relationText: `Node00 依赖 Node${String(index).padStart(2, "0")}。`,
+      });
     }
     model.rows.set(op.versionId, rows);
     while (await f.graph.workOne(f.token)) {}
@@ -828,6 +844,23 @@ test("dense neighborhoods expose truncation without exceeding fifty entities or 
     expect(result.entities).toHaveLength(50);
     expect(result.claims).toHaveLength(49);
     expect(result.truncated).toBe(true);
+    const sql = postgres(url!);
+    try {
+      const [last] =
+        await sql`SELECT c.id,c.relation_text FROM graph_claims c JOIN graph_supports s ON s.claim_id=c.id WHERE s.source_version_id=${op.versionId} ORDER BY c.id DESC LIMIT 1`;
+      expect(result.claims.some((claim) => claim.id === last!.id)).toBe(false);
+      const focused = await f.graph.search(
+        f.token,
+        String(last!.relation_text),
+        undefined,
+        undefined,
+        { entityHints: ["Node00"] },
+      );
+      expect(focused.claims[0]?.id).toBe(String(last!.id));
+      expect(focused.entities.length).toBeLessThanOrEqual(50);
+    } finally {
+      await sql.end();
+    }
   } finally {
     await f.close();
   }
@@ -1239,3 +1272,33 @@ test("an identity event consumed during extraction cannot strand a later registe
     await f.close();
   }
 }, 30000);
+
+test("AC31: exact unchanged source packets reuse raw extraction but renew review and original memberships", async () => {
+  const model = new ScriptedWikiModel(),
+    f = await fixture(model);
+  try {
+    const first = await f.source("# 配置\n\n本节仅记录说明，没有关系声明。");
+    while (await f.graph.workOne(f.token)) {}
+    const extraction = model.calls.filter(
+      (call) => call.phase === "graph_extraction",
+    ).length;
+    const reviews = model.calls.filter(
+      (call) => call.phase === "graph_review",
+    ).length;
+    const next = await f.source(
+      "# 配置\n\n本节仅记录说明，没有关系声明。",
+      first,
+    );
+    while (await f.graph.workOne(f.token)) {}
+    expect(
+      model.calls.filter((call) => call.phase === "graph_extraction").length,
+    ).toBe(extraction);
+    expect(
+      model.calls.filter((call) => call.phase === "graph_review").length,
+    ).toBeGreaterThan(reviews);
+    const result = await f.graph.inspect(f.token, next.id);
+    expect(result.generations.some((g) => g.state === "active")).toBe(true);
+  } finally {
+    await f.close();
+  }
+});

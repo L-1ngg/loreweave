@@ -363,3 +363,56 @@ test("Wiki's fixed heading enters the claim manifest and cannot bypass semantic 
     server.stop(true);
   }
 });
+
+test("AC28: explicit size rejection subdivides bounded batches and checkpoints each validated HTTP result", async () => {
+  const calls: number[] = [],
+    completed: number[][] = [];
+  let malformed = false;
+  const server = Bun.serve({
+    hostname: "127.0.0.1",
+    port: 0,
+    async fetch(request) {
+      const body = (await request.json()) as { input: string[] };
+      calls.push(body.input.length);
+      if (body.input.length > 2) return new Response("size", { status: 413 });
+      return Response.json({
+        data: body.input.map((_, index) => ({
+          index: malformed ? 0 : index,
+          embedding: [index + 1, 2],
+        })),
+      });
+    },
+  });
+  const model = new OpenAIEmbeddings({
+    baseUrl: server.url.toString(),
+    apiKey: "test-key",
+    model: "test",
+    dimensions: 2,
+    batchSize: 32,
+    sendDimensions: false,
+    timeoutMs: 1000,
+  });
+  try {
+    const result = await model.embed(
+      ["a", "b", "c", "d"],
+      AbortSignal.timeout(5000),
+      async (indices) => {
+        completed.push(indices);
+      },
+    );
+    expect(calls).toEqual([4, 2, 2]);
+    expect(completed).toEqual([
+      [0, 1],
+      [2, 3],
+    ]);
+    expect(result).toHaveLength(4);
+    malformed = true;
+    const prior = calls.length;
+    await expect(
+      model.embed(["a", "b"], AbortSignal.timeout(5000)),
+    ).rejects.toThrow("invalid_embedding");
+    expect(calls.length - prior).toBe(1);
+  } finally {
+    server.stop(true);
+  }
+});

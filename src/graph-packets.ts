@@ -66,7 +66,8 @@ export function graphPackets(items: GraphOriginal[]): GraphPacket[] {
       context = bytes(item.context);
     if (
       current.length &&
-      (originalBytes + size > 3000 ||
+      (current[0]!.headingPath.join(" > ") !== item.headingPath.join(" > ") ||
+        originalBytes + size > 3000 ||
         contextBytes + context > 1000 ||
         bytes(JSON.stringify([...current, item])) > 12000)
     ) {
@@ -124,7 +125,10 @@ export function graphPackets(items: GraphOriginal[]): GraphPacket[] {
         items: spans.map((item) => ({ ...item, context: "" })),
       });
     };
-    if (index + 1 < primary.length)
+    if (
+      index + 1 < primary.length &&
+      packet.items.at(-1)!.passageId === primary[index + 1]!.items[0]!.passageId
+    )
       bridge([packet.items.at(-1)!, primary[index + 1]!.items[0]!]);
     for (const item of packet.items) {
       for (const match of item.text.matchAll(/\[[^\]]*\]\(#([^\s)]+)\)/g)) {

@@ -1,3 +1,4 @@
+import { withModelWork } from "./model-admission.ts";
 import postgres from "postgres";
 import type { TrustedContext } from "./access.ts";
 export type Transaction = postgres.TransactionSql;
@@ -95,7 +96,14 @@ export class Operations {
     schedule();
     try {
       controller.signal.throwIfAborted();
-      await run(job);
+      const [operation] = await this
+        .sql`SELECT created_at FROM knowledge_operations WHERE id=${job.operationId}`;
+      const deadline =
+        new Date(operation!.created_at).getTime() + 30 * 60 * 1000;
+      await withModelWork(
+        { operationId: job.operationId, priority: "background", deadline },
+        () => run(job),
+      );
     } catch (error) {
       if (
         controller.signal.aborted ||
@@ -176,7 +184,10 @@ export class Operations {
     payload: Record<string, unknown>,
     jobKey = "",
   ): Promise<void> {
-    await tx`INSERT INTO knowledge_jobs(id,operation_id,kind,payload,job_key) VALUES(${crypto.randomUUID()},${operationId},${kind},${tx.json(payload as postgres.JSONValue)},${jobKey})`;
+    const [scope] = await tx`SELECT o.organization_id::text||':'||coalesce(
+      (SELECT d.project_id::text FROM source_versions v JOIN source_documents d ON d.id=v.document_id WHERE v.operation_id=o.id),
+      (SELECT p.project_id::text FROM wiki_pages p WHERE p.id::text=${String(payload.pageId ?? "")}),${typeof payload.projectId === "string" ? payload.projectId : null},'shared') AS key FROM knowledge_operations o WHERE o.id=${operationId}`;
+    await tx`INSERT INTO knowledge_jobs(id,operation_id,kind,payload,job_key,schedule_scope) VALUES(${crypto.randomUUID()},${operationId},${kind},${tx.json(payload as postgres.JSONValue)},${jobKey},${String(scope!.key)})`;
   }
   async claim(
     kinds: string[],
@@ -186,12 +197,12 @@ export class Operations {
   ): Promise<Job | undefined> {
     if (eligibleIds && !eligibleIds.length) return undefined;
     const [row] = await this
-      .sql`UPDATE knowledge_jobs SET state='running', attempt=attempt+1, fence=fence+1,
+      .sql`UPDATE knowledge_jobs SET state='running', attempt=attempt+1, fence=fence+1,last_claimed_at=clock_timestamp(),
       lease_until=clock_timestamp()+${leaseMs}*interval '1 millisecond'
       WHERE id=(SELECT id FROM knowledge_jobs WHERE kind IN ${this.sql(kinds)} AND (${organizationId ?? null}::uuid IS NULL OR operation_id IN (SELECT id FROM knowledge_operations WHERE organization_id=${organizationId ?? null})) AND
       ((state='queued' OR (state='retry_wait' AND kind NOT LIKE 'wiki.%')) OR (state='running' AND lease_until<clock_timestamp()))
       AND (${eligibleIds === undefined} OR id::text IN (SELECT value FROM jsonb_array_elements_text(${this.sql.json(eligibleIds ?? [])}::jsonb)))
-      ORDER BY id FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING *`;
+      ORDER BY coalesce((SELECT max(prior.last_claimed_at) FROM knowledge_jobs prior WHERE prior.schedule_scope=knowledge_jobs.schedule_scope AND split_part(prior.kind,'.',1)=split_part(knowledge_jobs.kind,'.',1)),'epoch'::timestamptz),(SELECT o.created_at FROM knowledge_operations o WHERE o.id=knowledge_jobs.operation_id),id FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING *`;
     return row
       ? {
           id: String(row.id),

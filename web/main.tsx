@@ -14,7 +14,7 @@ import "./style.css";
 const labels: Record<RunSnapshot["status"], string> = {
   queued: "等待执行",
   executing: "正在查阅原文",
-  finalizing: "正在生成并审核答案",
+  finalizing: "正在校验答案引用",
   refreshing: "来源已更新，正在重新取证",
   answered: "回答完成",
   partial: "部分回答，仍有证据缺口",
@@ -277,7 +277,7 @@ function App({
                   ? "检索或模型服务暂不可用，本次没有发布答案。"
                   : run.reason === "source_changed"
                     ? "来源在回答期间发生变化，本次没有发布过时答案。"
-                    : "本次没有得到通过审核的答案，请重试或补充资料。"}
+                    : "本次未能完成回答，请重试或补充资料。"}
             </p>
           )}
         </section>

@@ -1,5 +1,7 @@
 # M06: Evidence and answers
 
+Runtime adoption: [Issue 28 contract](../issue-28-adoption.md) supersedes the conflicting online-answer, retrieval, admission and incremental-maintenance defaults below; unaffected invariants and historical records remain in force.
+
 M06 owns the transition from retrieval candidates to a supported product answer.
 Its evidence registry is authoritative for citation handles within a run.
 

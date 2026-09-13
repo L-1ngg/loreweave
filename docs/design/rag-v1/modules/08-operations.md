@@ -1,5 +1,7 @@
 # M08: Durable operations
 
+Runtime adoption: [Issue 28 contract](../issue-28-adoption.md) supersedes the conflicting online-answer, retrieval, admission and incremental-maintenance defaults below; unaffected invariants and historical records remain in force.
+
 M08 gives knowledge changes a durable request identity and inspectable outcome,
 and executes their background work with bounded retries and ownership fencing.
 

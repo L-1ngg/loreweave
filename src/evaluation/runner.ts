@@ -130,6 +130,16 @@ export async function verifySnapshot(
   }
 }
 /** Shared QA/capacity contract: an expected gap must actually be delivered. */
+/** Delivery validation is not an independent semantic quality verdict. */
+export function validatedDelivery(run: RunSnapshot) {
+  return Boolean(
+    run.answer &&
+    ((run.answer.contract === "direct-answer-v2" &&
+      run.answer.validation?.kind === "citation-traceability" &&
+      run.answer.validation.semanticReview === false) ||
+      run.answer.certificate),
+  );
+}
 export function expectedGap(run: RunSnapshot, item: EvaluationCase) {
   return (
     item.category === "missing" &&
@@ -215,7 +225,11 @@ export async function evaluateCase(
       !validCitations ||
       (delivered &&
         !result.citationChecks.length &&
-        !(genuineGap && run.answer?.certificate))
+        !(
+          (genuineGap ||
+            (run.status === "partial" && run.reason === "evidence_gap")) &&
+          validatedDelivery(run)
+        ))
     ) {
       result.reason = run.reason ?? "invalid_or_missing_citations";
       return result;

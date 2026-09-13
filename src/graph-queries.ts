@@ -1,6 +1,16 @@
+import { lexicalText } from "./indexing.ts";
 import type { AccessService, TrustedContext } from "./access.ts";
 import type { Operations } from "./operations.ts";
 import type { GraphRelation } from "./graph-types.ts";
+export interface GraphSearchOptions {
+  entityHints?: string[];
+  predicate?: string;
+  direction?: "incoming" | "outgoing" | "both";
+  hops?: 1 | 2;
+  indirectNeed?: string;
+  time?: string;
+  environment?: string;
+}
 interface Claim {
   id: string;
   subjectMention: string;
@@ -42,28 +52,94 @@ export class GraphQueries {
     question: string,
     projectId?: string,
     signal?: AbortSignal,
+    options: GraphSearchOptions = {},
   ) {
     const context = await this.access.authorize(token, "read", projectId);
     signal?.throwIfAborted();
+    if (
+      (options.entityHints?.length ?? 0) > 8 ||
+      options.entityHints?.some((hint) => !hint.trim() || hint.length > 200) ||
+      (options.hops !== undefined && ![1, 2].includes(options.hops)) ||
+      (options.hops === 2 && !options.indirectNeed?.trim()) ||
+      (options.direction !== undefined &&
+        !["incoming", "outgoing", "both"].includes(options.direction))
+    )
+      throw new Error("invalid_input");
     const sql = this.operations.sql;
+    const names =
+      options.entityHints?.map((hint) =>
+        hint.normalize("NFKC").trim().toLowerCase(),
+      ) ?? [];
     const seeds = await cancellable(
-      sql`SELECT DISTINCT rev.canonical_id AS id,length(m.original_text) AS weight FROM identity_mentions m
-      JOIN identity_revisions rev ON rev.id=m.current_revision_id
-      JOIN source_documents d ON d.active_version_id=m.version_id
-      WHERE m.organization_id=${context.organizationId} AND position(lower(m.original_text) IN lower(${question}))>0
+      sql`SELECT DISTINCT rev.canonical_id AS id,lower(normalize(m.original_text,NFKC)) AS name,d.project_id FROM identity_mentions m
+      JOIN identity_revisions rev ON rev.id=m.current_revision_id JOIN source_documents d ON d.active_version_id=m.version_id
+      WHERE m.organization_id=${context.organizationId}
+      AND ((${!names.length} AND position(lower(normalize(m.original_text,NFKC)) IN lower(${question.normalize("NFKC")}))>0) OR lower(normalize(m.original_text,NFKC)) IN (SELECT value FROM jsonb_array_elements_text(${sql.json(names)}::jsonb)) OR rev.canonical_id::text IN (SELECT value FROM jsonb_array_elements_text(${sql.json(names)}::jsonb)))
       AND (${projectId ?? null}::uuid IS NULL OR d.project_id IS NULL OR d.project_id=${projectId ?? null})
       AND EXISTS(SELECT 1 FROM identity_proof_eligibility pe WHERE pe.revision_id=rev.id AND pe.valid)
-      ORDER BY weight DESC,id LIMIT 9`,
+      ORDER BY name,id,project_id LIMIT 50`,
       signal,
+    );
+    const groups = new Map<string, Set<string>>();
+    for (const seed of seeds) {
+      const ids = groups.get(String(seed.name)) ?? new Set<string>();
+      ids.add(String(seed.id));
+      groups.set(String(seed.name), ids);
+    }
+    const ambiguousNames = new Set(
+      [...groups].filter(([, ids]) => ids.size > 1).map(([name]) => name),
+    );
+    const ambiguity = seeds
+      .filter((seed) => ambiguousNames.has(String(seed.name)))
+      .map((seed) => ({
+        id: String(seed.id),
+        name: String(seed.name),
+        projectId: seed.project_id as string | null,
+      }));
+    const resolved = [
+      ...new Set(
+        seeds
+          .filter((seed) => !ambiguousNames.has(String(seed.name)))
+          .map((seed) => String(seed.id)),
+      ),
+    ];
+    const predicates = [
+      "responsibility",
+      "membership",
+      "ownership",
+      "part_of",
+      "dependency",
+      "usage",
+      "applicability",
+    ];
+    const predicate =
+      options.predicate === "depends_on" ? "dependency" : options.predicate;
+    const unknownPredicate = Boolean(
+      predicate && !predicates.includes(predicate),
     );
     const result = await this.walk(
       context,
-      seeds.slice(0, 8).map((row) => String(row.id)),
-      2,
-      undefined,
+      resolved.slice(0, 8),
+      options.hops ?? 1,
+      unknownPredicate ? undefined : predicate,
       signal,
+      options,
+      lexicalText(question.normalize("NFKC"))
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 32),
     );
-    return { ...result, truncated: result.truncated || seeds.length > 8 };
+    return {
+      ...result,
+      ambiguity,
+      truncated: result.truncated || resolved.length > 8 || seeds.length === 50,
+      gaps: [
+        ...result.gaps,
+        ...(ambiguity.length ? ["entity_ambiguous"] : []),
+        ...(!resolved.length ? ["entity_unresolved"] : []),
+        ...(unknownPredicate ? ["unknown_relation_unconstrained"] : []),
+      ],
+    };
   }
   private async walk(
     context: TrustedContext,
@@ -71,10 +147,27 @@ export class GraphQueries {
     hops: number,
     predicate?: string,
     signal?: AbortSignal,
+    options: GraphSearchOptions = {},
+    queryTerms: string[] = [],
   ) {
     const sql = this.operations.sql;
     const entities = new Set(seeds),
       claims = new Map<string, Claim>();
+    type Edge = {
+      claimId: string;
+      from: string;
+      to: string;
+      traversal: "forward" | "reverse";
+      qualifiers: GraphRelation["qualifiers"];
+    };
+    const paths = new Map<string, { seed: string; edges: Edge[] }>(
+      seeds.map((seed) => [seed, { seed, edges: [] }]),
+    );
+    const orderedPaths: Array<{
+      seed: string;
+      edges: Edge[];
+      interpretation: "discovery-path";
+    }> = [];
     let frontier = [...entities],
       truncated = false;
     for (let depth = 0; depth < hops && frontier.length; depth++) {
@@ -87,12 +180,18 @@ export class GraphQueries {
         WHERE c.organization_id=${context.organizationId} AND c.status='active'
         AND (c.subject_id::text IN ${sql(frontier)} OR c.object_id::text IN ${sql(frontier)})
         AND (${predicate ?? null}::text IS NULL OR c.predicate=${predicate ?? null})
+        AND (${options.direction ?? "both"}='both' OR (${options.direction ?? "both"}='outgoing' AND (CASE WHEN c.direction='reverse' THEN c.object_id ELSE c.subject_id END)::text IN ${sql(frontier)}) OR (${options.direction ?? "both"}='incoming' AND (CASE WHEN c.direction='reverse' THEN c.subject_id ELSE c.object_id END)::text IN ${sql(frontier)}))
+        AND (${options.time ?? null}::text IS NULL OR c.qualifiers->>'time'=${options.time ?? null})
+        AND (${options.environment ?? null}::text IS NULL OR c.qualifiers->>'environment'=${options.environment ?? null})
         AND (${context.scope.projectId ?? null}::uuid IS NULL OR d.project_id IS NULL OR d.project_id=${context.scope.projectId ?? null})
         AND NOT EXISTS(SELECT 1 FROM jsonb_to_recordset(s.identity_dependencies) dep(mention_id uuid,revision_id uuid,proof_id uuid)
           LEFT JOIN identity_mentions m ON m.id=dep.mention_id
           LEFT JOIN identity_proof_eligibility pe ON pe.id=dep.proof_id AND pe.revision_id=dep.revision_id AND pe.valid
           WHERE m.current_revision_id IS DISTINCT FROM dep.revision_id OR pe.id IS NULL)
-        GROUP BY c.id ORDER BY c.id LIMIT 101`;
+        GROUP BY c.id ORDER BY
+        (SELECT count(*) FROM jsonb_array_elements_text(${sql.json(queryTerms)}::jsonb) term
+          WHERE position(term.value IN lower(normalize(c.relation_text||' '||c.qualifiers::text,NFKC)))>0) DESC,
+        CASE WHEN ${queryTerms.length}>0 THEN c.relation_text END,c.id LIMIT 101`;
       const rows = await cancellable(query, signal);
       if (rows.length > 100) truncated = true;
       const next = new Set<string>();
@@ -124,6 +223,28 @@ export class GraphQueries {
               .map((ref) => [`${ref.version}:${ref.passageId}`, ref]),
           ).values(),
         ];
+        const from = frontier.includes(subject) ? subject : object;
+        const to = from === subject ? object : subject;
+        const prior = paths.get(from) ?? { seed: from, edges: [] };
+        const actualFrom = row.direction === "reverse" ? object : subject;
+        const path = {
+          seed: prior.seed,
+          edges: [
+            ...prior.edges,
+            {
+              claimId: id,
+              from: actualFrom,
+              to: actualFrom === subject ? object : subject,
+              traversal:
+                from === actualFrom
+                  ? ("forward" as const)
+                  : ("reverse" as const),
+              qualifiers: row.qualifiers,
+            },
+          ],
+        };
+        if (!paths.has(to)) paths.set(to, path);
+        orderedPaths.push({ ...path, interpretation: "discovery-path" });
         claims.set(id, {
           id,
           subjectMention: subject,
@@ -140,6 +261,7 @@ export class GraphQueries {
     }
     const coverage = await this.coverage(context, signal);
     return {
+      orderedPaths,
       claims: [...claims.values()],
       entities: [...entities],
       truncated,

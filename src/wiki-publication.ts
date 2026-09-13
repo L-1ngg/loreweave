@@ -1,3 +1,4 @@
+import { sectionPacks, evidenceContext } from "./wiki-sections.ts";
 import {
   Operations,
   jsonValue,
@@ -54,6 +55,35 @@ export class WikiPublication {
     const pageId = existing?.id ?? crypto.randomUUID(),
       versionId = crypto.randomUUID();
     const blocks: Array<{ text: string; certificate: WikiCertificate }> = [];
+    const [priorVersion] = existing
+      ? await this.operations
+          .sql`SELECT certificates FROM wiki_versions WHERE id=${existing.version} AND page_id=${pageId}`
+      : [];
+    const previous = (priorVersion?.certificates ?? []) as WikiCertificate[];
+    const guidance = await this.operations
+      .sql`SELECT id,body FROM wiki_guidance WHERE organization_id=${organizationId} AND (page_id IS NULL OR page_id=${pageId}) AND (project_id IS NULL OR project_id::text=${scope}) ORDER BY id`;
+    const contextHash = hash({
+      topic: {
+        title: topic.title,
+        aliases: topic.aliases,
+        question: topic.question,
+        subjectKey: topic.subjectKey,
+        aspectKey: topic.aspectKey,
+        inclusion: topic.inclusion,
+        exclusion: topic.exclusion,
+        identities: topic.identities.map((ref) => ({
+          mentionId: ref.mentionId,
+          revisionId: ref.revisionId,
+          proofId: ref.proofId,
+        })),
+        identityRequired: topic.identityRequired,
+      },
+      scope,
+      guidance,
+      assembly: "reviewed-section-v1",
+      model: this.model.profile,
+      policy: "V01-wiki-v2-sections",
+    });
     const conflicts = await conflictPacks(
       this.operations,
       this.runtime,
@@ -62,55 +92,118 @@ export class WikiPublication {
       pack,
       index,
     );
-    const ordinaryBlocks = packetPacks(pack, 2000);
-    for (const [blockIndex, block] of [
+    const ordinaryBlocks = await sectionPacks(
+      this.runtime,
+      job,
+      topic,
+      pack,
+      pageId,
+      previous,
+      index,
+    );
+    const plannedBlocks = [
       ...ordinaryBlocks,
-      ...conflicts,
-    ].entries()) {
+      ...conflicts.map((block, continuation) => ({
+        block,
+        section: {
+          id: hash({ pageId, key: "conflicts" }),
+          key: "conflicts",
+          purpose: "Unresolved source conflicts",
+        },
+        continuation,
+      })),
+    ];
+    const prepareBlock = async (blockIndex: number) => {
+      const planned = plannedBlocks[blockIndex]!;
+      const { block, section, continuation } = planned;
       const requiredConflict =
         blockIndex >= ordinaryBlocks.length
           ? block.items.map((item) => item.handle)
           : undefined;
+      const previousCertificate = !requiredConflict
+        ? previous.find(
+            (certificate) =>
+              certificate.section?.id === section.id &&
+              certificate.contextHash === contextHash &&
+              certificate.evidence.length === block.items.length &&
+              certificate.evidence.every(
+                (item) =>
+                  block.items.filter(
+                    (next) => evidenceContext(item) === evidenceContext(next),
+                  ).length === 1,
+              ),
+          )
+        : undefined;
+      let reusableDraft: import("./answer-validation.ts").Draft | undefined;
+      if (previousCertificate) {
+        const handles = new Map(
+          previousCertificate.evidence.map((item) => [
+            item.handle,
+            block.items.find(
+              (next) => evidenceContext(item) === evidenceContext(next),
+            )!.handle,
+          ]),
+        );
+        try {
+          reusableDraft = validateDraft(
+            {
+              ...previousCertificate.draft,
+              claims: previousCertificate.draft.claims.map((claim) => ({
+                ...claim,
+                handles: claim.handles.map((handle) => handles.get(handle)!),
+              })),
+            },
+            block,
+            { maxBytes: 16000, maxClaims: 128 },
+          );
+        } catch {
+          /* Legacy or ambiguous claim mapping requires regeneration. */
+        }
+      }
       let feedback: unknown;
       let reviewed: { text: string; certificate: WikiCertificate } | undefined;
       for (let attempt = 0; attempt < 3; attempt++) {
-        const draft = await this.runtime.request(
-          job,
-          `block:${index}:${blockIndex}`,
-          "generation",
-          3,
-          {
-            pack: block,
-            topic,
-            feedback,
-            ...(requiredConflict ? { requiredConflict } : {}),
-          },
-          (raw) => {
-            const draft = validateDraft(raw, block, {
-              maxBytes: 16000,
-              maxClaims: 128,
-            });
-            if (
-              draft.text !== `# ${topic.title}` &&
-              !draft.text.startsWith(`# ${topic.title}\n`)
-            )
-              throw new Error("unreviewed_title");
-            if (new TextEncoder().encode(draft.text).length > 4000)
-              throw new Error("wiki_block_too_large");
-            if (
-              requiredConflict &&
-              !draft.claims.some(
-                (claim) =>
-                  claim.start > topic.title.length + 2 &&
-                  requiredConflict.every((handle) =>
-                    claim.handles.includes(handle),
-                  ),
+        const draft =
+          (attempt === 0 ? reusableDraft : undefined) ??
+          (await this.runtime.request(
+            job,
+            `block:${index}:${blockIndex}`,
+            "generation",
+            3,
+            {
+              pack: block,
+              topic,
+              section,
+              continuation,
+              feedback,
+              ...(requiredConflict ? { requiredConflict } : {}),
+            },
+            (raw) => {
+              const draft = validateDraft(raw, block, {
+                maxBytes: 16000,
+                maxClaims: 128,
+              });
+              if (
+                draft.text !== `# ${topic.title}` &&
+                !draft.text.startsWith(`# ${topic.title}\n`)
               )
-            )
-              throw new Error("missing_conflict_claim");
-            return draft;
-          },
-        );
+                throw new Error("unreviewed_title");
+              if (new TextEncoder().encode(draft.text).length > 4000)
+                throw new Error("wiki_block_too_large");
+              if (
+                requiredConflict &&
+                !draft.claims.some(
+                  (claim) =>
+                    claim.start > topic.title.length + 2 &&
+                    requiredConflict.every((handle) =>
+                      claim.handles.includes(handle),
+                    ),
+                )
+              )
+                throw new Error("missing_conflict_claim");
+              return draft;
+            },
+          ));
         const review = await this.runtime.request(
           job,
           `block:${index}:${blockIndex}`,
@@ -119,6 +212,8 @@ export class WikiPublication {
           {
             pack: block,
             topic,
+            section,
+            continuation,
             draft,
             ...(requiredConflict ? { requiredConflict } : {}),
           },
@@ -129,17 +224,18 @@ export class WikiPublication {
             text: draft.text,
             certificate: {
               draft,
+              section,
+              continuation,
+              contextHash,
+              generationReused: Boolean(attempt === 0 && reusableDraft),
               evidence: block.items,
-              offset: blocks.reduce(
-                (total, item) => total + item.text.length + 2,
-                0,
-              ),
+              offset: 0,
               draftHash: draft.hash,
               evidenceHash: block.hash,
               review,
               model: this.model.profile,
               prompt: "wiki-support-v1",
-              policy: "V01-wiki-v1",
+              policy: "V01-wiki-v2-sections",
               checkedAt: new Date().toISOString(),
             },
           };
@@ -148,6 +244,75 @@ export class WikiPublication {
         feedback = { draft, review };
       }
       if (!reviewed) throw new Error("insufficient_evidence");
+      return reviewed;
+    };
+    const sections = new Map<string, number[]>();
+    for (const [blockIndex, planned] of plannedBlocks.entries()) {
+      const indices = sections.get(planned.section.id) ?? [];
+      indices.push(blockIndex);
+      sections.set(planned.section.id, indices);
+    }
+    const groups = [...sections.values()];
+    const prepared = new Array<Awaited<ReturnType<typeof prepareBlock>>>(
+      plannedBlocks.length,
+    );
+    let nextSection = 0,
+      failed = false;
+    // Each section preserves its continuation order. Separate sections share two
+    // local lanes; every HTTP request still passes global model admission.
+    const outcomes = await Promise.allSettled(
+      Array.from({ length: Math.min(2, groups.length) }, async () => {
+        while (!failed && nextSection < groups.length) {
+          const group = groups[nextSection++]!;
+          try {
+            for (const blockIndex of group) {
+              if (failed) return;
+              prepared[blockIndex] = await prepareBlock(blockIndex);
+            }
+          } catch (error) {
+            failed = true;
+            throw error;
+          }
+        }
+      }),
+    );
+    // Keep the job's heartbeat and fence until all started work has settled,
+    // including when a peer's review failed. Nothing is published on failure.
+    for (const outcome of outcomes)
+      if (outcome.status === "rejected") throw outcome.reason;
+    for (const [blockIndex, reviewed] of prepared.entries()) {
+      const { section } = plannedBlocks[blockIndex]!;
+      // Remove only repeated, already-reviewed headings; never introduce connective claims.
+      const pageHeading = `# ${topic.title}`;
+      const sectionHeading = `${pageHeading}\n\n## ${section.purpose}`;
+      const sameSection = blocks.some(
+        (block) => block.certificate.section?.id === section.id,
+      );
+      let cut = 0;
+      if (blocks.length) {
+        cut =
+          sameSection && reviewed.text.startsWith(sectionHeading)
+            ? sectionHeading.length
+            : reviewed.text.startsWith(pageHeading)
+              ? pageHeading.length
+              : 0;
+        while (reviewed.text[cut] === "\n" || reviewed.text[cut] === "\r")
+          cut++;
+      }
+      const publishedStart = blocks.reduce(
+        (total, item) => total + item.text.length + 2,
+        0,
+      );
+      reviewed.certificate.offset = publishedStart;
+      reviewed.certificate.publishedRanges = [
+        {
+          draftStart: cut,
+          draftEnd: reviewed.text.length,
+          publishedStart,
+          publishedEnd: publishedStart + reviewed.text.length - cut,
+        },
+      ];
+      reviewed.text = reviewed.text.slice(cut);
       blocks.push(reviewed);
     }
     const reviewed = {
@@ -155,16 +320,6 @@ export class WikiPublication {
       certificates: blocks.map((block) => block.certificate),
     };
     let vector: number[] | undefined;
-    try {
-      const vectors = await this.embeddings.embed(
-        [descriptorText(topic)],
-        this.operations.signal(job, AbortSignal.timeout(45000)),
-      );
-      validateEmbeddings(vectors, 1, this.embeddings.dimensions);
-      vector = vectors[0];
-    } catch {
-      // The required lexical catalogue publishes even when its optional vector projection is pending.
-    }
     return {
       pageId,
       versionId,
@@ -211,6 +366,15 @@ export class WikiPublication {
           await tx`INSERT INTO wiki_version_inputs(version_id,source_version_id) VALUES(${versionId},${version}) ON CONFLICT DO NOTHING`;
         await tx`UPDATE wiki_pages SET current_version_id=${versionId},lifecycle='active',retirement=NULL WHERE id=${pageId}`;
         await tx`UPDATE wiki_reservations SET state='published',page_id=${pageId} WHERE organization_id=${organizationId} AND scope=${scope} AND operation_id=${job.operationId} AND decision_id=${job.id} AND state='pending'`;
+        const [priorProjection] =
+          await tx`SELECT descriptor,embedding::text AS embedding,embedding_profile,dimensions FROM wiki_catalogue WHERE page_id=${pageId}`;
+        if (
+          priorProjection?.embedding &&
+          priorProjection.embedding_profile === this.embeddings.profile &&
+          Number(priorProjection.dimensions) === this.embeddings.dimensions &&
+          descriptorText(priorProjection.descriptor) === descriptorText(topic)
+        )
+          vector = JSON.parse(String(priorProjection.embedding));
         await tx`INSERT INTO wiki_catalogue(page_id,version_id,normalized_title,subject_key,aspect_key,descriptor,lexical_text,embedding,embedding_profile,dimensions,title_lexical,aliases,subject_ids,body_lexical) VALUES(${pageId},${versionId},${normalize(topic.title)},${topic.subjectKey},${topic.aspectKey},${tx.json(jsonValue(topic))},${lexicalText(descriptorText(topic))},${vector ? JSON.stringify(vector) : null}::vector,${this.embeddings.profile},${this.embeddings.dimensions},${lexicalText([topic.title, ...topic.aliases].join(" "))},${tx.json(topic.aliases.map(normalize))},${tx.json(publishedEntities)},${lexicalText(reviewed.text)}) ON CONFLICT(page_id) DO UPDATE SET version_id=excluded.version_id,normalized_title=excluded.normalized_title,subject_key=excluded.subject_key,aspect_key=excluded.aspect_key,descriptor=excluded.descriptor,lexical_text=excluded.lexical_text,embedding=excluded.embedding,embedding_profile=excluded.embedding_profile,dimensions=excluded.dimensions,title_lexical=excluded.title_lexical,aliases=excluded.aliases,subject_ids=excluded.subject_ids,body_lexical=excluded.body_lexical`;
         if (!vector)
           await this.operations.enqueue(

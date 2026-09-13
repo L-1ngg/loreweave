@@ -105,7 +105,7 @@ test("a second host reconnects to the same durable run and acknowledged history"
     expect(history.entries.length).toBeGreaterThan(2);
     expect(history.leafId).toBe(history.entries.at(-1)!.id);
     expect((await reader.events(run.id)).at(-1)!.type).toBe("settled");
-    expect(provider.calls).toHaveLength(4);
+    expect(provider.calls).toHaveLength(2);
   } finally {
     await host.close();
     await reader.close();
@@ -159,7 +159,7 @@ test("same-conversation turns queue across hosts while another conversation prog
   }
 });
 
-test("refresh reconnect preserves the abandoned draft identity and consumed budgets", async () => {
+test("reconnect preserves rejection of a direct answer whose source changed during the model call", async () => {
   const { KnowledgeHost } = await import("../src/host.ts");
   const { FixtureSources } = await import("../src/development/sources.ts");
   const { startScriptedProvider } =
@@ -167,11 +167,10 @@ test("refresh reconnect preserves the abandoned draft identity and consumed budg
   const store = new PostgresConversations(url);
   await store.migrate();
   const sources = new FixtureSources();
-  let changed = false;
+  let tasks = 0;
   const provider = startScriptedProvider({
     onRequest(phase) {
-      if (phase === "review" && !changed) {
-        changed = true;
+      if (phase === "task" && ++tasks === 2) {
         sources.replace("日志保留 60 天。");
       }
     },
@@ -184,16 +183,34 @@ test("refresh reconnect preserves the abandoned draft identity and consumed budg
   try {
     const run = await host.start({ question: "日志保留多久" });
     await host.settled(run.id);
-    const events = await host.events(run.id);
-    const refresh = events.find((event) => event.run.status === "refreshing")!;
-    expect(refresh.run.refreshUsed).toBe(true);
-    expect(refresh.run.supersededDraftIds).toHaveLength(1);
-    expect(refresh.run.counts.generation).toBe(1);
-    expect(refresh.run.counts.review).toBe(1);
-    const result = await store.run(run.id);
-    expect(result.status).toBe("answered");
-    expect(result.supersededDraftIds).not.toContain(result.draftId!);
-    expect(result.deadline).toBe(run.deadline);
+    const reconnected = new PostgresConversations(url);
+    try {
+      const result = await reconnected.run(run.id);
+      expect(result.status).toBe("failed");
+      expect(result.reason).toBe("source_changed");
+      expect(result.answer).toBeUndefined();
+      expect(result.counts).toEqual({
+        exploration: 2,
+        generation: 0,
+        review: 0,
+        retrieval: 1,
+      });
+      expect(result.draftId).toBeUndefined();
+      expect(result.settledAt).toBeDefined();
+      expect(result.deadline).toBe(run.deadline);
+      const events = await reconnected.events(run.id, 0);
+      expect(events.at(-1)?.type).toBe("settled");
+      expect(events.some((event) => event.run.answer)).toBe(false);
+      expect(events.some((event) => event.run.status === "refreshing")).toBe(
+        false,
+      );
+      expect(provider.calls.map((call) => call.phase)).toEqual([
+        "task",
+        "task",
+      ]);
+    } finally {
+      await reconnected.close();
+    }
   } finally {
     await host.close();
     provider.stop();
@@ -210,8 +227,7 @@ test("interrupted finalization is reported without replay or premature settlemen
     conversationId: conversation.id,
     deadline: Date.now() + 30000,
     status: "queued" as const,
-    counts: { exploration: 2, generation: 1, review: 0, retrieval: 1 },
-    draftId: crypto.randomUUID(),
+    counts: { exploration: 2, generation: 0, review: 0, retrieval: 1 },
   };
   await store.register(snapshot, "中断的查询", snapshot.deadline);
   const writer = await store.acquire(conversation.id, snapshot.id);
@@ -227,8 +243,9 @@ test("interrupted finalization is reported without replay or premature settlemen
     expect(recovered.status).toBe("failed");
     expect(recovered.reason).toBe("answer_generation_interrupted");
     expect(recovered.settledAt).toBeUndefined();
-    expect(recovered.counts.generation).toBe(1);
-    expect(recovered.draftId).toBe(snapshot.draftId);
+    expect(recovered.counts).toEqual(snapshot.counts);
+    expect(recovered.draftId).toBeUndefined();
+    expect(recovered.answer).toBeUndefined();
     const settled = await store.reconcile(snapshot.id, {
       executionTerminated: true,
     });
@@ -424,7 +441,7 @@ test("later turns in a reloaded conversation retrieve fresh evidence instead of 
       expect((await host.get(run.id)).status).toBe("answered");
       expect((await host.get(run.id)).answer?.text).toContain(`${30 + i} 天`);
     }
-    expect(provider.calls).toHaveLength(16);
+    expect(provider.calls).toHaveLength(8);
   } finally {
     await host.close();
     provider.stop();
@@ -473,7 +490,7 @@ test("a replacement host cancels or expires acknowledged queued runs without rep
       await reader.settled(next.id);
       expect((await reader.get(next.id)).status).toBe("answered");
     }
-    expect(provider.calls).toHaveLength(8);
+    expect(provider.calls).toHaveLength(4);
   } finally {
     await reader.close();
     provider.stop();
@@ -551,7 +568,11 @@ test("concurrent owner cancellation and remote queue inspection acknowledge the 
   }
 });
 
-for (const boundary of ["generation", "refreshing", "settled"] as const) {
+for (const boundary of [
+  "direct-answer admission",
+  "result",
+  "settled",
+] as const) {
   test(`Host retains ownership while ${boundary} persistence is pending`, async () => {
     const { KnowledgeHost } = await import("../src/host.ts");
     const { FixtureSources } = await import("../src/development/sources.ts");
@@ -569,10 +590,11 @@ for (const boundary of ["generation", "refreshing", "settled"] as const) {
           ...writer,
           save: async (event: import("../src/host.ts").RunEvent) => {
             const matches =
-              boundary === "generation"
-                ? event.type === "progress" && event.run.counts.generation === 1
-                : boundary === "refreshing"
-                  ? event.type === "state" && event.run.status === "refreshing"
+              boundary === "direct-answer admission"
+                ? event.type === "progress" &&
+                  event.run.counts.exploration === 2
+                : boundary === "result"
+                  ? event.type === "result"
                   : event.type === "settled";
             if (!this.held && matches) {
               this.held = true;
@@ -587,12 +609,7 @@ for (const boundary of ["generation", "refreshing", "settled"] as const) {
     const store = new DelayedStore(url!);
     await store.migrate();
     const sources = new FixtureSources();
-    const provider = startScriptedProvider({
-      onRequest(phase) {
-        if (boundary === "refreshing" && phase === "generation")
-          sources.replace("日志保留 60 天。");
-      },
-    });
+    const provider = startScriptedProvider();
     const host = new KnowledgeHost({
       providerUrl: provider.url,
       sources,
@@ -614,7 +631,7 @@ for (const boundary of ["generation", "refreshing", "settled"] as const) {
       expect(settled).toBe(false);
       const calls = provider.calls.length;
       await host.cancel(next.id);
-      if (boundary !== "settled") {
+      if (boundary === "direct-answer admission") {
         const canceled = host.cancel(first.id);
         while (!(await store.cancellationRequested(first.id)))
           await Bun.sleep(1);
@@ -627,9 +644,9 @@ for (const boundary of ["generation", "refreshing", "settled"] as const) {
       const result = await host.get(first.id);
       expect(result.settledAt).toBeDefined();
       expect(result.status).toBe(
-        boundary === "settled" ? "answered" : "canceled",
+        boundary === "direct-answer admission" ? "canceled" : "answered",
       );
-      if (boundary !== "settled") {
+      if (boundary === "direct-answer admission") {
         expect(result.answer).toBeUndefined();
         expect(provider.calls).toHaveLength(calls);
         expect(provider.calls.some((call) => call.phase === "review")).toBe(

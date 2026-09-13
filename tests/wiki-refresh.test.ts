@@ -27,6 +27,7 @@ async function fixture(model: WikiModel = new ScriptedWikiModel()) {
   };
   await access.bootstrap(account);
   const { token } = await access.login(account);
+  const { organizationId } = await access.authorize(token, "read");
   const embeddings = new ControlledEmbeddings(),
     sources = new SourceService(url!, access, embeddings),
     identities = new IdentityService(url!, access, sources);
@@ -40,6 +41,7 @@ async function fixture(model: WikiModel = new ScriptedWikiModel()) {
   );
   return {
     access,
+    organizationId,
     token,
     sources,
     identities,
@@ -75,7 +77,7 @@ async function fixture(model: WikiModel = new ScriptedWikiModel()) {
           ? { documentId: prior.documentId, expectedPrior: prior.versionId }
           : {}),
       });
-      await sources.workOne();
+      await sources.workOne({ organizationId });
       return operation;
     },
   };
@@ -232,7 +234,7 @@ test("member corrections retain attributed originals and scope while preferences
     const accepted = await f.wiki.contribute(f.token, correction);
     expect(accepted.status).toBe("accepted");
     expect(await f.wiki.contribute(f.token, correction)).toEqual(accepted);
-    await f.sources.workOne();
+    await f.sources.workOne({ organizationId: f.organizationId });
     expect((await f.wiki.page(f.token, page.id)).fresh).toBe(false);
     while (await f.wiki.workOne(f.token)) {}
     const receipt = await f.sources.inspect(f.token, accepted.operationId!);
@@ -399,13 +401,19 @@ test("an exhausted large-page inspection retains exact unresolved ranges and ori
   const f = await fixture();
   try {
     const original = Array.from(
-      { length: 75 },
-      () => `生产日志保留 30 天。${"仅用于生产服务。".repeat(12)}`,
+      { length: 60 },
+      () => `生产日志保留 30 天。${"仅用于生产服务。".repeat(16)}`,
     ).join("\n\n");
     const first = await f.source(original);
     while (await f.wiki.workOne(f.token)) {}
     const page = (await f.wiki.list(f.token)).items[0]!;
     expect(page).toBeDefined();
+    const published = await f.wiki.page(f.token, page.id);
+    // Six bounded inspection windows cannot cover this body even after repeated
+    // continuation headings are removed during section assembly.
+    expect(new TextEncoder().encode(published.text).length).toBeGreaterThan(
+      6 * 4000,
+    );
     const changed = await f.source("生产日志保留 60 天。", first);
     while (await f.wiki.workOne(f.token)) {}
     const result = await f.wiki.inspect(f.token, changed.id);
@@ -418,6 +426,20 @@ test("an exhausted large-page inspection retains exact unresolved ranges and ori
       0,
     );
     expect(mandatory.ledger["inspection:0"].windows).toHaveLength(6);
+    const pageRanges: string[] = [];
+    for (const window of mandatory.ledger["inspection:0"].windows) {
+      for (const range of window.ranges) {
+        if (range.kind === "page") pageRanges.push(range.text);
+      }
+    }
+    for (const range of mandatory.ledger["inspection:0"].remaining) {
+      if (range.kind === "page") {
+        expect(range.version).toBe(published.version);
+        expect(range.text).toBe(published.text.slice(range.start, range.end));
+        pageRanges.push(range.text);
+      }
+    }
+    expect(pageRanges.join("")).toBe(published.text);
     expect((await f.wiki.page(f.token, page.id)).lifecycle).toBe("active");
     expect((await f.wiki.page(f.token, page.id)).fresh).toBe(false);
     const pack = await new EvidenceService(f.sources, f.wiki).retrieve(
@@ -816,3 +838,206 @@ test("Wiki retirement and reactivation recover lost COMMIT acknowledgements with
     await f.close();
   }
 }, 30000);
+
+test("AC30: exact remapping preserves sections with fresh review while changed source titles regenerate prose", async () => {
+  const model = new ScriptedWikiModel(),
+    f = await fixture(model);
+  try {
+    const first = await f.source("生产日志保留 30 天。");
+    while (await f.wiki.workOne(f.token)) {}
+    const listed = (await f.wiki.list(f.token)).items[0]!;
+    const before = await f.wiki.page(f.token, listed.id);
+    const generated = model.calls.filter(
+      (call) => call.phase === "generation",
+    ).length;
+    const next = await f.source("生产日志保留 30 天。", first);
+    while (await f.wiki.workOne(f.token)) {}
+    const after = await f.wiki.page(f.token, listed.id);
+    expect(after.fresh).toBe(true);
+    expect(after.sections).toEqual(before.sections);
+    expect(after.text).toBe(before.text);
+    expect(
+      model.calls.filter((call) => call.phase === "generation").length,
+    ).toBe(generated);
+    expect(after.certificates.every((c) => c.generationReused)).toBe(true);
+    expect(
+      after.certificates.every((c) =>
+        c.evidence.every((e) => e.version === next.versionId),
+      ),
+    ).toBe(true);
+    expect(after.certificates[0]!.evidenceHash).not.toBe(
+      before.certificates[0]!.evidenceHash,
+    );
+    const renamed = await f.sources.submit(f.token, {
+      key: crypto.randomUUID(),
+      filename: "renamed-rules.md",
+      bytes: new TextEncoder().encode("生产日志保留 30 天。"),
+      documentId: next.documentId,
+      expectedPrior: next.versionId,
+    });
+    await f.sources.workOne({ organizationId: f.organizationId });
+    while (await f.wiki.workOne(f.token)) {}
+    const changedTitle = await f.wiki.page(f.token, listed.id);
+    expect(changedTitle.text).toContain("renamed-rules.md");
+    expect(changedTitle.certificates.every((c) => !c.generationReused)).toBe(
+      true,
+    );
+    expect(
+      changedTitle.sources.every(
+        (source) => source.version === renamed.versionId,
+      ),
+    ).toBe(true);
+    expect(
+      model.calls.filter((call) => call.phase === "generation").length,
+    ).toBeGreaterThan(generated);
+  } finally {
+    await f.close();
+  }
+});
+
+class ConcurrentSections extends ScriptedWikiModel {
+  readonly overlap = Promise.withResolvers<void>();
+  readonly third = Promise.withResolvers<void>();
+  readonly rejected = Promise.withResolvers<void>();
+  readonly releaseA = Promise.withResolvers<void>();
+  readonly releaseB = Promise.withResolvers<void>();
+  active = 0;
+  peak = 0;
+  constructor(private readonly failReview = false) {
+    super();
+  }
+  override async request(
+    phase: WikiPhase,
+    input: Record<string, unknown>,
+    signal: AbortSignal,
+  ): Promise<unknown> {
+    if (phase === "sections") {
+      const groups = new Map<string, string[]>();
+      for (const item of (input.pack as WikiPack).items) {
+        const key = item.text.match(/区域 ([ABC])/)![1]!;
+        groups.set(key, [...(groups.get(key) ?? []), item.handle]);
+      }
+      return {
+        sections: [...groups].map(([key, handles]) => ({
+          key,
+          purpose: `${key} 区域的日志要求`,
+          handles,
+        })),
+      };
+    }
+    const section = input.section as { key: string } | undefined;
+    if (phase === "review" && section?.key === "B" && this.failReview) {
+      this.rejected.resolve();
+      throw new Error("provider_http_401");
+    }
+    if (phase !== "generation") return super.request(phase, input, signal);
+    this.active++;
+    this.peak = Math.max(this.peak, this.active);
+    if (this.active === 2) this.overlap.resolve();
+    try {
+      if (input.continuation === 0) {
+        if (section?.key === "A") await this.releaseA.promise;
+        if (section?.key === "B") await this.releaseB.promise;
+        if (section?.key === "C") this.third.resolve();
+      }
+      return await super.request(phase, input, signal);
+    } finally {
+      this.active--;
+    }
+  }
+}
+const sectionOriginals = ["A", "B", "C"]
+  .flatMap((region) =>
+    [1, 2, 3].map(
+      (ordinal) =>
+        `生产日志保留 30 天。区域 ${region}，条目 ${ordinal}。${"仅用于生产服务。".repeat(24)}`,
+    ),
+  )
+  .join("\n\n");
+async function observed(promise: Promise<void>) {
+  await Promise.race([
+    promise,
+    Bun.sleep(3000).then(() => {
+      throw new Error("section_request_not_observed");
+    }),
+  ]);
+}
+
+test("AC30: independent Wiki sections overlap within two lanes and publish continuations in planned order", async () => {
+  const model = new ConcurrentSections(),
+    f = await fixture(model);
+  let work: Promise<boolean> | undefined;
+  try {
+    await f.source(sectionOriginals);
+    work = f.wiki.workOne(f.token);
+    await observed(model.overlap.promise);
+    expect((await f.wiki.list(f.token)).items).toHaveLength(0);
+    model.releaseB.resolve();
+    await observed(model.third.promise);
+    model.releaseA.resolve();
+    await work;
+    const listed = (await f.wiki.list(f.token)).items[0]!;
+    const page = await f.wiki.page(f.token, listed.id);
+    expect(model.peak).toBe(2);
+    expect(page.sections?.map((section) => section.key)).toEqual([
+      "A",
+      "B",
+      "C",
+    ]);
+    for (const region of ["A", "B", "C"]) {
+      const certificates = page.certificates.filter(
+        (c) => c.section?.key === region,
+      );
+      expect(certificates.length).toBeGreaterThan(1);
+      expect(certificates.map((c) => c.continuation)).toEqual(
+        certificates.map((_, index) => index),
+      );
+      expect(page.text.indexOf(`区域 ${region}，条目 1`)).toBeLessThan(
+        page.text.indexOf(`区域 ${region}，条目 2`),
+      );
+      expect(page.text.indexOf(`区域 ${region}，条目 2`)).toBeLessThan(
+        page.text.indexOf(`区域 ${region}，条目 3`),
+      );
+    }
+    expect(page.text.indexOf("区域 A，条目 3")).toBeLessThan(
+      page.text.indexOf("区域 B，条目 1"),
+    );
+    expect(page.text.indexOf("区域 B，条目 3")).toBeLessThan(
+      page.text.indexOf("区域 C，条目 1"),
+    );
+  } finally {
+    model.releaseA.resolve();
+    model.releaseB.resolve();
+    await work;
+    await f.close();
+  }
+}, 15000);
+
+test("AC30/33: failed section review waits for other started work and publishes no partial Wiki page", async () => {
+  const model = new ConcurrentSections(true),
+    f = await fixture(model);
+  let work: Promise<boolean> | undefined,
+    settled = false;
+  try {
+    const source = await f.source(sectionOriginals);
+    work = f.wiki.workOne(f.token).finally(() => {
+      settled = true;
+    });
+    await observed(model.overlap.promise);
+    model.releaseB.resolve();
+    await observed(model.rejected.promise);
+    await Bun.sleep(50);
+    expect(settled).toBe(false);
+    expect((await f.wiki.list(f.token)).items).toHaveLength(0);
+    model.releaseA.resolve();
+    await work;
+    expect(model.active).toBe(0);
+    expect((await f.wiki.inspect(f.token, source.id)).status).toBe("failed");
+    expect((await f.wiki.list(f.token)).items).toHaveLength(0);
+  } finally {
+    model.releaseA.resolve();
+    model.releaseB.resolve();
+    await work;
+    await f.close();
+  }
+}, 15000);

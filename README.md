@@ -1,5 +1,7 @@
 # LoreWeave
 
+Current direct-answer, worker, import/index and recovery behavior is specified in the [Issue 28 runtime contract](docs/design/rag-v1/issue-28-adoption.md). Real-provider BGE-M3 startup requires `bun run prepare:tokenizer`; review `RAG_EMBEDDING_REVISION` before an index-profile change.
+
 An agent-powered knowledge base with a living wiki, graph-assisted retrieval,
 and source-backed answers.
 
@@ -45,6 +47,13 @@ in [provider setup](docs/development/providers.md) are the current configuration
 contract. The retired Python `RAG_DATABASE_URL`, Elasticsearch, S3, and MinerU
 settings are not read by the TypeScript runtime. Use `.env.example` as the
 starting point for a local `.env`.
+
+`LOREWEAVE_SOURCE_PREPARATION_SECONDS` sets the total source preparation budget
+(default `1800`; integer seconds from `1` to `86400`). Acceptance persists an
+absolute PostgreSQL deadline, including queue time. Restart, retry, and later
+configuration changes preserve that deadline for already accepted sources;
+expiry fails preparation without activating an incomplete source. This is a
+resource bound, not a completion SLA.
 
 Open <http://127.0.0.1:41735>. The API binds to `127.0.0.1:41736` and the scripted
 model server uses a dynamically assigned loopback port. No provider credentials are required. The database is a dedicated local instance;

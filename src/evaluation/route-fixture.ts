@@ -1,3 +1,5 @@
+import { ModelAdmission } from "../model-admission.ts";
+import { loadEmbeddingTokenizer } from "../embedding-tokenizer.ts";
 import { z } from "zod";
 import { createLifecycle } from "../lifecycle.ts";
 import { AccessService } from "../access.ts";
@@ -111,13 +113,21 @@ export async function routeFixture(input: {
   )
     throw new Error("invalid_maintenance_budget");
   const lifecycle = createLifecycle(async ({ defer, signal }) => {
+    const admission = new ModelAdmission(input.databaseUrl);
+    defer(() => admission.close());
     const access = new AccessService(input.databaseUrl);
     defer(() => access.close());
     const embeddings = input.provider
-      ? new OpenAIEmbeddings(input.provider.embedding)
+      ? new OpenAIEmbeddings(
+          { ...input.provider.embedding, fetch: admission.fetch },
+          await loadEmbeddingTokenizer(input.provider.embedding.model),
+        )
       : new ControlledEmbeddings();
     const model = input.provider
-      ? new OpenAIKnowledgeModel(input.provider.chat)
+      ? new OpenAIKnowledgeModel({
+          ...input.provider.chat,
+          fetch: admission.fetch,
+        })
       : new ScriptedWikiModel();
     const sources = new SourceService(input.databaseUrl, access, embeddings);
     defer(() => sources.close());
@@ -281,11 +291,18 @@ export async function routeFixture(input: {
     const clients: Partial<Record<Profile, PublicAnswers>> = {};
     for (const profile of profiles) {
       const host = new KnowledgeHost({
+        modelFetch: admission.fetch,
         access,
         imports: sources,
         conversations,
         sources: fixtureSources,
         evidence: new EvidenceService(sources, wiki, graph, profile),
+        evaluationRoutes:
+          profile === "combined"
+            ? ["source", "wiki", "graph"]
+            : profile === "source"
+              ? ["source"]
+              : ["source", profile],
         providerUrl: input.provider?.chat.baseUrl ?? provider!.url,
         ...(input.provider
           ? {

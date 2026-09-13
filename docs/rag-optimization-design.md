@@ -1,5 +1,7 @@
 # RAG Optimization Design Discussion
 
+Runtime adoption: [Issue 28 contract](design/rag-v1/issue-28-adoption.md) supersedes the conflicting online-answer, retrieval, admission and incremental-maintenance defaults below; unaffected invariants and historical records remain in force.
+
 Status: design recorded; implementation progress is tracked in GitHub Issues. User-confirmed decisions
 and explicitly delegated defaults are distinguished below. Q36 delegates routine
 design and Q37 permits component selection without compatibility constraints.

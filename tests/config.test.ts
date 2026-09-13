@@ -26,3 +26,15 @@ describe("runtime configuration", () => {
     ).toThrow("invalid_config:RAG_CHAT_BASE_URL");
   });
 });
+
+test("source preparation duration defaults to 30 minutes and validates configured seconds", () => {
+  expect(loadConfig(base).preparationDeadlineMs).toBe(1800000);
+  expect(
+    loadConfig({ ...base, LOREWEAVE_SOURCE_PREPARATION_SECONDS: "60" })
+      .preparationDeadlineMs,
+  ).toBe(60000);
+  for (const value of ["0", "-1", "1.5", "NaN", "Infinity", "86401"])
+    expect(() =>
+      loadConfig({ ...base, LOREWEAVE_SOURCE_PREPARATION_SECONDS: value }),
+    ).toThrow("invalid_config:LOREWEAVE_SOURCE_PREPARATION_SECONDS");
+});

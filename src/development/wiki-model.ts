@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import { hash } from "../answer-validation.ts";
 import { scriptedStructure } from "./wiki-structure-model.ts";
 import type { Draft, Claim, Review } from "../answer-validation.ts";
@@ -38,6 +39,16 @@ export class ScriptedWikiModel implements WikiModel {
     const pack = input.pack as WikiPack;
     if (phase === "extraction") return extract(pack);
     const topic = input.topic as TopicDescriptor;
+    if (phase === "sections")
+      return {
+        sections: [
+          {
+            key: topic.aspectKey,
+            purpose: topic.question,
+            handles: pack.items.map((item) => item.handle),
+          },
+        ],
+      };
     if (phase === "conflicts")
       return {
         evidenceHash: pack.hash,
@@ -136,13 +147,23 @@ export class ScriptedWikiModel implements WikiModel {
         ]),
       };
     }
-    if (phase === "generation") return draft(pack, topic);
+    if (phase === "generation")
+      return draft(
+        pack,
+        topic,
+        input.section as { purpose: string } | undefined,
+      );
     if (phase === "review") {
       const supplied = input.draft as Draft,
-        expected = draft(pack, topic);
-      const correct =
-        JSON.stringify({ text: supplied.text, claims: supplied.claims }) ===
-        JSON.stringify(expected);
+        expected = draft(
+          pack,
+          topic,
+          input.section as { purpose: string } | undefined,
+        );
+      const correct = isDeepStrictEqual(
+        { text: supplied.text, claims: supplied.claims },
+        expected,
+      );
       const result: Review = {
         draftHash: supplied.hash,
         evidenceHash: pack.hash,
@@ -275,9 +296,13 @@ export function extract(
     };
   return { topics: [...groups.values()], coverage };
 }
-function draft(pack: WikiPack, topic: TopicDescriptor) {
+function draft(
+  pack: WikiPack,
+  topic: TopicDescriptor,
+  section?: { purpose: string },
+) {
   const claims: Claim[] = [];
-  let text = `# ${topic.title}`;
+  let text = `# ${topic.title}` + (section ? `\n\n## ${section.purpose}` : "");
   claims.push({
     id: "title",
     start: 0,

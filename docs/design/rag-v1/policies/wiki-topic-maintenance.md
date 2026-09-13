@@ -1,5 +1,7 @@
 # Wiki topic selection and maintenance policy
 
+Runtime adoption: [Issue 28 contract](../issue-28-adoption.md) supersedes the conflicting online-answer, retrieval, admission and incremental-maintenance defaults below; unaffected invariants and historical records remain in force.
+
 Status: implementation defaults selected on 2026-09-10 under Q36 and the user's
 request to specify candidate retrieval, inspection limits and topic creation.
 This is part of M05's contract, not implemented behavior or measured tuning.

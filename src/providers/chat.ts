@@ -6,7 +6,9 @@ import { prompts } from "./prompts.ts";
 /** Tools-disabled model calls; all semantic verdicts come from a separate request. */
 export class OpenAIKnowledgeModel implements WikiModel {
   readonly profile: string;
+  readonly admittedTransport: boolean;
   constructor(private readonly config: ProviderConfig) {
+    this.admittedTransport = Boolean(config.fetch);
     this.profile = `openai-chat:${config.model}:knowledge-v1`;
   }
   async request(
@@ -85,7 +87,11 @@ function materializeDraft(
     // must support it from originals before the publication gate admits it.
     segments.unshift({
       id: "wiki-heading",
-      text: `# ${input.topic.title}`,
+      text:
+        `# ${input.topic.title}` +
+        (record(input.section) && typeof input.section.purpose === "string"
+          ? `\n\n## ${input.section.purpose}`
+          : ""),
       role: "fact",
       handles: input.pack.items.map((item) =>
         record(item) ? item.handle : undefined,

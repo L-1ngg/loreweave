@@ -1,3 +1,4 @@
+import { validatedDelivery } from "./runner.ts";
 import { AccessService } from "../access.ts";
 import { SourceService } from "../sources.ts";
 import { IdentityService } from "../identity.ts";
@@ -120,7 +121,7 @@ export async function runProviderSmoke(
     });
     const passed =
       result.status === "answered" &&
-      Boolean(result.answer?.certificate) &&
+      validatedDelivery(result) &&
       result.answer!.citations.some((c) => c.version === original.version) &&
       relations.claims.length > 0 &&
       status.wiki === "ready";

@@ -46,12 +46,16 @@
     "test:providers": "bun --no-env-file test tests/providers.test.ts",
     "dev:real": "bun --env-file=.env scripts/dev-real.mjs",
     "smoke:providers": "bun --env-file=.env scripts/provider-smoke.ts",
-    "eval:routes": "bun --no-env-file scripts/evaluate-routes.ts"
+    "eval:routes": "bun --no-env-file scripts/evaluate-routes.ts",
+    "prepare:tokenizer": "bun --no-env-file scripts/prepare-tokenizer.ts",
+    "model:status": "bun --no-env-file scripts/model-requests.ts",
+    "test:ingestion": "bun --no-env-file test tests/direct-answer.test.ts tests/model-admission.test.ts tests/model-concurrency.test.ts tests/source-recovery.test.ts tests/search-index.test.ts"
   },
   "dependencies": {
     "@earendil-works/pi-ai": "0.85.1",
     "@forge-agent/core": "workspace:*",
     "@forge-agent/protocol": "workspace:*",
+    "@huggingface/tokenizers": "0.2.0",
     "@modelcontextprotocol/sdk": "1.30.0",
     "@node-rs/jieba": "2.0.3",
     "drizzle-orm": "0.45.2",

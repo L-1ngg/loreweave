@@ -36,6 +36,7 @@ export type ToolHooks = Pick<RuntimeOptions, "beforeToolCall" | "afterToolCall" 
 
 export interface PiPortOptions extends InputQueueOptions {
 	/** Host admission completes before each task/summary provider request. */
+	fetch?: typeof globalThis.fetch;
 	beforeModelRequest?: (request: { kind: "task" | "summary"; signal?: AbortSignal }) => void | Promise<void>;
 	toolHooks?: ToolHooks;
 	sessionId?: string;
@@ -157,7 +158,7 @@ async function resolveModelOptions(options: PiPortOptions): Promise<ModelPortOpt
 		settings?.signal?.throwIfAborted();
 		await options.beforeModelRequest?.({ kind: context.systemPrompt === SUMMARY_SYSTEM ? "summary" : "task", ...(settings?.signal ? { signal: settings.signal } : {}) });
 		settings?.signal?.throwIfAborted();
-		return models.streamSimple(model, context, settings);
+		return models.streamSimple(model, context, { ...settings, ...(options.fetch ? { fetch: options.fetch } : {}) });
 	} };
 }
 

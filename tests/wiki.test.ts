@@ -171,7 +171,7 @@ test("a compatible ninth card expands inspection to sixteen before creating a co
   }
 }, 30000);
 
-test("missing vectors allow empty bootstrap and supported reuse but defer novelty", async () => {
+test("optional vector failure permits supported distinct topic creation after catalogue collision checks", async () => {
   const controlled = new ControlledEmbeddings();
   let offline = false;
   const embeddings: EmbeddingAdapter = {
@@ -200,10 +200,10 @@ test("missing vectors allow empty bootstrap and supported reuse but defer novelt
     const operation = await f.source("backup.md", "数据库备份保留 90 天。");
     offline = true;
     while (await f.wiki.workOne(f.token)) {}
-    expect((await f.wiki.list(f.token)).items).toHaveLength(1);
+    expect((await f.wiki.list(f.token)).items).toHaveLength(2);
     expect(
       JSON.stringify(await f.wiki.inspect(f.token, operation.id)),
-    ).toContain("catalogue_unavailable");
+    ).not.toContain("catalogue_unavailable");
   } finally {
     await f.close();
   }
@@ -581,6 +581,7 @@ test("Wiki-assisted retrieval returns current original evidence once and exclude
     const pack = await evidence.retrieve(f.token, {
       runId: crypto.randomUUID(),
       question: "日志保留",
+      routes: ["source", "wiki"],
       signal: AbortSignal.timeout(5000),
     });
     expect(pack.diagnostics.wikiCandidates).toBe(1);
@@ -600,6 +601,7 @@ test("Wiki-assisted retrieval returns current original evidence once and exclude
     const changed = await evidence.retrieve(f.token, {
       runId: crypto.randomUUID(),
       question: "日志保留",
+      routes: ["source", "wiki"],
       signal: AbortSignal.timeout(5000),
     });
     expect(changed.diagnostics.wikiCandidates).toBe(0);
@@ -647,7 +649,7 @@ test("a high-ranked creation proposal without substantive support cannot publish
   }
 }, 30000);
 
-test("concurrent maintenance jobs share one background model request slot", async () => {
+test("independent controlled maintenance jobs can overlap; actual HTTP limits are tested at transport", async () => {
   class Busy extends ScriptedWikiModel {
     active = 0;
     peak = 0;
@@ -672,14 +674,14 @@ test("concurrent maintenance jobs share one background model request slot", asyn
     await f.source("a.md", "日志保留 30 天。");
     await f.source("b.md", "备份保留 7 天。");
     await Promise.all([f.wiki.workOne(f.token), f.wiki.workOne(f.token)]);
-    expect(model.peak).toBe(1);
+    expect(model.peak).toBe(2);
     expect((await f.wiki.list(f.token)).items).toHaveLength(2);
   } finally {
     await f.close();
   }
 }, 30000);
 
-test("restored catalogue projection wakes a waiting novelty decision without resetting its operation", async () => {
+test("optional catalogue projection recovery does not delay a supported novelty decision", async () => {
   const controlled = new ControlledEmbeddings();
   let offline = false;
   const embeddings: EmbeddingAdapter = {
@@ -701,7 +703,7 @@ test("restored catalogue projection wakes a waiting novelty decision without res
     offline = true;
     while (await f.wiki.workOne(f.token)) {}
     expect((await f.wiki.inspect(f.token, operation.id)).jobs[0]!.state).toBe(
-      "retry_wait",
+      "succeeded",
     );
     offline = false;
     await f.wiki.retryProjection(f.token, existing.id, crypto.randomUUID());
@@ -1001,3 +1003,127 @@ test("no-change cannot silently skip a new rule at the end of a long contributio
     await f.close();
   }
 }, 30000);
+
+test("AC22: legacy page fallback ranks original references before the fifty-reference cap", async () => {
+  const f = await fixture();
+  const { default: postgres } = await import("postgres");
+  const sql = postgres(url!);
+  try {
+    await f.source(
+      "logs.md",
+      Array.from(
+        { length: 61 },
+        (_, index) =>
+          `生产日志保留 30 天。${index === 60 ? "needle-last-reference" : `ordinary-reference-${index}`}。`,
+      ).join("\n\n"),
+    );
+    while (await f.wiki.workOne(f.token)) {}
+    const page = (await f.wiki.list(f.token)).items[0]!;
+    const historical = await f.wiki.page(f.token, page.id);
+    expect(historical.sources).toHaveLength(61);
+    // A historical generation predating claim/section associations retains only page refs.
+    await sql`UPDATE wiki_versions SET certificates='[]'::jsonb WHERE id=${page.version}`;
+    const result = await f.wiki.search(f.token, {
+      question: "needle-last-reference",
+      signal: AbortSignal.timeout(5000),
+    });
+    expect(result.originals.length).toBeLessThanOrEqual(50);
+    expect(result.originals[0]?.text).toContain("needle-last-reference");
+    expect(result).toMatchObject({ truncated: true, pageLevelMapping: true });
+    const pack = await new EvidenceService(f.sources, f.wiki).retrieve(
+      f.token,
+      {
+        runId: crypto.randomUUID(),
+        question: "needle-last-reference",
+        routes: ["wiki"],
+        signal: AbortSignal.timeout(5000),
+      },
+    );
+    expect(pack.diagnostics.gaps).toContain("wiki_page_level_mapping");
+  } finally {
+    await sql.end();
+    await f.close();
+  }
+}, 15000);
+
+test("AC22/24: scoped Wiki readiness distinguishes unfinished maintenance from empty knowledge", async () => {
+  class Unavailable extends ScriptedWikiModel {
+    failed = false;
+    override request(
+      phase: WikiPhase,
+      input: Record<string, unknown>,
+      signal: AbortSignal,
+    ) {
+      if (this.failed) throw new Error("provider_http_401");
+      return super.request(phase, input, signal);
+    }
+  }
+  const model = new Unavailable(),
+    f = await fixture(model);
+  try {
+    const project = await f.access.createProject(f.token, "active-import"),
+      other = await f.access.createProject(f.token, "other-project");
+    const first = await f.source("logs.md", "生产日志保留 30 天。", project.id);
+    const service = new EvidenceService(f.sources, f.wiki);
+    const retrieve = (projectId: string) =>
+      service.retrieve(f.token, {
+        runId: crypto.randomUUID(),
+        question: "日志保留",
+        projectId,
+        routes: ["source", "wiki"],
+        signal: AbortSignal.timeout(5000),
+      });
+    const pending = await retrieve(project.id);
+    expect(pending.diagnostics.routeOutcomes?.wiki?.status).toBe("pending");
+    expect(pending.items.some((item) => item.version === first.versionId)).toBe(
+      true,
+    );
+    const answer = await service.finalizeDirect(
+      f.token,
+      pending.runId,
+      {
+        basis: "source",
+        text: "日志保留30天 [" + pending.items[0]!.handle + "]",
+        citations: [pending.items[0]!.handle],
+        gaps: [],
+        conflicts: [],
+      },
+      AbortSignal.timeout(5000),
+    );
+    expect(answer.status).toBe("answered");
+    expect(
+      (await retrieve(other.id)).diagnostics.routeOutcomes?.wiki?.status,
+    ).toBe("empty");
+    while (await f.wiki.workOne(f.token)) {}
+    expect(
+      (await retrieve(project.id)).diagnostics.routeOutcomes?.wiki?.status,
+    ).toBe("success");
+    const changed = await f.sources.submit(f.token, {
+      key: crypto.randomUUID(),
+      filename: "logs.md",
+      projectId: project.id,
+      documentId: first.documentId,
+      expectedPrior: first.versionId,
+      bytes: new TextEncoder().encode("生产日志保留 90 天。"),
+    });
+    const context = await f.access.authorize(f.token, "read");
+    await f.sources.workOne({ organizationId: context.organizationId });
+    const stale = await retrieve(project.id);
+    expect(stale.diagnostics.routeOutcomes?.wiki?.status).toBe("pending");
+    expect(stale.items.some((item) => item.version === first.versionId)).toBe(
+      false,
+    );
+    expect(stale.items.some((item) => item.version === changed.versionId)).toBe(
+      true,
+    );
+    model.failed = true;
+    while (await f.wiki.workOne(f.token)) {}
+    const unavailable = await retrieve(project.id);
+    expect(unavailable.diagnostics.routeOutcomes?.wiki?.status).toBe(
+      "unavailable",
+    );
+    expect(unavailable.diagnostics.gaps).toContain("wiki_incomplete");
+  } finally {
+    await f.close();
+  }
+}, 15000);

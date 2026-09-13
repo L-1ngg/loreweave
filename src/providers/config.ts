@@ -52,6 +52,7 @@ export function providerConfig(env: Record<string, string | undefined>) {
     baseUrl: endpoint("RAG_EMBEDDING_BASE_URL"),
     apiKey: required("RAG_EMBEDDING_API_KEY"),
     model: required("RAG_EMBEDDING_MODEL"),
+    revision: env.RAG_EMBEDDING_REVISION?.trim() || "operator-deployment-v1",
     dimensions: integer("RAG_EMBEDDING_DIMENSIONS", 1024, 16000),
     batchSize: integer("RAG_EMBEDDING_BATCH_SIZE", 16, 128),
     sendDimensions: send === "true",

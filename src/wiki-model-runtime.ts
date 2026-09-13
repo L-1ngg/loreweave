@@ -1,4 +1,5 @@
-import { BackgroundAdmission } from "./background-admission.ts";
+import { setTimeout as pause } from "node:timers/promises";
+import { withModelWork } from "./model-admission.ts";
 import { hash } from "./answer-validation.ts";
 import { Operations, type Job } from "./operations.ts";
 import type { WikiModel, WikiPhase } from "./wiki-types.ts";
@@ -7,7 +8,6 @@ export class WikiModelRuntime {
   constructor(
     private readonly operations: Operations,
     private readonly model: WikiModel,
-    private readonly admission: BackgroundAdmission,
   ) {}
   async request<T>(
     job: Job,
@@ -41,45 +41,57 @@ export class WikiModelRuntime {
       const deadline = new Date(work!.deadline).getTime();
       if (Date.now() >= deadline) throw new Error("maintenance_deadline");
       const attempts =
-        await tx`SELECT * FROM wiki_model_attempts WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase=${phase} ORDER BY attempt`;
+        await tx`SELECT a.*,r.state AS transport_state FROM wiki_model_attempts a LEFT JOIN model_requests r ON r.id=a.model_request_id WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase=${phase} ORDER BY attempt`;
       const cached = attempts.findLast(
         (attempt) =>
           attempt.input_hash === inputHash && attempt.state === "completed",
       );
       if (cached) return { cached: cached.response, deadline, attempt: 0 };
+      const executions = attempts.filter(
+        (attempt) =>
+          (attempt.dispatched_at && attempt.transport_state !== "expired") ||
+          attempt.state === "completed",
+      );
       if (
-        attempts.length >= cap ||
+        executions.length >= cap ||
         (phase === "inspection" &&
-          attempts.filter((attempt) => attempt.state === "failed").length > 1)
+          executions.filter((attempt) => attempt.state === "failed").length > 1)
       )
         throw new Error("maintenance_budget_exhausted");
       if (phase === "generation") {
         const [reviews] =
-          await tx`SELECT count(*) AS count FROM wiki_model_attempts WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase='review'`;
+          await tx`SELECT count(*) AS count FROM wiki_model_attempts a LEFT JOIN model_requests r ON r.id=a.model_request_id WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase='review' AND a.dispatched_at IS NOT NULL AND r.state IS DISTINCT FROM 'expired'`;
         if (Number(reviews!.count) >= 3)
           throw new Error("maintenance_review_budget_exhausted");
       }
       const attempt = attempts.length + 1;
       await tx`INSERT INTO wiki_model_attempts(job_id,unit_key,phase,attempt,input_hash,model_profile,prompt_profile) VALUES(${job.id},${unitKey},${phase},${attempt},${inputHash},${this.model.profile},'wiki-request-v1')`;
-      return { deadline, attempt };
+      return { deadline, attempt, executions: executions.length };
     });
     if ("cached" in admitted) return validate(structuredClone(admitted.cached));
     const signal = this.operations.signal(
       job,
-      AbortSignal.timeout(
-        Math.max(1, Math.min(45000, admitted.deadline - Date.now())),
-      ),
+      AbortSignal.timeout(Math.max(1, admitted.deadline - Date.now())),
     );
     try {
-      const raw = await this.admission.run(signal, async () => {
+      signal.throwIfAborted();
+      const onDispatch = async (requestId?: string) => {
         signal.throwIfAborted();
-        // This durable intent precedes the external call; crash gaps stay uncertain.
         await this.operations.checkpoint(job, async (tx) => {
-          await tx`UPDATE wiki_model_attempts SET dispatched_at=clock_timestamp() WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase=${phase} AND attempt=${admitted.attempt}`;
+          await tx`UPDATE wiki_model_attempts SET dispatched_at=clock_timestamp(),model_request_id=${requestId ?? null} WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase=${phase} AND attempt=${admitted.attempt}`;
         });
-        signal.throwIfAborted();
-        return this.model.request(phase, input, signal);
-      });
+      };
+      if (!this.model.admittedTransport) await onDispatch();
+      const raw = await withModelWork(
+        {
+          operationId: `${job.id}:${unitKey}:${phase}`,
+          parentOperationId: job.operationId,
+          priority: "background",
+          deadline: admitted.deadline,
+          onDispatch,
+        },
+        () => this.model.request(phase, input, signal),
+      );
       signal.throwIfAborted();
       const maxBytes =
         phase === "generation" || phase === "review"
@@ -101,7 +113,39 @@ export class WikiModelRuntime {
       });
       if (error instanceof Error && error.message === "stale_worker")
         throw error;
-      if (admitted.attempt >= cap) throw error;
+      if (
+        error instanceof Error &&
+        [
+          "provider_http_400",
+          "provider_http_401",
+          "provider_http_403",
+          "provider_uncertain",
+          "invalid_embedding",
+          "model_authority_lost",
+        ].includes(error.message)
+      )
+        throw error;
+      signal.throwIfAborted();
+      const [attempt] = await this.operations
+        .sql`SELECT a.dispatched_at,r.state AS transport_state FROM wiki_model_attempts a LEFT JOIN model_requests r ON r.id=a.model_request_id WHERE a.job_id=${job.id} AND a.unit_key=${unitKey} AND a.phase=${phase} AND a.attempt=${admitted.attempt}`;
+      const dispatched = Boolean(
+        attempt?.dispatched_at && attempt.transport_state !== "expired",
+      );
+      if (
+        admitted.executions + Number(dispatched) >= cap ||
+        admitted.attempt >= cap + 3
+      )
+        throw error;
+      if (
+        error instanceof Error &&
+        /^provider_(http_(429|5\d\d)|unavailable)$/.test(error.message)
+      )
+        await pause(
+          Math.min(5000, 250 * 2 ** (admitted.attempt - 1)) +
+            Math.floor(Math.random() * 100),
+          undefined,
+          { signal },
+        );
       return this.request(job, unitKey, phase, cap, input, validate);
     }
   }

@@ -30,7 +30,7 @@ test("HTTP returns ordered provisional events and a distinct final cited result"
     expect(text).toContain("event: result");
     expect(text).toContain("30 天");
     expect(text).toContain("event: settled");
-    expect(provider.calls).toHaveLength(4);
+    expect(provider.calls).toHaveLength(2);
   } finally {
     await host.close();
     server.stop(true);
@@ -162,7 +162,7 @@ test("SSE reconnection resumes after the acknowledged event without starting ano
         .map((event) => event.sequence),
     );
     expect(body).toContain("event: settled");
-    expect(provider.calls).toHaveLength(4);
+    expect(provider.calls).toHaveLength(2);
     const invalid = await app.request(
       `http://localhost/api/runs/${run.id}/events`,
       {

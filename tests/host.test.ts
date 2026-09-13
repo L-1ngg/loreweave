@@ -3,36 +3,6 @@ import { KnowledgeHost } from "../src/host.ts";
 import { FixtureSources } from "../src/development/sources.ts";
 import { startScriptedProvider } from "../src/development/provider.ts";
 
-test("a knowledge turn returns a reviewed cited fixture answer, not Forge exploration text", async () => {
-  const provider = startScriptedProvider();
-  const sources = new FixtureSources();
-  const host = new KnowledgeHost({ providerUrl: provider.url, sources });
-  try {
-    const run = await host.start({ question: "项目日志保留多久？" });
-    await host.settled(run.id);
-    const answer = await host.get(run.id);
-    expect(answer.status).toBe("answered");
-    expect(answer.answer?.text).toContain("30 天");
-    expect(answer.answer?.text).not.toContain("Exploration");
-    expect(answer.answer?.citations[0]?.version).toBe("v1");
-    expect(provider.calls.map((call) => call.phase)).toEqual([
-      "task",
-      "task",
-      "generation",
-      "review",
-    ]);
-    expect(answer.counts).toEqual({
-      exploration: 2,
-      generation: 1,
-      review: 1,
-      retrieval: 1,
-    });
-  } finally {
-    await host.close();
-    provider.stop();
-  }
-});
-
 test("cancel stops the model turn and exposes settlement separately from its outcome", async () => {
   const provider = startScriptedProvider({ delayMs: 80 });
   const host = new KnowledgeHost({
@@ -47,76 +17,6 @@ test("cancel stops the model turn and exposes settlement separately from its out
     expect((await host.get(run.id)).settledAt).toBeDefined();
     expect((await host.get(run.id)).answer).toBeUndefined();
     expect(provider.calls).toHaveLength(0);
-  } finally {
-    await host.close();
-    provider.stop();
-  }
-});
-
-test("the original deadline terminates slow final generation without unreviewed delivery", async () => {
-  const provider = startScriptedProvider({ delays: { generation: 300 } });
-  const host = new KnowledgeHost({
-    providerUrl: provider.url,
-    sources: new FixtureSources(),
-    timing: { ordinaryMs: 100, ordinaryReserveMs: 30 },
-  });
-  try {
-    const run = await host.start({ question: "慢查询" });
-    await host.settled(run.id);
-    expect((await host.get(run.id)).status).toBe("timed_out");
-    expect((await host.get(run.id)).answer).toBeUndefined();
-    expect(provider.calls.some((call) => call.phase === "review")).toBe(false);
-    expect((await host.get(run.id)).settledAt).toBeDefined();
-  } finally {
-    await host.close();
-    provider.stop();
-  }
-});
-
-test("a source change during final generation uses one remaining round and regenerates before review", async () => {
-  const sources = new FixtureSources();
-  let changed = false;
-  const provider = startScriptedProvider({
-    onRequest(phase) {
-      if (phase === "generation" && !changed) {
-        changed = true;
-        sources.replace("演示项目的应用日志保留 60 天。");
-      }
-    },
-  });
-  const host = new KnowledgeHost({ providerUrl: provider.url, sources });
-  try {
-    const run = await host.start({ question: "项目日志保留多久？" });
-    await host.settled(run.id);
-    const answer = await host.get(run.id);
-    expect(answer.status).toBe("answered");
-    expect(answer.answer?.text).toContain("60 天");
-    expect(answer.answer?.citations[0]?.version).toBe("v2");
-    expect(answer.counts).toEqual({
-      exploration: 2,
-      generation: 2,
-      review: 1,
-      retrieval: 2,
-    });
-    expect(answer.refreshUsed).toBe(true);
-  } finally {
-    await host.close();
-    provider.stop();
-  }
-});
-
-test("a rejected draft is regenerated and reviewed within the same finalization allowance", async () => {
-  const provider = startScriptedProvider({ rejectReviews: 1 });
-  const host = new KnowledgeHost({
-    providerUrl: provider.url,
-    sources: new FixtureSources(),
-  });
-  try {
-    const run = await host.start({ question: "检查回答" });
-    await host.settled(run.id);
-    expect((await host.get(run.id)).status).toBe("answered");
-    expect((await host.get(run.id)).counts.generation).toBe(2);
-    expect((await host.get(run.id)).counts.review).toBe(2);
   } finally {
     await host.close();
     provider.stop();
@@ -146,11 +46,110 @@ test("five active runs and ten queued runs bound development admission", async (
   }
 });
 
-test("repair and exploration together never exceed seven actual model requests", async () => {
-  const provider = startScriptedProvider({
-    repeatTool: true,
-    rejectReviews: 2,
+test("the original deadline covers the Agent loop and never delivers incomplete streamed output", async () => {
+  const provider = startScriptedProvider({ delayMs: 300 });
+  const host = new KnowledgeHost({
+    providerUrl: provider.url,
+    sources: new FixtureSources(),
+    timing: { ordinaryMs: 100 },
   });
+  try {
+    const run = await host.start({ question: "慢查询" });
+    await host.settled(run.id);
+    const result = await host.get(run.id);
+    expect(result.status).toBe("timed_out");
+    expect(result.answer).toBeUndefined();
+    expect(result.settledAt).toBeDefined();
+    expect(result.counts.generation).toBe(0);
+    expect(result.counts.review).toBe(0);
+  } finally {
+    await host.close();
+    provider.stop();
+  }
+});
+
+test("a source change while the Agent answers cannot finalize stale citations", async () => {
+  const sources = new FixtureSources();
+  let requests = 0;
+  const provider = startScriptedProvider({
+    onRequest(phase) {
+      if (phase === "task" && ++requests === 2)
+        sources.replace("日志改为保留 60 天。");
+    },
+  });
+  const host = new KnowledgeHost({ providerUrl: provider.url, sources });
+  try {
+    const run = await host.start({ question: "日志规则" });
+    await host.settled(run.id);
+    const result = await host.get(run.id);
+    expect(result.status).toBe("failed");
+    expect(result.reason).toBe("source_changed");
+    expect(result.answer).toBeUndefined();
+    expect(
+      (await host.events(run.id)).every((event) => !event.run.answer),
+    ).toBe(true);
+  } finally {
+    await host.close();
+    provider.stop();
+  }
+});
+
+test("invalid issued-handle references are rejected without a model reviewer", async () => {
+  const provider = startScriptedProvider({
+    answer: {
+      basis: "source",
+      text: "日志保留 30 天 [e999]",
+      citations: ["e999"],
+      gaps: [],
+      conflicts: [],
+    },
+  });
+  const host = new KnowledgeHost({
+    providerUrl: provider.url,
+    sources: new FixtureSources(),
+  });
+  try {
+    const run = await host.start({ question: "日志规则" });
+    await host.settled(run.id);
+    const result = await host.get(run.id);
+    expect(result.reason).toBe("invalid_citation");
+    expect(result.answer).toBeUndefined();
+    expect(provider.calls.every((call) => call.phase === "task")).toBe(true);
+  } finally {
+    await host.close();
+    provider.stop();
+  }
+});
+
+test("actual gaps and conflicts produce an explicit partial direct answer", async () => {
+  const provider = startScriptedProvider({
+    answer: {
+      basis: "source",
+      text: "日志保留 30 天 [e1]",
+      citations: ["e1"],
+      gaps: ["备份保留时间未找到依据。"],
+      conflicts: ["两份制度的适用日期尚不明确。"],
+    },
+  });
+  const host = new KnowledgeHost({
+    providerUrl: provider.url,
+    sources: new FixtureSources(),
+  });
+  try {
+    const run = await host.start({ question: "日志和备份规则" });
+    await host.settled(run.id);
+    const result = await host.get(run.id);
+    expect(result.status).toBe("partial");
+    expect(result.answer?.text).toContain("备份保留时间未找到依据");
+    expect(result.answer?.text).toContain("适用日期尚不明确");
+  } finally {
+    await host.close();
+    provider.stop();
+  }
+});
+
+test("repeated tool work stays within the original Agent and retrieval ceilings", async () => {
+  const provider = startScriptedProvider({ repeatTool: true });
   const host = new KnowledgeHost({
     providerUrl: provider.url,
     sources: new FixtureSources(),
@@ -158,125 +157,33 @@ test("repair and exploration together never exceed seven actual model requests",
   try {
     const run = await host.start({ question: "继续检查" });
     await host.settled(run.id);
-    expect((await host.get(run.id)).status).toBe("failed");
-    expect((await host.get(run.id)).answer).toBeUndefined();
-    expect((await host.get(run.id)).counts).toEqual({
-      exploration: 3,
-      generation: 2,
-      review: 2,
+    const result = await host.get(run.id);
+    expect(result.answer).toBeUndefined();
+    expect(result.status).toBe("failed");
+    expect(result.reason).toBe("model_call_budget_exhausted");
+    expect(result.counts).toEqual({
+      exploration: 4,
       retrieval: 2,
-    });
-    expect(provider.calls).toHaveLength(7);
-  } finally {
-    await host.close();
-    provider.stop();
-  }
-});
-
-test("a second source change cannot obtain another refresh or publish stale text", async () => {
-  const sources = new FixtureSources();
-  const provider = startScriptedProvider({
-    onRequest(phase) {
-      if (phase === "generation") sources.replace("更新后的日志保留规则。");
-    },
-  });
-  const host = new KnowledgeHost({ providerUrl: provider.url, sources });
-  try {
-    const run = await host.start({ question: "日志规则" });
-    await host.settled(run.id);
-    expect((await host.get(run.id)).status).toBe("failed");
-    expect((await host.get(run.id)).answer).toBeUndefined();
-    expect((await host.get(run.id)).counts).toEqual({
-      exploration: 2,
-      generation: 2,
+      generation: 0,
       review: 0,
-      retrieval: 2,
     });
-    expect(
-      (await host.events(run.id)).filter(
-        (event) => event.run.status === "refreshing",
-      ),
-    ).toHaveLength(1);
+    expect(provider.calls).toHaveLength(4);
   } finally {
     await host.close();
     provider.stop();
   }
 });
 
-test("source change during review consumes the remaining pair without restarting Forge", async () => {
-  const sources = new FixtureSources();
-  let changed = false;
-  const provider = startScriptedProvider({
-    onRequest(phase) {
-      if (phase === "review" && !changed) {
-        changed = true;
-        sources.replace("应用日志保留 60 天。");
-      }
-    },
-  });
-  const host = new KnowledgeHost({ providerUrl: provider.url, sources });
-  try {
-    const run = await host.start({ question: "日志规则" });
-    await host.settled(run.id);
-    expect((await host.get(run.id)).answer?.citations[0]?.version).toBe("v2");
-    expect((await host.get(run.id)).counts).toEqual({
-      exploration: 2,
-      generation: 2,
-      review: 2,
-      retrieval: 2,
-    });
-    const phases = (await host.events(run.id))
-      .filter((event) => event.type === "state")
-      .map((event) => event.run.status);
-    expect(phases).toEqual([
-      "queued",
-      "executing",
-      "finalizing",
-      "refreshing",
-      "finalizing",
-    ]);
-  } finally {
-    await host.close();
-    provider.stop();
-  }
-});
-
-test("canceling in-flight final generation never starts support review", async () => {
-  let started!: () => void;
-  const generation = new Promise<void>((resolve) => {
-    started = resolve;
-  });
-  const provider = startScriptedProvider({
-    delays: { generation: 300 },
-    onRequest(phase) {
-      if (phase === "generation") started();
-    },
-  });
-  const host = new KnowledgeHost({
-    providerUrl: provider.url,
-    sources: new FixtureSources(),
-  });
-  try {
-    const run = await host.start({ question: "日志规则" });
-    await generation;
-    await host.cancel(run.id);
-    await host.settled(run.id);
-    expect((await host.get(run.id)).status).toBe("canceled");
-    expect(provider.calls.some((call) => call.phase === "review")).toBe(false);
-  } finally {
-    await host.close();
-    provider.stop();
-  }
-});
-
-test("canceling in-flight review never publishes the generated draft or starts repair", async () => {
+test("canceling the final Agent request waits for settlement without delivering provisional text", async () => {
   let entered!: () => void;
-  const reviewing = new Promise<void>((resolve) => (entered = resolve));
+  const answering = new Promise<void>((resolve) => {
+    entered = resolve;
+  });
+  let count = 0;
   const provider = startScriptedProvider({
-    delays: { review: 300 },
-    rejectReviews: 1,
-    onRequest(phase) {
-      if (phase === "review") entered();
+    delayMs: 100,
+    onRequest() {
+      if (++count === 2) entered();
     },
   });
   const host = new KnowledgeHost({
@@ -285,17 +192,32 @@ test("canceling in-flight review never publishes the generated draft or starts r
   });
   try {
     const run = await host.start({ question: "日志规则" });
-    await reviewing;
+    await answering;
     expect((await host.get(run.id)).answer).toBeUndefined();
-    const calls = provider.calls.length;
     await host.cancel(run.id);
     await host.settled(run.id);
     expect((await host.get(run.id)).status).toBe("canceled");
     expect((await host.get(run.id)).answer).toBeUndefined();
-    expect(provider.calls).toHaveLength(calls);
-    expect(
-      (await host.events(run.id)).every((event) => !event.run.answer),
-    ).toBe(true);
+    expect(provider.calls).toHaveLength(2);
+  } finally {
+    await host.close();
+    provider.stop();
+  }
+});
+
+test("provider execution failure is not reported as a wall-clock timeout", async () => {
+  const provider = startScriptedProvider({ failTasks: 1 });
+  const host = new KnowledgeHost({
+    providerUrl: provider.url,
+    sources: new FixtureSources(),
+  });
+  try {
+    const run = await host.start({ question: "日志规则" });
+    await host.settled(run.id);
+    const result = await host.get(run.id);
+    expect(result.status).toBe("failed");
+    expect(result.reason).toBe("agent_execution_failed");
+    expect(result.counts.exploration).toBe(1);
   } finally {
     await host.close();
     provider.stop();

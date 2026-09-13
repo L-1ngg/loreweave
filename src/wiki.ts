@@ -15,7 +15,6 @@ import {
 import { makePack, packetPacks } from "./wiki-packets.ts";
 import { validateExtraction, validateDecision } from "./wiki-validation.ts";
 import { WikiProjection } from "./wiki-projection.ts";
-import { BackgroundAdmission } from "./background-admission.ts";
 import { WikiInspection } from "./wiki-inspection.ts";
 import {
   WikiCatalogue,
@@ -71,11 +70,7 @@ export class WikiService {
     private readonly model: WikiModel,
   ) {
     this.operations = new Operations(url);
-    this.runtime = new WikiModelRuntime(
-      this.operations,
-      model,
-      new BackgroundAdmission(url),
-    );
+    this.runtime = new WikiModelRuntime(this.operations, model);
     this.catalogue = new WikiCatalogue(this.operations, embeddings);
   }
   private structure() {
@@ -177,6 +172,13 @@ export class WikiService {
       lifecycle: String(row.lifecycle),
       sources: row.sources,
       certificates: row.certificates,
+      sections: [
+        ...new Map(
+          (row.certificates as WikiCertificate[]).flatMap((c) =>
+            c.section ? [[c.section.id, c.section] as const] : [],
+          ),
+        ).values(),
+      ],
       descriptor: row.descriptor,
       ...(row.retirement ? { retirement: row.retirement } : {}),
     };
@@ -722,7 +724,7 @@ export class WikiService {
     if (
       decision.action === "create" &&
       pool.count > 0 &&
-      pool.unavailable.length
+      pool.unavailable.some((route) => route !== "vector")
     ) {
       await this.operations.checkpoint(job, async (tx) => {
         await tx`UPDATE wiki_work SET state=state||${tx.json(jsonValue({ waitRevisions: pool.scopeRevisions, wake: "catalogue_projection_or_revision" }))}::jsonb WHERE job_id=${job.id}`;
@@ -772,7 +774,8 @@ export class WikiService {
     if (
       decision.action === "create" &&
       (cards.length < Math.min(16, candidates.length) ||
-        (pool.count > 0 && pool.unavailable.length))
+        (pool.count > 0 &&
+          pool.unavailable.some((route) => route !== "vector")))
     )
       throw new Error("needs_attention:incomplete_novelty_inspection");
     await this.operations.checkpoint(job, async (tx) => {
@@ -909,6 +912,9 @@ export class WikiService {
     pages: number;
     originals: SourceCandidate[];
     truncated?: boolean;
+    pending?: boolean;
+    incomplete?: boolean;
+    pageLevelMapping?: boolean;
   }> {
     const context = await this.access.authorize(token, "read", input.projectId);
     const query = lexicalText(input.question)
@@ -918,32 +924,121 @@ export class WikiService {
       .join(" | ");
     if (!query) return { pages: 0, originals: [] };
     const sql = this.operations.sql;
-    const statement = sql`SELECT p.id,v.sources FROM wiki_pages p JOIN wiki_versions v ON v.id=p.current_version_id JOIN wiki_catalogue c ON c.page_id=p.id AND c.version_id=v.id JOIN wiki_version_eligibility e ON e.id=v.id WHERE p.organization_id=${context.organizationId} AND p.lifecycle='active' AND e.eligible AND (${input.projectId ?? null}::uuid IS NULL OR p.project_id IS NULL OR p.project_id=${input.projectId ?? null}) AND (c.lexical||c.body_search) @@ to_tsquery('simple',${query}) ORDER BY ts_rank_cd(c.lexical||c.body_search,to_tsquery('simple',${query})) DESC,p.id LIMIT 20`;
-    const cancel = () => statement.cancel();
+    const statement = sql`SELECT p.id,v.id AS version,v.certificates FROM wiki_pages p JOIN wiki_versions v ON v.id=p.current_version_id JOIN wiki_catalogue c ON c.page_id=p.id AND c.version_id=v.id JOIN wiki_version_eligibility e ON e.id=v.id WHERE p.organization_id=${context.organizationId} AND p.lifecycle='active' AND e.eligible AND (${input.projectId ?? null}::uuid IS NULL OR p.project_id IS NULL OR p.project_id=${input.projectId ?? null}) AND (c.lexical||c.body_search) @@ to_tsquery('simple',${query}) ORDER BY ts_rank_cd(c.lexical||c.body_search,to_tsquery('simple',${query})) DESC,p.id LIMIT 20`;
+    let cancelFollowup: (() => void) | undefined;
+    const cancel = () => {
+      statement.cancel();
+      cancelFollowup?.();
+    };
     input.signal.addEventListener("abort", cancel, { once: true });
     try {
       input.signal.throwIfAborted();
       const rows = await statement;
       input.signal.throwIfAborted();
+      const readinessQuery = sql`WITH matching_pages AS (
+        SELECT p.id,e.eligible FROM wiki_pages p JOIN wiki_versions v ON v.id=p.current_version_id
+        JOIN wiki_catalogue c ON c.page_id=p.id AND c.version_id=v.id JOIN wiki_version_eligibility e ON e.id=v.id
+        WHERE p.organization_id=${context.organizationId} AND p.lifecycle='active'
+        AND (${input.projectId ?? null}::uuid IS NULL OR p.project_id IS NULL OR p.project_id=${input.projectId ?? null})
+        AND (c.lexical||c.body_search) @@ to_tsquery('simple',${query})
+      ), matching_sources AS (
+        SELECT d.id,d.active_version_id,v.operation_id FROM source_documents d JOIN source_versions v ON v.id=d.active_version_id
+        WHERE d.organization_id=${context.organizationId}
+        AND (${input.projectId ?? null}::uuid IS NULL OR d.project_id IS NULL OR d.project_id=${input.projectId ?? null})
+        AND EXISTS(SELECT 1 FROM source_passages p JOIN source_search_records r ON r.passage_id=p.id WHERE p.version_id=v.id AND r.lexical @@ to_tsquery('simple',${query}))
+      ) SELECT EXISTS(SELECT 1 FROM knowledge_jobs j JOIN knowledge_operations o ON o.id=j.operation_id
+        WHERE o.organization_id=${context.organizationId} AND j.kind IN ('wiki.refresh','wiki.revalidate','wiki.dependencies','wiki.identity','wiki.structure','wiki.restore')
+        AND j.state IN ('queued','running','retry_wait','outcome_unknown')
+        AND (j.operation_id IN (SELECT operation_id FROM matching_sources)
+          OR j.payload->>'versionId' IN (SELECT active_version_id::text FROM matching_sources)
+          OR j.payload->>'sourceVersionId' IN (SELECT active_version_id::text FROM matching_sources)
+          OR j.payload->>'documentId' IN (SELECT id::text FROM matching_sources)
+          OR j.payload->>'pageId' IN (SELECT id::text FROM matching_pages))) AS pending,
+        EXISTS(SELECT 1 FROM matching_pages WHERE NOT eligible) AS incomplete`;
+      cancelFollowup = () => readinessQuery.cancel();
+      const [readiness] = await readinessQuery;
+      input.signal.throwIfAborted();
       const references = new Map<
         string,
         { version: string; passageId: string }
       >();
-      for (const row of rows)
-        for (const ref of row.sources) {
-          const key = `${ref.version}:${ref.passageId}`;
-          if (!references.has(key))
-            references.set(key, {
-              version: String(ref.version),
-              passageId: String(ref.passageId),
-            });
+      const terms = new Set(
+        lexicalText(input.question).split(/\s+/).filter(Boolean),
+      );
+      const ranked: Array<{
+        ref: { version: string; passageId: string };
+        score: number;
+        order: number;
+      }> = [];
+      const fallbackVersions: string[] = [];
+      for (const [order, row] of rows.entries()) {
+        let associated = false;
+        for (const certificate of (row.certificates ??
+          []) as WikiCertificate[]) {
+          for (const claim of certificate.draft.claims) {
+            const score = lexicalText(
+              certificate.draft.text.slice(claim.start, claim.end),
+            )
+              .split(/\s+/)
+              .filter((term) => terms.has(term)).length;
+            if (!score) continue;
+            associated = true;
+            for (const handle of claim.handles) {
+              const ref = certificate.evidence.find(
+                (item) => item.handle === handle,
+              );
+              if (ref) ranked.push({ ref, score, order });
+            }
+          }
         }
+        if (!associated) fallbackVersions.push(String(row.version));
+      }
+      if (fallbackVersions.length) {
+        // Rank in PostgreSQL before resolving bodies, including legacy references
+        // that occur beyond the first fifty positions in a broad page's manifest.
+        const fallbackQuery = sql`SELECT DISTINCT p.version_id,p.id,
+          (SELECT count(*) FROM jsonb_array_elements_text(${sql.json([...terms])}::jsonb) term(value)
+            WHERE position(term.value IN lower(normalize(p.original_text,NFKC)))>0) AS score
+          FROM wiki_versions v JOIN wiki_pages page ON page.current_version_id=v.id
+          JOIN wiki_version_eligibility eligibility ON eligibility.id=v.id AND eligibility.eligible
+          CROSS JOIN LATERAL jsonb_to_recordset(v.sources) ref(version uuid,"passageId" uuid)
+          JOIN source_passages p ON p.version_id=ref.version AND p.id=ref."passageId"
+          JOIN source_documents d ON d.active_version_id=p.version_id
+          WHERE v.id::text IN ${sql(fallbackVersions)} AND page.organization_id=${context.organizationId} AND d.organization_id=${context.organizationId}
+          AND (${input.projectId ?? null}::uuid IS NULL OR d.project_id IS NULL OR d.project_id=${input.projectId ?? null})
+          ORDER BY score DESC,p.version_id,p.id LIMIT 51`;
+        cancelFollowup = () => fallbackQuery.cancel();
+        const fallback = await fallbackQuery;
+        input.signal.throwIfAborted();
+        for (const ref of fallback)
+          ranked.push({
+            ref: { version: String(ref.version_id), passageId: String(ref.id) },
+            score: Number(ref.score),
+            order: rows.length,
+          });
+      }
+      ranked.sort((a, b) => b.score - a.score || a.order - b.order);
+      for (const { ref } of ranked) {
+        const key = `${ref.version}:${ref.passageId}`;
+        if (!references.has(key))
+          references.set(key, {
+            version: String(ref.version),
+            passageId: String(ref.passageId),
+          });
+      }
       const originals = await this.sources.resolveCurrent(token, {
         references: [...references.values()].slice(0, 50),
         signal: input.signal,
         ...(input.projectId ? { projectId: input.projectId } : {}),
       });
-      return { pages: rows.length, originals, truncated: references.size > 50 };
+      return {
+        pages: rows.length,
+        originals,
+        truncated: references.size > 50,
+        pending: readiness?.pending === true,
+        incomplete: readiness?.incomplete === true,
+        pageLevelMapping: fallbackVersions.length > 0,
+      };
     } finally {
       input.signal.removeEventListener("abort", cancel);
     }

@@ -11,6 +11,9 @@ import type { Draft } from "../answer-validation.ts";
 export interface ScriptedOptions {
   toolArguments?: Record<string, unknown>;
   repeatTool?: boolean;
+  noRetrieval?: boolean;
+  answer?: unknown;
+  transformAnswer?: (answer: unknown) => unknown;
   delayMs?: number;
   delays?: Record<string, number>;
   onRequest?: (phase: string) => void;
@@ -102,11 +105,64 @@ export function startScriptedProvider(options: ScriptedOptions = {}) {
       const restoring = restoreIntent(instruction);
       const tool =
         !summary &&
+        !options.noRetrieval &&
         (!attachment || importing) &&
         (options.repeatTool ||
           !JSON.stringify(messages.slice(Math.max(0, questionIndex))).includes(
             '"tool_result"',
           ));
+      const results = messages
+        .slice(Math.max(0, questionIndex))
+        .flatMap((message) =>
+          Array.isArray(message.content) ? message.content : [],
+        )
+        .filter((block) => block.type === "tool_result");
+      let answer: unknown = {
+        basis: "general",
+        text: "水在标准大气压下约 100°C 沸腾。",
+        citations: [],
+        gaps: [],
+        conflicts: [],
+      };
+      if (results.length && !options.noRetrieval) {
+        const last = results.at(-1)!;
+        const raw =
+          typeof last.content === "string"
+            ? last.content
+            : Array.isArray(last.content)
+              ? last.content
+                  .map((block: { text?: string }) => block.text ?? "")
+                  .join("")
+              : "";
+        try {
+          const evidence = JSON.parse(raw);
+          if (Array.isArray(evidence.items)) {
+            const draft = scriptedDraft(evidence);
+            const citations = [
+              ...new Set(draft.claims.flatMap((claim) => claim.handles)),
+            ];
+            answer = {
+              basis: "source",
+              text:
+                draft.text + citations.map((handle) => ` [${handle}]`).join(""),
+              citations,
+              gaps: draft.claims
+                .filter((claim) => claim.role === "gap")
+                .map((claim) => draft.text.slice(claim.start, claim.end)),
+              conflicts: [],
+            };
+          } else if (evidence.handle)
+            answer = {
+              basis: "source",
+              text: `证据表明：${evidence.text} [${evidence.handle}]`,
+              citations: [evidence.handle],
+              gaps: [],
+              conflicts: [],
+            };
+        } catch {
+          /* Tool errors stay non-evidence. */
+        }
+      }
       const events = [
         {
           type: "message_start",
@@ -139,7 +195,11 @@ export function startScriptedProvider(options: ScriptedOptions = {}) {
               }
             : {
                 type: "text",
-                text: "Exploration text is not the product answer.",
+                text: JSON.stringify(
+                  options.transformAnswer
+                    ? options.transformAnswer(options.answer ?? answer)
+                    : (options.answer ?? answer),
+                ),
               },
         },
         ...(tool
