@@ -49,7 +49,7 @@
     "eval:routes": "bun --no-env-file scripts/evaluate-routes.ts",
     "prepare:tokenizer": "bun --no-env-file scripts/prepare-tokenizer.ts",
     "model:status": "bun --no-env-file scripts/model-requests.ts",
-    "test:ingestion": "bun --no-env-file test tests/direct-answer.test.ts tests/model-admission.test.ts tests/model-concurrency.test.ts tests/source-recovery.test.ts tests/search-index.test.ts"
+    "test:ingestion": "bun --no-env-file test tests/direct-answer.test.ts tests/model-admission.test.ts tests/model-settlement.test.ts tests/model-concurrency.test.ts tests/source-recovery.test.ts tests/search-index.test.ts"
   },
   "dependencies": {
     "@earendil-works/pi-ai": "0.85.1",

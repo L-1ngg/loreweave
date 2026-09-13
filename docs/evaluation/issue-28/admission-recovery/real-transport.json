@@ -1,0 +1,85 @@
+{
+  "capturedAt": "2026-09-13T14:10:29.611Z",
+  "provider": "api.siliconflow.cn",
+  "model": "deepseek-ai/DeepSeek-V4-Flash",
+  "runs": [
+    {
+      "operationId": "f40846bd-d563-423b-b101-5a9ff160c7b1",
+      "canceled": true,
+      "delivery": "caller_canceled",
+      "deliveryMs": 157,
+      "settlementMs": 1033,
+      "active": 0,
+      "blocked": 0,
+      "request": {
+        "id": "431420b8-195a-45f8-8446-78fc8f155304",
+        "operation_id": "f40846bd-d563-423b-b101-5a9ff160c7b1",
+        "priority": "interactive",
+        "state": "settled",
+        "queued_at": "2026-09-13T14:10:27.836Z",
+        "admitted_at": "2026-09-13T14:10:27.848Z",
+        "dispatched_at": "2026-09-13T14:10:27.851Z",
+        "settled_at": "2026-09-13T14:10:28.825Z",
+        "deadline": "2026-09-13T14:13:27.797Z",
+        "transport_deadline": "2026-09-13T14:15:27.852Z",
+        "consumer_ended_at": "2026-09-13T14:10:27.956Z",
+        "response_started_at": "2026-09-13T14:10:28.814Z",
+        "response_status": 200,
+        "provider_request_id": "ti_bmj88kgg4dcwog47kb",
+        "outcome": "http_200",
+        "capacity_released_at": "2026-09-13T14:10:28.825Z",
+        "capacity_release": {
+          "kind": "transport-ended",
+          "reference": "http_200"
+        },
+        "reconciliation": null
+      }
+    },
+    {
+      "operationId": "085eb25d-f9f5-48f1-a4df-6188ad4b338e",
+      "canceled": false,
+      "delivery": "http_200",
+      "deliveryMs": 779,
+      "settlementMs": 781,
+      "answer": "2",
+      "usage": {
+        "prompt_tokens": 13,
+        "completion_tokens": 19,
+        "total_tokens": 32,
+        "completion_tokens_details": {
+          "reasoning_tokens": 18
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 13
+      },
+      "active": 0,
+      "blocked": 0,
+      "request": {
+        "id": "fc1541f9-de7b-4420-bc9e-10eac705ffa9",
+        "operation_id": "085eb25d-f9f5-48f1-a4df-6188ad4b338e",
+        "priority": "interactive",
+        "state": "settled",
+        "queued_at": "2026-09-13T14:10:28.836Z",
+        "admitted_at": "2026-09-13T14:10:28.843Z",
+        "dispatched_at": "2026-09-13T14:10:28.845Z",
+        "settled_at": "2026-09-13T14:10:29.608Z",
+        "deadline": "2026-09-13T14:13:28.830Z",
+        "transport_deadline": "2026-09-13T14:15:28.848Z",
+        "consumer_ended_at": null,
+        "response_started_at": "2026-09-13T14:10:29.604Z",
+        "response_status": 200,
+        "provider_request_id": "ti_aknr4p5uylivfpem5l",
+        "outcome": "http_200",
+        "capacity_released_at": "2026-09-13T14:10:29.608Z",
+        "capacity_release": {
+          "kind": "transport-ended",
+          "reference": "http_200"
+        },
+        "reconciliation": null
+      }
+    }
+  ]
+}

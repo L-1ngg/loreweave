@@ -6,6 +6,11 @@ software behavior from real-model quality and deployment acceptance. The adopted
 runtime contract is [issue-28-adoption.md](../../design/rag-v1/issue-28-adoption.md).
 No remote issue closure or production acceptance is implied.
 
+The subsequent [admission incident recovery](admission-recovery/README.md) records
+the eight-permit root cause, explicit HTTP-capacity policy correction, recovery of
+the retained database, 266 passing software tests and fresh real HTTP/browser
+checks. Earlier measurements below remain historical, including failed cases.
+
 ## Software verification
 
 Tests used Bun 1.3.12 and disposable PostgreSQL 17 databases with

@@ -167,8 +167,8 @@ function App({
       <aside>
         <strong>本地开发验证</strong>
         <p>
-          当前检索已导入的
-          Markdown，并使用受控向量与摘录式模型响应验证流程。导入资料后即可查询；此模式不代表真实模型质量。
+          查询已导入的 Markdown，并沿引用核对原文。来源可检索后即可提问；Wiki
+          和图谱的处理状态会单独显示。
         </p>
       </aside>
       <SourceImports

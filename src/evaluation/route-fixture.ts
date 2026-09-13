@@ -292,6 +292,7 @@ export async function routeFixture(input: {
     for (const profile of profiles) {
       const host = new KnowledgeHost({
         modelFetch: admission.fetch,
+        settleModelWork: admission.settled.bind(admission),
         access,
         imports: sources,
         conversations,

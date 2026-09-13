@@ -1,3 +1,4 @@
+import { currentModelWork, withModelWork } from "../model-admission.ts";
 export interface ProviderConfig {
   fetch?: typeof globalThis.fetch;
   baseUrl: string;
@@ -15,9 +16,9 @@ export async function providerJSON(
 ): Promise<unknown> {
   signal.throwIfAborted();
   try {
-    const response = await (config.fetch ?? fetch)(
-      `${config.baseUrl.replace(/\/$/, "")}/${path}`,
-      {
+    const context = config.fetch ? currentModelWork() : undefined;
+    const send = () =>
+      (config.fetch ?? fetch)(`${config.baseUrl.replace(/\/$/, "")}/${path}`, {
         method: "POST",
         redirect: "error",
         headers: {
@@ -27,10 +28,15 @@ export async function providerJSON(
         body: JSON.stringify({ model: config.model, ...body }),
         signal: AbortSignal.any([
           signal,
-          ...(!config.fetch ? [AbortSignal.timeout(config.timeoutMs)] : []),
+          ...(!context ? [AbortSignal.timeout(config.timeoutMs)] : []),
         ]),
-      },
-    );
+      });
+    const response = context
+      ? await withModelWork(
+          { ...context, requestTimeoutMs: config.timeoutMs },
+          send,
+        )
+      : await send();
     if (!response.ok) {
       await response.arrayBuffer();
       throw new Error(`provider_http_${response.status}`);
@@ -47,6 +53,7 @@ export async function providerJSON(
           "provider_uncertain",
           "missing_model_work",
           "model_authority_lost",
+          "model_capacity_blocked",
         ].includes(error.message))
     )
       throw error;

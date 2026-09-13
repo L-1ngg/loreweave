@@ -101,3 +101,11 @@ packets processed and their coverage outcomes, published as one replacement set.
 A check that each material generated assertion faithfully represents its cited
 original evidence, including scope and qualifications; it is not independent
 verification of the original author's truthfulness.
+
+**Model HTTP capacity**:
+The shared allowance for admitted model connections, including orphaned requests
+without evidence that their client transport ended.
+
+**Remote outcome uncertainty**:
+A dispatched model request whose completion or termination has not been observed;
+its outcome remains unknown even when its client connection has ended.

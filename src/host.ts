@@ -119,6 +119,7 @@ export interface HostOptions {
   /** Fixed-route experimental controls only; production leaves Agent selection intact. */
   evaluationRoutes?: import("./evidence.ts").EvidenceRoute[];
   modelFetch?: typeof globalThis.fetch;
+  settleModelWork?: (operationId: string) => Promise<void>;
   model?: {
     profile: string;
     exploration: {
@@ -1331,8 +1332,13 @@ export class KnowledgeHost {
       } catch {
         this.fault(run);
       }
-      run.snapshot.settledAt = new Date().toISOString();
-      this.publish(run, "settled");
+      try {
+        await this.options.settleModelWork?.(run.snapshot.id);
+        run.snapshot.settledAt = new Date().toISOString();
+        this.publish(run, "settled");
+      } catch {
+        this.fault(run);
+      }
       try {
         await run.persistence;
       } catch {

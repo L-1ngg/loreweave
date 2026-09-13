@@ -109,6 +109,7 @@ try {
     sources: new FixtureSources({ organizationId: context.organizationId }),
     evidence: new EvidenceService(sources),
     modelFetch: admission.fetch,
+    settleModelWork: admission.settled.bind(admission),
     providerUrl: config.chat.baseUrl,
     model: {
       profile: model.profile,

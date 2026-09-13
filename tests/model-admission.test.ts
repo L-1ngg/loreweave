@@ -79,7 +79,7 @@ test("AC06/07: actual streamed requests share eight slots, background six, until
   }
 });
 
-test("AC09: consumer abort quarantines capacity until explicit remote-completion evidence", async () => {
+test("consumer cancellation drains the provider before releasing HTTP capacity", async () => {
   const admission = new ModelAdmission(url!);
   let controller!: ReadableStreamDefaultController<Uint8Array>;
   const server = Bun.serve({
@@ -107,13 +107,10 @@ test("AC09: consumer abort quarantines capacity until explicit remote-completion
     const attempt = status.requests.find(
       (row) => row.operation_id === operationId,
     )!;
-    expect(attempt.state).toBe("uncertain");
+    expect(attempt.state).toBe("dispatched");
     expect(status.active).toBe(1);
     controller.close();
-    await admission.reconcile(attempt.id, {
-      kind: "provider-completed",
-      reference: "controlled server stream explicitly closed",
-    });
+    await admission.settled(operationId);
     expect((await admission.status()).active).toBe(0);
   } finally {
     server.stop(true);
@@ -132,6 +129,7 @@ test("AC06: the Forge SDK uses the admitted HTTP transport through streamed comp
     providerUrl: provider.url,
     sources: new FixtureSources(),
     modelFetch: admission.fetch,
+    settleModelWork: admission.settled.bind(admission),
   });
   try {
     const run = await host.start({ question: "水的沸点" });

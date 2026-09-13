@@ -295,6 +295,10 @@ for (const state of ["completed", "uncertain"] as const) {
             (row) => row.id === requestId,
           )?.state,
         ).toBe("uncertain");
+        await admission.releaseTerminatedClient(
+          requestId,
+          "legacy fixture has no owner process or transport",
+        );
         await admission.reconcile(requestId, {
           kind: "provider-terminated",
           reference: "legacy controlled fixture confirms old request ended",
@@ -307,15 +311,20 @@ for (const state of ["completed", "uncertain"] as const) {
         expect(embedded).toBe(2);
       }
     } finally {
-      if (
-        (await admission.status()).requests.some(
-          (row) => row.id === requestId && row.state === "uncertain",
-        )
-      )
+      const remaining = (await admission.status()).requests.find(
+        (row) => row.id === requestId && row.state === "uncertain",
+      );
+      if (remaining) {
+        if (!remaining.capacity_released_at)
+          await admission.releaseTerminatedClient(
+            requestId,
+            "legacy fixture cleanup: no process or transport",
+          );
         await admission.reconcile(requestId, {
           kind: "provider-terminated",
           reference: "legacy controlled fixture cleanup",
         });
+      }
       await admission.close();
       await sources.close();
       await access.close();

@@ -45,21 +45,32 @@ reuse on an organization dependency snapshot change, including unrelated changes
 ## Admission, settlement and workers
 
 PostgreSQL `model_requests` is the single runtime HTTP admission authority. All
-configured SDK/chat/embedding transports use it. Eight requests may be reserved,
-dispatched or uncertain globally within this authority; background may use six.
-Interactive waiters have priority for available eligible capacity. Slots last
-through response-body/stream settlement. Physical HTTP batches and retries each
-acquire a slot; domain/CPU job counts are different metrics.
+configured SDK/chat/embedding transports use it. Eight owned HTTP requests may be
+reserved/dispatched globally, with six available to background work. Interactive
+waiters have priority. This is an HTTP capacity bound; the provider's unseen
+computation count cannot be proved after a lost connection. The incident recovery
+request explicitly changes the former indefinite uncertain-capacity policy; see
+[ADR-0004](../../adr/0004-model-transport-capacity-and-outcome.md). The live issue's
+stronger AC09 wording is not yet amended and is not claimed satisfied.
 
-The logical deadline includes queue time and survives recovery. Execution is
-capped at 45 seconds after admission and clipped by that deadline. Queued-only
-attempts are not model executions. Maintenance attempts link to transport IDs,
-so a known pre-dispatch cancellation does not consume the execution allowance.
-Owner heartbeats use lease/fence checks; expired undispatched owners are fenced
-before reservation reclamation and replay checks. A dispatched request without
-confirmed settlement retains capacity as uncertain. Local timeout/abort, lease
-expiry or process death is not proof of remote termination. There is no
-exactly-once execution or billing promise.
+The logical deadline includes queue time and survives recovery. Provider JSON
+calls honor configured timeouts, clipped by the logical deadline; admission does
+not override them with a 45-second timer. Caller timeout/cancel detaches delivery
+while the owner drains the response, bounded to five minutes from dispatch.
+Capacity lasts until the physical response ends or local transport closes. EOF of
+a non-streaming response, OpenAI `[DONE]`, or Anthropic `message_stop` settles the
+request. Interrupted or unterminated streams remain uncertain after their HTTP
+capacity is released. That uncertainty still blocks same-operation/input replay.
+Queued-only attempts are not model executions. Maintenance attempts link to HTTP
+request IDs; known pre-dispatch cancellation does not consume execution allowance.
+
+Owner heartbeats use lease/fence checks. Expired undispatched owners are fenced
+before reservation reclamation. Lease expiry alone never reclaims dispatched
+capacity: orphaned requests remain blocked until actual completion or audited
+client process termination. Eight unreleased uncertainties (or six background)
+fail affected admissions with `model_capacity_blocked`. Local transport termination
+is not proof of remote termination or billing outcome. Host result deadlines and
+transport settlement are separate; writer release waits for transport cleanup.
 
 `LOREWEAVE_ROLE=all|api|worker` selects bootstrap roles (default `all`). Workers
 share the same database and profiles; do not create separate admission databases
@@ -73,13 +84,23 @@ closes transports and database connections. Multiple API instances and database
 HA are separate deployment gates; this bootstrap does not claim those validated.
 
 Use `DATABASE_URL=... bun run model:status` for request/uncertainty inspection.
-After obtaining actual provider completion/termination evidence, reconcile with:
+After local transport capacity has been released, actual provider
+completion/termination evidence can reconcile the remaining uncertainty:
 
 ```sh
 bun run model:status reconcile REQUEST_UUID provider-completed EVIDENCE_REFERENCE
 ```
 
-The reference is recorded durably. A timeout observation is not valid evidence.
+For an owner process confirmed terminated, after its lease expires, release only
+its HTTP capacity while retaining remote uncertainty and replay protection:
+
+```sh
+bun run model:status release-client REQUEST_UUID CLIENT_TERMINATION_EVIDENCE_REFERENCE
+```
+
+References are recorded durably. A timeout or expired lease alone is not client
+process termination evidence. Status separates `active`, `draining`, `blocked`
+(unreleased uncertain capacity), and `uncertain` (all unknown remote outcomes).
 Provider cooldown, queued/admitted/dispatched/settled times, request IDs, parent
 operation IDs and operation readiness are inspectable. Cost is explicitly
 unavailable where the provider does not supply attributable billing data.

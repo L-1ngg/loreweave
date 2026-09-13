@@ -127,6 +127,7 @@ export function createRuntime(config: RuntimeConfig) {
     host = new KnowledgeHost({
       wiki,
       modelFetch: admission.fetch,
+      settleModelWork: admission.settled.bind(admission),
       providerUrl: real?.chat.baseUrl ?? provider!.url,
       ...(real
         ? {

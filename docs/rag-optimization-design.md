@@ -870,3 +870,17 @@ that automated support review eliminates hallucinations.
   mechanics during implementation preparation under the design defaults.
 - Implementation, paid execution, deployment and any destructive cutover remain
   separate from the design work authorized here.
+
+### Q44: Restore model admission after locally interrupted requests
+
+On 2026-09-13 the user explicitly requested diagnosis and repair of all eight
+occupied model permits. Controlled reproduction and retained request timestamps
+showed local cancellation destroying completion evidence. Under Q36, the recovery
+changes admission to bound owned HTTP requests while retaining separate remote
+uncertainty and same-input replay protection. Caller deadlines detach delivery;
+transport owners drain within a finite cleanup deadline. Audited client process
+termination releases only transport capacity. No guessed remote-completion time is
+introduced. [ADR-0004](adr/0004-model-transport-capacity-and-outcome.md) records the
+trade-off and explicit conflict with the prior AC09 remote-concurrency wording;
+the [runtime contract](design/rag-v1/issue-28-adoption.md) owns current behavior.
+The remote issue remains unchanged until separately authorized for publication.
