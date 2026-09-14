@@ -14,8 +14,49 @@ import { IdentityService } from "../src/identity.ts";
 import { ControlledEmbeddings } from "../src/development/embeddings.ts";
 import { WikiService } from "../src/wiki.ts";
 import { ScriptedWikiModel } from "../src/development/wiki-model.ts";
+import type { Draft, Review } from "../src/answer-validation.ts";
 const url = process.env.TEST_DATABASE_URL;
 if (!url) throw new Error("TEST_DATABASE_URL is required");
+
+test("Wiki repairs a claim whose declared citations exceed its reviewed support", async () => {
+  let generations = 0,
+    reviews = 0,
+    repaired = false;
+  class RepairModel extends ScriptedWikiModel {
+    override async request(...args: Parameters<ScriptedWikiModel["request"]>) {
+      const [phase, input] = args;
+      if (phase === "generation") {
+        generations++;
+        repaired ||= Boolean(input.feedback);
+      }
+      const result = await super.request(...args);
+      if (phase === "review") reviews++;
+      if (phase === "review" && !repaired) {
+        const review = result as Review;
+        const draft = input.draft as Draft;
+        const claim = draft.claims.find(
+          (c) => c.role === "fact" && c.handles.length,
+        )!;
+        review.claims.find((c) => c.id === claim.id)!.spans = [];
+      }
+      return result;
+    }
+  }
+  const f = await fixture(new RepairModel());
+  try {
+    const operation = await f.source(
+      "logs.md",
+      "生产环境的应用日志保留 30 天。",
+    );
+    await f.wiki.workOne(f.token);
+    expect((await f.wiki.inspect(f.token, operation.id)).status).toBe("ready");
+    expect(repaired).toBe(true);
+    expect(generations).toBe(2);
+    expect(reviews).toBe(2);
+  } finally {
+    await f.close();
+  }
+}, 10000);
 async function fixture(
   model: WikiModel = new ScriptedWikiModel(),
   embeddings: EmbeddingAdapter = new ControlledEmbeddings(),

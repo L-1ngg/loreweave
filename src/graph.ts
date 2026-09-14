@@ -1,4 +1,5 @@
 import { graphExtraction } from "./graph-extraction-cache.ts";
+import { ModelValidationError } from "./model-validation.ts";
 import { GraphQueries } from "./graph-queries.ts";
 import {
   graphOriginals,
@@ -73,7 +74,7 @@ export class GraphService {
     this.runtime = new WikiModelRuntime(this.operations, model);
   }
   private profile() {
-    return `graph-v4:${this.model.profile}:${normalizationProfile}:vocabulary-v1`;
+    return `graph-v5:${this.model.profile}:${normalizationProfile}:vocabulary-v1`;
   }
   async workOne(token?: string) {
     const context = token
@@ -187,7 +188,7 @@ export class GraphService {
     let processedPackets = 0;
     for (const packet of packets) {
       const [completed] = await this.operations
-        .sql`SELECT state,identity_dependencies,exclusions FROM graph_packets WHERE generation_id=${generationId} AND packet_key=${packet.key}`;
+        .sql`SELECT state,identity_dependencies,exclusions,endpoint_mentions FROM graph_packets WHERE generation_id=${generationId} AND packet_key=${packet.key}`;
       if (completed?.state === "reviewed") continue;
       const mentions = await this.identities.maintenanceMentions(
         job.operationId,
@@ -239,21 +240,84 @@ export class GraphService {
             (value) => validatePacket(value, packet.items),
           ),
       );
-      const raw = validatePacket(extraction.raw, packet.items);
+      let raw = validatePacket(extraction.raw, packet.items);
+      for (let repair = 0; ; repair++) {
+        try {
+          await this.runtime.request(
+            job,
+            packet.key,
+            "graph_review",
+            2,
+            {
+              packet: raw,
+              pack: packet.items,
+              mentions,
+              sourceVersion: versionId,
+            },
+            (value) => validateReview(value, raw),
+          );
+          break;
+        } catch (error) {
+          if (
+            !(error instanceof ModelValidationError) ||
+            error.repair !== "content" ||
+            repair >= 1
+          )
+            throw error;
+          // Correct the candidate using the negative review, then independently review again.
+          // Both phases keep their existing durable two-request limits.
+          const corrected = await this.runtime.request(
+            job,
+            packet.key,
+            "graph_extraction",
+            2,
+            {
+              pack: { items: packet.items, hash: hash(packet.items) },
+              vocabulary: [...predicates],
+              mentions,
+              feedback: {
+                packet: raw,
+                review: error.response,
+                issues: error.issues,
+              },
+            },
+            (value) => validatePacket(value, packet.items),
+          );
+          if (hash(corrected) === hash(raw)) throw error;
+          raw = corrected;
+          extraction.reused = false;
+        }
+      }
+      if (raw !== extraction.raw) {
+        await graphExtraction(
+          this.operations,
+          job,
+          pack.source.id,
+          this.profile() + (ambiguous ? `:${versionId}:${packet.key}` : ""),
+          packet.items,
+          mentions,
+          async () => raw,
+          true,
+        );
+      }
+      const endpoints = [
+        ...new Set([
+          ...raw.relations.flatMap((relation) => [
+            relation.subjectMention,
+            relation.objectMention,
+          ]),
+          ...raw.exclusions.flatMap((exclusion) =>
+            exclusion.mention ? [exclusion.mention] : [],
+          ),
+        ]),
+      ];
+      const reuseBindings =
+        completed?.identity_dependencies != null &&
+        hash([...(completed.endpoint_mentions ?? [])].sort()) ===
+          hash([...endpoints].sort());
       // Register all endpoint inputs before resolving them. Identity events then see
       // exclusion-only references even when the referenced mention belongs elsewhere.
       await this.operations.checkpoint(job, async (tx) => {
-        const endpoints = [
-          ...new Set([
-            ...raw.relations.flatMap((relation) => [
-              relation.subjectMention,
-              relation.objectMention,
-            ]),
-            ...raw.exclusions.flatMap((exclusion) =>
-              exclusion.mention ? [exclusion.mention] : [],
-            ),
-          ]),
-        ];
         // Serialize registration with M03 pointer updates: an event commits either
         // before this epoch check or after these reverse dependencies are visible.
         await tx`SELECT id FROM identity_mentions WHERE organization_id=${org} AND id::text IN ${tx(endpoints.length ? endpoints : [""])} ORDER BY id FOR SHARE`;
@@ -268,12 +332,11 @@ export class GraphService {
         mentionId: string;
         revisionId: string;
         proofId: string;
-      }> = completed?.identity_dependencies ?? [];
-      const exclusions: GraphPacketResult["exclusions"] =
-        completed?.identity_dependencies == null
-          ? [...raw.exclusions]
-          : completed.exclusions;
-      if (completed?.identity_dependencies == null) {
+      }> = reuseBindings ? completed.identity_dependencies : [];
+      const exclusions: GraphPacketResult["exclusions"] = !reuseBindings
+        ? [...raw.exclusions]
+        : completed.exclusions;
+      if (!reuseBindings) {
         for (const mentionId of new Set(
           raw.relations.flatMap((relation) => [
             relation.subjectMention,
@@ -316,14 +379,6 @@ export class GraphService {
           await tx`UPDATE graph_packets SET identity_dependencies=${tx.json(bindings)},exclusions=${tx.json(exclusions)} WHERE generation_id=${generationId} AND packet_key=${packet.key}`;
         });
       }
-      await this.runtime.request(
-        job,
-        packet.key,
-        "graph_review",
-        2,
-        { packet: raw, pack: packet.items, mentions, sourceVersion: versionId },
-        (value) => validateReview(value, raw),
-      );
       await this.operations.checkpoint(job, async (tx) => {
         await tx`UPDATE graph_packets SET state='reviewed',relations=${tx.json(jsonValue(raw.relations))},exclusions=${tx.json(jsonValue(exclusions))} WHERE generation_id=${generationId} AND packet_key=${packet.key}`;
       });
@@ -567,19 +622,44 @@ function validatePacket(
   return raw as unknown as GraphPacketResult;
 }
 function validateReview(raw: unknown, packet: GraphPacketResult) {
+  const invalid = (issues: string[], repair: "format" | "content") => {
+    throw new ModelValidationError(
+      "needs_attention:graph_review_failed",
+      issues,
+      repair,
+      raw,
+    );
+  };
+  if (!record(raw)) return invalid(["review must be an object"], "format");
+  const shape: string[] = [];
+  if (typeof raw.complete !== "boolean")
+    shape.push("complete must be a boolean");
+  if (raw.evidenceHash !== hash(packet.relations))
+    shape.push("evidenceHash must echo the supplied relationsHash");
   if (
-    !record(raw) ||
-    raw.evidenceHash !== hash(packet.relations) ||
-    raw.complete !== true ||
     !Array.isArray(raw.relations) ||
-    raw.relations.length !== packet.relations.length ||
-    raw.relations.some(
-      (relation: unknown) =>
-        !record(relation) ||
-        relation.verdict !== "supported" ||
-        relation.qualifiersChecked !== true,
-    )
+    raw.relations.length !== packet.relations.length
   )
-    throw new Error("needs_attention:graph_review_failed");
+    shape.push(
+      "relations must contain exactly one ordered verdict per candidate relation",
+    );
+  if (shape.length) return invalid(shape, "format");
+  const issues: string[] = [];
+  if (raw.complete !== true)
+    issues.push("review did not establish complete support");
+  for (const [index, relation] of (raw.relations as unknown[]).entries()) {
+    if (
+      !record(relation) ||
+      !["supported", "contradicted", "insufficient"].includes(
+        String(relation.verdict),
+      )
+    )
+      return invalid([`relations[${index}].verdict is invalid`], "format");
+    if (relation.verdict !== "supported")
+      issues.push(`relations[${index}] is ${relation.verdict}`);
+    if (relation.qualifiersChecked !== true)
+      issues.push(`relations[${index}] qualifiers were not verified`);
+  }
+  if (issues.length) return invalid(issues, "content");
   return true;
 }

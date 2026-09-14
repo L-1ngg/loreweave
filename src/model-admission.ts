@@ -10,6 +10,8 @@ export interface ModelWork {
   priority: "interactive" | "background";
   deadline: number;
   requestTimeoutMs?: number;
+  /** Maintenance keeps its consumer attached until the durable work deadline. */
+  waitForCompletion?: boolean;
   onDispatch?: (requestId?: string) => Promise<void>;
 }
 const work = new AsyncLocalStorage<ModelWork>();
@@ -179,12 +181,13 @@ export class ModelAdmission {
       dispatched = true;
       const tracked = modelTransport({
         request,
-        caller: context.requestTimeoutMs
-          ? AbortSignal.any([
-              signal,
-              AbortSignal.timeout(context.requestTimeoutMs),
-            ])
-          : signal,
+        caller:
+          context.requestTimeoutMs && !context.waitForCompletion
+            ? AbortSignal.any([
+                signal,
+                AbortSignal.timeout(context.requestTimeoutMs),
+              ])
+            : signal,
         transport: AbortSignal.any([
           this.authority.signal,
           AbortSignal.timeout(this.settlementMs),

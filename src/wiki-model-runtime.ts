@@ -1,6 +1,7 @@
 import { setTimeout as pause } from "node:timers/promises";
 import { withModelWork } from "./model-admission.ts";
 import { hash } from "./answer-validation.ts";
+import { ModelValidationError } from "./model-validation.ts";
 import { Operations, type Job } from "./operations.ts";
 import type { WikiModel, WikiPhase } from "./wiki-types.ts";
 /** Every actual maintenance request is charged durably before provider dispatch. */
@@ -42,16 +43,26 @@ export class WikiModelRuntime {
       if (Date.now() >= deadline) throw new Error("maintenance_deadline");
       const attempts =
         await tx`SELECT a.*,r.state AS transport_state FROM wiki_model_attempts a LEFT JOIN model_requests r ON r.id=a.model_request_id WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase=${phase} ORDER BY attempt`;
-      const cached = attempts.findLast(
-        (attempt) =>
-          attempt.input_hash === inputHash && attempt.state === "completed",
-      );
-      if (cached) return { cached: cached.response, deadline, attempt: 0 };
       const executions = attempts.filter(
         (attempt) =>
           (attempt.dispatched_at && attempt.transport_state !== "expired") ||
           attempt.state === "completed",
       );
+      const cached = attempts.findLast(
+        (attempt) =>
+          attempt.input_hash === inputHash &&
+          attempt.model_profile === this.model.profile &&
+          (attempt.state === "completed" || attempt.state === "received"),
+      );
+      if (cached)
+        return {
+          cached: cached.response,
+          deadline,
+          attempt: Number(cached.attempt),
+          executions: executions.filter((a) => a.attempt !== cached.attempt)
+            .length,
+          feedback: undefined,
+        };
       if (
         executions.length >= cap ||
         (phase === "inspection" &&
@@ -65,34 +76,59 @@ export class WikiModelRuntime {
           throw new Error("maintenance_review_budget_exhausted");
       }
       const attempt = attempts.length + 1;
-      await tx`INSERT INTO wiki_model_attempts(job_id,unit_key,phase,attempt,input_hash,model_profile,prompt_profile) VALUES(${job.id},${unitKey},${phase},${attempt},${inputHash},${this.model.profile},'wiki-request-v1')`;
-      return { deadline, attempt, executions: executions.length };
+      await tx`INSERT INTO wiki_model_attempts(job_id,unit_key,phase,attempt,input_hash,model_profile,prompt_profile) VALUES(${job.id},${unitKey},${phase},${attempt},${inputHash},${this.model.profile},'wiki-request-v2')`;
+      const previous = attempts.findLast(
+        (a) => a.input_hash === inputHash && a.state === "failed",
+      );
+      return {
+        deadline,
+        attempt,
+        executions: executions.length,
+        feedback: previous?.validation_issues,
+      };
     });
-    if ("cached" in admitted) return validate(structuredClone(admitted.cached));
     const signal = this.operations.signal(
       job,
       AbortSignal.timeout(Math.max(1, admitted.deadline - Date.now())),
     );
-    try {
+    const assertLive = () => {
+      if (
+        Date.now() >= admitted.deadline ||
+        signal.reason?.name === "TimeoutError"
+      )
+        throw new Error("maintenance_deadline");
       signal.throwIfAborted();
+    };
+    try {
+      assertLive();
+      const requestInput = admitted.feedback?.length
+        ? { ...input, validationFeedback: admitted.feedback }
+        : input;
+      if (new TextEncoder().encode(JSON.stringify(requestInput)).length > 15500)
+        throw new Error("needs_attention:model_input_limit");
       const onDispatch = async (requestId?: string) => {
-        signal.throwIfAborted();
+        assertLive();
         await this.operations.checkpoint(job, async (tx) => {
           await tx`UPDATE wiki_model_attempts SET dispatched_at=clock_timestamp(),model_request_id=${requestId ?? null} WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase=${phase} AND attempt=${admitted.attempt}`;
         });
       };
-      if (!this.model.admittedTransport) await onDispatch();
-      const raw = await withModelWork(
-        {
-          operationId: `${job.id}:${unitKey}:${phase}`,
-          parentOperationId: job.operationId,
-          priority: "background",
-          deadline: admitted.deadline,
-          onDispatch,
-        },
-        () => this.model.request(phase, input, signal),
-      );
-      signal.throwIfAborted();
+      if (!("cached" in admitted) && !this.model.admittedTransport)
+        await onDispatch();
+      const raw =
+        "cached" in admitted
+          ? structuredClone(admitted.cached)
+          : await withModelWork(
+              {
+                operationId: `${job.id}:${unitKey}:${phase}`,
+                parentOperationId: job.operationId,
+                priority: "background",
+                deadline: admitted.deadline,
+                waitForCompletion: true,
+                onDispatch,
+              },
+              () => this.model.request(phase, requestInput, signal),
+            );
+      assertLive();
       const maxBytes =
         phase === "generation" || phase === "review"
           ? 16000
@@ -101,16 +137,29 @@ export class WikiModelRuntime {
             : 8000;
       if (new TextEncoder().encode(JSON.stringify(raw)).length > maxBytes)
         throw new Error("model_output_limit");
+      // A rejected result is still evidence needed to diagnose or repair this attempt.
+      if (!("cached" in admitted))
+        await this.operations.checkpoint(job, async (tx) => {
+          await tx`UPDATE wiki_model_attempts SET state='received',response=${tx.json(JSON.parse(JSON.stringify(raw)))} WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase=${phase} AND attempt=${admitted.attempt}`;
+        });
+      assertLive();
       const result = validate(structuredClone(raw));
       await this.operations.checkpoint(job, async (tx) => {
         await tx`UPDATE wiki_model_attempts SET state='completed',completed_at=clock_timestamp(),response=${tx.json(JSON.parse(JSON.stringify(raw)))} WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase=${phase} AND attempt=${admitted.attempt}`;
       });
       return result;
     } catch (error) {
+      if (
+        Date.now() >= admitted.deadline ||
+        (signal.aborted && signal.reason?.name === "TimeoutError")
+      )
+        error = new Error("maintenance_deadline");
       // Ownership loss must not record failure or retry under a replacement owner.
       await this.operations.checkpoint(job, async (tx) => {
-        await tx`UPDATE wiki_model_attempts SET state='failed',completed_at=clock_timestamp(),error=${error instanceof Error ? error.message : "model_failure"} WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase=${phase} AND attempt=${admitted.attempt}`;
+        await tx`UPDATE wiki_model_attempts SET state='failed',completed_at=clock_timestamp(),error=${error instanceof Error ? error.message : "model_failure"},validation_issues=${tx.json(error instanceof ModelValidationError ? error.issues : [])} WHERE job_id=${job.id} AND unit_key=${unitKey} AND phase=${phase} AND attempt=${admitted.attempt}`;
       });
+      if (error instanceof ModelValidationError && error.repair === "content")
+        throw error;
       if (error instanceof Error && error.message === "stale_worker")
         throw error;
       if (
@@ -122,10 +171,12 @@ export class WikiModelRuntime {
           "provider_uncertain",
           "invalid_embedding",
           "model_authority_lost",
+          "maintenance_deadline",
+          "needs_attention:model_input_limit",
         ].includes(error.message)
       )
         throw error;
-      signal.throwIfAborted();
+      assertLive();
       const [attempt] = await this.operations
         .sql`SELECT a.dispatched_at,r.state AS transport_state FROM wiki_model_attempts a LEFT JOIN model_requests r ON r.id=a.model_request_id WHERE a.job_id=${job.id} AND a.unit_key=${unitKey} AND a.phase=${phase} AND a.attempt=${admitted.attempt}`;
       const dispatched = Boolean(
@@ -145,7 +196,14 @@ export class WikiModelRuntime {
             Math.floor(Math.random() * 100),
           undefined,
           { signal },
-        );
+        ).catch((error) => {
+          if (
+            Date.now() >= admitted.deadline ||
+            signal.reason?.name === "TimeoutError"
+          )
+            throw new Error("maintenance_deadline");
+          throw error;
+        });
       return this.request(job, unitKey, phase, cap, input, validate);
     }
   }

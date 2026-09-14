@@ -12,6 +12,8 @@ import type { ProviderRuntimeConfig } from "../providers/config.ts";
 import { createLifecycle } from "../lifecycle.ts";
 import { OpenAIEmbeddings } from "../providers/embeddings.ts";
 import { OpenAIKnowledgeModel } from "../providers/chat.ts";
+import { ModelAdmission } from "../model-admission.ts";
+import { loadEmbeddingTokenizer } from "../embedding-tokenizer.ts";
 
 /** Explicit smoke entry; the caller selects an isolated database and provider. */
 export async function runProviderSmoke(
@@ -19,8 +21,18 @@ export async function runProviderSmoke(
   provider: ProviderRuntimeConfig,
 ) {
   const lifecycle = createLifecycle(async ({ defer }) => {
-    const embeddings = new OpenAIEmbeddings(provider.embedding);
-    const model = new OpenAIKnowledgeModel(provider.chat);
+    const admission = new ModelAdmission(url);
+    defer(() => admission.close(), "settlement");
+    const embeddings = new OpenAIEmbeddings(
+      { ...provider.embedding, fetch: admission.fetch },
+      provider.embedding.model === "BAAI/bge-m3"
+        ? await loadEmbeddingTokenizer(provider.embedding.model)
+        : undefined,
+    );
+    const model = new OpenAIKnowledgeModel({
+      ...provider.chat,
+      fetch: admission.fetch,
+    });
     const access = new AccessService(url);
     defer(() => access.close());
     const sources = new SourceService(url, access, embeddings);
@@ -92,6 +104,8 @@ export async function runProviderSmoke(
     for (let n = 0; n < 20 && (await graph.workOne()); n++) {}
     const evidence = new EvidenceService(sources, wiki, graph);
     const host = new KnowledgeHost({
+      modelFetch: admission.fetch,
+      settleModelWork: admission.settled.bind(admission),
       access,
       imports: sources,
       wiki,

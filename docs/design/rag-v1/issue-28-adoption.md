@@ -21,6 +21,15 @@ same Host result. No-retrieval answers display exactly
 **通识回答，未查询知识库**. Mixed answers must distinguish general explanation from
 private facts. Missing support and conflicts remain explicit.
 
+A syntactically invalid or malformed final answer may receive one Host-requested
+format correction in the same Agent session. The correction disables all tools,
+retains the existing evidence registry, and consumes the remaining Agent request
+allowance and original run deadline. It adds no mandatory generation/review stage.
+Every corrected answer still passes citation, scope and source-freshness checks;
+unknown citations are rejected. `answerFormat` records the original format issue,
+repair count and outcome. The internal correction instruction is retained in the
+Agent trace and does not create another user-facing knowledge run.
+
 The Agent selects `source`, `wiki`, `graph` or combinations, with `source` as
 an omitted-argument default. Selected routes run concurrently. Scope comes from
 the run's trusted context, never tool arguments. Graph defaults to one hop;
@@ -63,6 +72,16 @@ request. Interrupted or unterminated streams remain uncertain after their HTTP
 capacity is released. That uncertainty still blocks same-operation/input replay.
 Queued-only attempts are not model executions. Maintenance attempts link to HTTP
 request IDs; known pre-dispatch cancellation does not consume execution allowance.
+
+Admitted Wiki/graph calls now keep their consumer attached until the persisted
+maintenance deadline instead of abandoning an in-flight response at the shorter
+provider request timeout. Each work unit still has 120 seconds within its existing
+600-second operation budget; queue time and all attempts share those deadlines.
+Explicit cancellation and ownership loss still detach immediately. Expiry records
+`maintenance_deadline` and cannot publish a late result or reset budgets. This
+maintenance-specific policy supersedes the per-request timeout behavior above;
+interactive and standalone provider requests retain their configured timeouts.
+The transport cleanup bound and eight/six HTTP admission limits are unchanged.
 
 Owner heartbeats use lease/fence checks. Expired undispatched owners are fenced
 before reservation reclamation. Lease expiry alone never reclaims dispatched
@@ -171,7 +190,9 @@ with the version. Two bounded local lanes process independent sections concurren
 continuations within a section stay ordered, and publication waits for every
 started section to settle. Compatible mapped prose can skip generation, while a new source
 manifest still requires renewed support review. Unmapped/changed input regenerates
-under the existing finite budgets. Title and section headings are reviewed claims.
+under the existing finite budgets. The real adapter assigns separate manifest
+claims to the page title (`wiki-heading`) and section title
+(`wiki-section-heading`), so both are independently reviewed.
 Assembly removes repeated reviewed headings; `publishedRanges` maps assembled
 text to exact reviewed draft ranges. Legacy certificates without section/context
 provenance take the rebuild path. No fabricated inherited certificates are added.
@@ -190,6 +211,25 @@ registration, not an unrelated organization identity event. Explicit anchors and
 split structures create bounded bridges; simple adjacency creates no extra call.
 Complete packet coverage gates generation publication. Successful empty output
 replaces this source's memberships while preserving independent source support.
+
+Maintenance stores bounded model outputs in a `received` checkpoint before domain
+validation. Recovery validates a compatible received result without dispatching
+another request. Rejected outputs and `validation_issues` remain available through
+authenticated maintenance diagnostics. Graph review distinguishes structural
+errors from rejected support: structural repair receives specific feedback;
+semantic rejection returns feedback to extraction before another independent
+review. Extraction and review retain two actual requests each across retries and
+recovery. A corrected extraction replaces its reusable cache only after review.
+Unresolved Wiki source coverage and unsuccessful graph repair remain explicit
+failures; these changes do not waive complete-coverage or publication checks.
+
+Wiki review sends unsupported declared citations or unlisted prose back to draft
+generation with the rejected response and specific issues. It does not repeatedly
+review the unchanged candidate to obtain approval. Generation and review each
+retain their existing three-request allowance. Migration 0037 adds the structured
+validation diagnostics without rewriting prior attempts. The graph repair profile
+is `graph-v5`; existing completed publications remain readable, and obsolete
+in-flight profiles cannot silently publish under new rules.
 
 Migrations 0024–0035 add durable admission, checkpoints, manifests, chunks/cache,
 search generations, transport accounting, raw graph cache, source deltas and

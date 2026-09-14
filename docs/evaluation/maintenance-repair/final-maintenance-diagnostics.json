@@ -1,0 +1,212 @@
+{
+  "operationId": "c5d194a2-b42c-4e08-86ad-c05cff9887d0",
+  "jobs": [
+    {
+      "kind": "graph.refresh",
+      "state": "succeeded",
+      "reason": null
+    },
+    {
+      "kind": "identity.revalidate",
+      "state": "succeeded",
+      "reason": null
+    },
+    {
+      "kind": "source.prepare",
+      "state": "succeeded",
+      "reason": null
+    },
+    {
+      "kind": "wiki.project",
+      "state": "succeeded",
+      "reason": null
+    },
+    {
+      "kind": "wiki.project",
+      "state": "succeeded",
+      "reason": null
+    },
+    {
+      "kind": "wiki.refresh",
+      "state": "succeeded",
+      "reason": null
+    }
+  ],
+  "attempts": [
+    {
+      "kind": "wiki.refresh",
+      "unit_key": "packet:0:child:0",
+      "phase": "extraction",
+      "attempt": 1,
+      "state": "failed",
+      "error": "invalid_source_coverage",
+      "validation_issues": [],
+      "response_retained": true,
+      "elapsed_seconds": 36.968
+    },
+    {
+      "kind": "wiki.refresh",
+      "unit_key": "packet:0:child:0",
+      "phase": "extraction",
+      "attempt": 2,
+      "state": "completed",
+      "error": null,
+      "validation_issues": [],
+      "response_retained": true,
+      "elapsed_seconds": 17.511
+    },
+    {
+      "kind": "wiki.refresh",
+      "unit_key": "topic:0",
+      "phase": "planning",
+      "attempt": 1,
+      "state": "completed",
+      "error": null,
+      "validation_issues": [],
+      "response_retained": true,
+      "elapsed_seconds": 5.818
+    },
+    {
+      "kind": "wiki.refresh",
+      "unit_key": "sections:0:0",
+      "phase": "sections",
+      "attempt": 1,
+      "state": "completed",
+      "error": null,
+      "validation_issues": [],
+      "response_retained": true,
+      "elapsed_seconds": 4.234
+    },
+    {
+      "kind": "wiki.refresh",
+      "unit_key": "block:0:0",
+      "phase": "generation",
+      "attempt": 1,
+      "state": "completed",
+      "error": null,
+      "validation_issues": [],
+      "response_retained": true,
+      "elapsed_seconds": 5.639
+    },
+    {
+      "kind": "wiki.refresh",
+      "unit_key": "block:0:0",
+      "phase": "review",
+      "attempt": 1,
+      "state": "completed",
+      "error": null,
+      "validation_issues": [],
+      "response_retained": true,
+      "elapsed_seconds": 10.263
+    },
+    {
+      "kind": "wiki.refresh",
+      "unit_key": "topic:1",
+      "phase": "planning",
+      "attempt": 1,
+      "state": "completed",
+      "error": null,
+      "validation_issues": [],
+      "response_retained": true,
+      "elapsed_seconds": 3.606
+    },
+    {
+      "kind": "wiki.refresh",
+      "unit_key": "sections:1:0",
+      "phase": "sections",
+      "attempt": 1,
+      "state": "completed",
+      "error": null,
+      "validation_issues": [],
+      "response_retained": true,
+      "elapsed_seconds": 6.014
+    },
+    {
+      "kind": "wiki.refresh",
+      "unit_key": "block:1:0",
+      "phase": "generation",
+      "attempt": 1,
+      "state": "completed",
+      "error": null,
+      "validation_issues": [],
+      "response_retained": true,
+      "elapsed_seconds": 3.603
+    },
+    {
+      "kind": "wiki.refresh",
+      "unit_key": "block:1:0",
+      "phase": "review",
+      "attempt": 1,
+      "state": "failed",
+      "error": "invalid_review",
+      "validation_issues": [
+        "review must echo draft.hash and pack.hash and contain claims and unlistedClaims within the output limit"
+      ],
+      "response_retained": true,
+      "elapsed_seconds": 12.565
+    },
+    {
+      "kind": "wiki.refresh",
+      "unit_key": "block:1:0",
+      "phase": "review",
+      "attempt": 2,
+      "state": "failed",
+      "error": "invalid_review",
+      "validation_issues": [
+        "review must echo draft.hash and pack.hash and contain claims and unlistedClaims within the output limit"
+      ],
+      "response_retained": true,
+      "elapsed_seconds": 7.496
+    },
+    {
+      "kind": "wiki.refresh",
+      "unit_key": "block:1:0",
+      "phase": "review",
+      "attempt": 3,
+      "state": "completed",
+      "error": null,
+      "validation_issues": [],
+      "response_retained": true,
+      "elapsed_seconds": 22.884
+    },
+    {
+      "kind": "graph.refresh",
+      "unit_key": "packet:0",
+      "phase": "graph_extraction",
+      "attempt": 1,
+      "state": "completed",
+      "error": null,
+      "validation_issues": [],
+      "response_retained": true,
+      "elapsed_seconds": 12.331
+    },
+    {
+      "kind": "graph.refresh",
+      "unit_key": "packet:0",
+      "phase": "graph_review",
+      "attempt": 1,
+      "state": "completed",
+      "error": null,
+      "validation_issues": [],
+      "response_retained": true,
+      "elapsed_seconds": 7.761
+    }
+  ],
+  "operationRequests": [
+    {
+      "state": "settled",
+      "outcome": "http_200",
+      "response_status": 200,
+      "count": 19,
+      "capacity_not_released": 0,
+      "max_response_start_seconds": 36.958
+    }
+  ],
+  "allThreeSmokesRequestSettlement": [
+    {
+      "state": "settled",
+      "count": 55,
+      "held_capacity": 0
+    }
+  ]
+}

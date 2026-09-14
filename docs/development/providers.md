@@ -24,6 +24,12 @@ Required settings (keep secrets in the local environment, not Git):
 | `RAG_EMBEDDING_SEND_DIMENSIONS` | Send the optional dimensions parameter; default false |
 | `RAG_EMBEDDING_BATCH_SIZE` | Sequential batch size, default 16, maximum 128 |
 
+For admitted Wiki/graph maintenance, the persisted work deadline controls how long
+the consumer waits for a started response. The shorter chat request timeout does
+not trigger a duplicate maintenance call. Standalone adapters and interactive
+requests retain their configured timeouts. See the [maintenance recovery
+contract](../design/rag-v1/issue-28-adoption.md).
+
 The selected Forge catalog entry must exist and use `openai-completions`.
 `huggingface` selects the compatible catalog entry for
 `deepseek-ai/DeepSeek-V4-Flash`; requests still go to `RAG_CHAT_BASE_URL`, not the

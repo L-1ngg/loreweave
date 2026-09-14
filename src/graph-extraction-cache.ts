@@ -19,6 +19,7 @@ export async function graphExtraction(
   items: GraphOriginal[],
   mentions: Mention[],
   extract: () => Promise<GraphPacketResult>,
+  replace = false,
 ) {
   const localMentions = mentions
     .map((mention) => {
@@ -53,7 +54,11 @@ export async function graphExtraction(
   const passageIds = [...new Set(items.map((item) => item.passageId))];
   const [cached] =
     await operations.sql`SELECT * FROM graph_extraction_cache WHERE document_id=${documentId} AND profile=${profile} AND input_hash=${inputHash}`;
-  if (cached && !(cached.response as GraphPacketResult).exclusions.length) {
+  if (
+    !replace &&
+    cached &&
+    !(cached.response as GraphPacketResult).exclusions.length
+  ) {
     const old = cached.mentions as Array<{ id: string; key: string }>;
     const mapping = new Map(
       old.map((item) => [

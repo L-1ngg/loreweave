@@ -1,0 +1,57 @@
+{
+  "kind": "real-provider-integration-smoke",
+  "qualityAcceptance": false,
+  "passed": false,
+  "models": {
+    "chat": "openai-chat:deepseek-ai/DeepSeek-V4-Flash:knowledge-v1",
+    "embedding": "openai-embeddings:BAAI/bge-m3:1024:c42cd75fca5cd5f36e1564dee3729c85b6d8315b851c8764386432d05a15544e"
+  },
+  "operation": {
+    "graph": "ready",
+    "wiki": "failed",
+    "id": "ab7d6225-f412-475e-971a-40c1ee3189a0",
+    "documentId": "15cabfd1-a6e9-4ace-8618-9b0ba019d721",
+    "versionId": "4332460c-d523-40a3-add7-3de8c7a21441",
+    "source": "searchable",
+    "maintenance": [
+      {
+        "id": "967efdfe-24d5-45f9-b5f2-f951f41ce6ff",
+        "kind": "graph.refresh",
+        "state": "succeeded"
+      },
+      {
+        "id": "a893decc-a3a1-4e31-92ee-acb6148ffd1c",
+        "kind": "identity.revalidate",
+        "state": "succeeded"
+      },
+      {
+        "id": "db04b703-a716-4b03-959b-8be834de45f8",
+        "kind": "wiki.refresh",
+        "state": "failed",
+        "reason": "The operation timed out."
+      }
+    ]
+  },
+  "graphClaims": 1,
+  "answer": {
+    "status": "answered",
+    "text": "根据项目日志规则文档，生产环境的应用日志保留 30 天。\n\n来源：[e1] [e2]",
+    "citations": [
+      {
+        "version": "4332460c-d523-40a3-add7-3de8c7a21441",
+        "passageId": "c66fc602-c8ff-457b-a022-35beed839325"
+      },
+      {
+        "version": "4332460c-d523-40a3-add7-3de8c7a21441",
+        "passageId": "15cd14bf-30c1-4ce6-8f1d-5563ea5afaa7"
+      }
+    ],
+    "counts": {
+      "review": 0,
+      "retrieval": 1,
+      "generation": 0,
+      "exploration": 2
+    },
+    "elapsedMs": 2826
+  }
+}

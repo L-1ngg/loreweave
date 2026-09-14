@@ -85,13 +85,9 @@ function materializeDraft(
   ) {
     // A deterministic page heading is still an assertion: the separate review
     // must support it from originals before the publication gate admits it.
-    segments.unshift({
+    const heading = {
       id: "wiki-heading",
-      text:
-        `# ${input.topic.title}` +
-        (record(input.section) && typeof input.section.purpose === "string"
-          ? `\n\n## ${input.section.purpose}`
-          : ""),
+      text: `# ${input.topic.title}`,
       role: "fact",
       handles: input.pack.items.map((item) =>
         record(item) ? item.handle : undefined,
@@ -101,7 +97,18 @@ function materializeDraft(
       conditions: [],
       attribution: "source",
       premises: [],
-    });
+    };
+    const section =
+      record(input.section) && typeof input.section.purpose === "string"
+        ? [
+            {
+              ...heading,
+              id: "wiki-section-heading",
+              text: `\n## ${input.section.purpose}`,
+            },
+          ]
+        : [];
+    segments.unshift(heading, ...section);
   }
   let text = "";
   const claims = segments.map((segment) => {

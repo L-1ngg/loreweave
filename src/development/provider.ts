@@ -14,6 +14,7 @@ export interface ScriptedOptions {
   noRetrieval?: boolean;
   answer?: unknown;
   transformAnswer?: (answer: unknown) => unknown;
+  finalText?: (answer: unknown) => string;
   delayMs?: number;
   delays?: Record<string, number>;
   onRequest?: (phase: string) => void;
@@ -30,6 +31,7 @@ export function startScriptedProvider(options: ScriptedOptions = {}) {
         system?: unknown;
         messages?: Array<{ role: string; content: unknown }>;
         phase?: string;
+        tools?: unknown[];
         pack?: EvidencePack;
         evidence?: { text: string };
         draft?: Draft;
@@ -105,6 +107,7 @@ export function startScriptedProvider(options: ScriptedOptions = {}) {
       const restoring = restoreIntent(instruction);
       const tool =
         !summary &&
+        Boolean(body.tools?.length) &&
         !options.noRetrieval &&
         (!attachment || importing) &&
         (options.repeatTool ||
@@ -195,7 +198,7 @@ export function startScriptedProvider(options: ScriptedOptions = {}) {
               }
             : {
                 type: "text",
-                text: JSON.stringify(
+                text: (options.finalText ?? JSON.stringify)(
                   options.transformAnswer
                     ? options.transformAnswer(options.answer ?? answer)
                     : (options.answer ?? answer),

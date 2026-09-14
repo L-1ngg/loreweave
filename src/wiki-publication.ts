@@ -9,6 +9,7 @@ import { SourceService } from "./sources.ts";
 import { IdentityService } from "./identity.ts";
 import { validateEmbeddings, type EmbeddingAdapter } from "./embeddings.ts";
 import { WikiModelRuntime } from "./wiki-model-runtime.ts";
+import { ModelValidationError } from "./model-validation.ts";
 import { hash, validateDraft, validateReview } from "./answer-validation.ts";
 import { conflictPacks } from "./wiki-conflicts.ts";
 import { packetPacks } from "./wiki-packets.ts";
@@ -204,21 +205,32 @@ export class WikiPublication {
               return draft;
             },
           ));
-        const review = await this.runtime.request(
-          job,
-          `block:${index}:${blockIndex}`,
-          "review",
-          3,
-          {
-            pack: block,
-            topic,
-            section,
-            continuation,
-            draft,
-            ...(requiredConflict ? { requiredConflict } : {}),
-          },
-          (raw) => validateReview(raw, draft, block, 16000),
-        );
+        let review;
+        try {
+          review = await this.runtime.request(
+            job,
+            `block:${index}:${blockIndex}`,
+            "review",
+            3,
+            {
+              pack: block,
+              topic,
+              section,
+              continuation,
+              draft,
+              ...(requiredConflict ? { requiredConflict } : {}),
+            },
+            (raw) => validateReview(raw, draft, block, 16000),
+          );
+        } catch (error) {
+          if (
+            !(error instanceof ModelValidationError) ||
+            error.repair !== "content"
+          )
+            throw error;
+          feedback = { draft, review: error.response, issues: error.issues };
+          continue;
+        }
         if (review.claims.every((claim) => claim.verdict === "supported")) {
           reviewed = {
             text: draft.text,

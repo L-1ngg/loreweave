@@ -1,5 +1,8 @@
 import { withModelWork } from "./model-admission.ts";
-import { directAnswerPrompt } from "./direct-answer.ts";
+import {
+  DirectAnswerFormatError,
+  directAnswerPrompt,
+} from "./direct-answer.ts";
 import { HostEvidence } from "./host-evidence.ts";
 import {
   sourceIntent,
@@ -66,6 +69,11 @@ export interface RunSnapshot {
     reviewMs?: number;
   };
   reason?: string;
+  answerFormat?: {
+    issue: string;
+    repairs: number;
+    outcome?: "corrected" | "failed" | "budget_exhausted";
+  };
   settledAt?: string;
   refreshUsed?: boolean;
   deadline: number;
@@ -1224,37 +1232,45 @@ export class KnowledgeHost {
         ],
       });
       run.controller.signal.throwIfAborted();
-      const turn = run.agent.runTurn(
-        question +
-          (run.snapshot.attachmentIds?.length
-            ? `\nSupplied attachment IDs: ${JSON.stringify(run.snapshot.attachmentIds)}`
-            : ""),
+      const readAnswer = async (turn: ReturnType<Agent["runTurn"]>) => {
+        let text = "";
+        for await (const event of turn) {
+          if (
+            event.type === "message_end" &&
+            event.message.role === "assistant"
+          )
+            text = event.message.content
+              .filter((block) => block.type === "text")
+              .map((block) => (block.type === "text" ? block.text : ""))
+              .join("");
+          if (
+            event.type === "tool_execution_end" &&
+            event.toolName === "search_evidence" &&
+            event.isError
+          )
+            evidence.failed();
+          if (event.type === "tool_execution_start")
+            this.publish(run, "progress", "正在查阅原文");
+        }
+        const outcome = await turn.result;
+        if (outcome.status !== "success")
+          throw new Error(
+            explorationController.signal.aborted
+              ? "budget_exhausted"
+              : run.requestBudgetExhausted
+                ? "model_call_budget_exhausted"
+                : "agent_execution_failed",
+          );
+        return text;
+      };
+      const finalText = await readAnswer(
+        run.agent.runTurn(
+          question +
+            (run.snapshot.attachmentIds?.length
+              ? `\nSupplied attachment IDs: ${JSON.stringify(run.snapshot.attachmentIds)}`
+              : ""),
+        ),
       );
-      let finalText = "";
-      for await (const event of turn) {
-        if (event.type === "message_end" && event.message.role === "assistant")
-          finalText = event.message.content
-            .filter((block) => block.type === "text")
-            .map((block) => (block.type === "text" ? block.text : ""))
-            .join("");
-        if (
-          event.type === "tool_execution_end" &&
-          event.toolName === "search_evidence" &&
-          event.isError
-        )
-          evidence.failed();
-        if (event.type === "tool_execution_start")
-          this.publish(run, "progress", "正在查阅原文");
-      }
-      const outcome = await turn.result;
-      if (outcome.status !== "success")
-        throw new Error(
-          explorationController.signal.aborted
-            ? "budget_exhausted"
-            : run.requestBudgetExhausted
-              ? "model_call_budget_exhausted"
-              : "agent_execution_failed",
-        );
       clearTimeout(explorationTimer);
       run.controller.signal.throwIfAborted();
       run.snapshot.status = "finalizing";
@@ -1283,7 +1299,40 @@ export class KnowledgeHost {
           validatedAt: new Date().toISOString(),
         };
       } else {
-        const answer = await evidence.finalizeDirect(finalText);
+        let answer;
+        try {
+          answer = await evidence.finalizeDirect(finalText);
+        } catch (error) {
+          if (!(error instanceof DirectAnswerFormatError)) throw error;
+          run.snapshot.answerFormat = {
+            issue: error.issue,
+            repairs: 0,
+            outcome: "budget_exhausted",
+          };
+          this.checkRunning(run, true);
+          if (run.snapshot.counts.exploration >= run.retrievalCap + 2)
+            throw error;
+          run.snapshot.answerFormat = {
+            issue: error.issue,
+            repairs: 1,
+            outcome: "failed",
+          };
+          this.publish(run, "progress", "正在整理答案格式");
+          const configured = await run.agent.updateConfiguration({
+            tools: [],
+            systemPrompt:
+              directAnswerPrompt +
+              " This is a Host-requested format correction. Preserve the prior answer's meaning, evidence handles, gaps and conflicts. Use only the existing conversation evidence. Output exactly one JSON object. Escape double quotes and control characters inside strings. No introductory text or Markdown fences. No tools or new knowledge operations are allowed.",
+          });
+          if ((await configured.applied).status !== "applied") throw error;
+          const corrected = await readAnswer(
+            run.agent.runTurn(
+              `Host format correction: ${error.issue}. Re-submit the previous answer using the required JSON schema. This is not a new user question.`,
+            ),
+          );
+          answer = await evidence.finalizeDirect(corrected);
+          run.snapshot.answerFormat.outcome = "corrected";
+        }
         this.checkRunning(run);
         run.snapshot.answer = answer;
         run.snapshot.status = answer.status;

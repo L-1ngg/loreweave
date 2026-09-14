@@ -81,6 +81,7 @@ export class MaintenanceService {
           : null,
         response: row.response,
         error: row.error,
+        validationIssues: row.validation_issues,
       })),
       id: operationId,
       createdAt: new Date(operation.created_at).toISOString(),

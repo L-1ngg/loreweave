@@ -15,6 +15,104 @@ import { record, hash } from "../src/answer-validation.ts";
 const url = process.env.TEST_DATABASE_URL;
 if (!url) throw new Error("TEST_DATABASE_URL required");
 
+for (const failure of ["format", "content"] as const)
+  test(`graph ${failure} rejection retains diagnostics and repairs the appropriate phase`, async () => {
+    const phases: string[] = [];
+    let extractions = 0,
+      reviews = 0;
+    let feedbackSeen = false;
+    class RepairModel extends ScriptedWikiModel {
+      override async request(
+        ...args: Parameters<ScriptedWikiModel["request"]>
+      ): Promise<unknown> {
+        const [phase, input] = args;
+        if (phase !== "graph_extraction" && phase !== "graph_review")
+          return super.request(...args);
+        phases.push(phase);
+        const mentions = input.mentions as Array<{
+          id: string;
+          text: string;
+          passageId: string;
+        }>;
+        const a = mentions.find((m) => m.text === "Alpha")!;
+        const b = mentions.find((m) => m.text === "Beta")!;
+        if (phase === "graph_extraction") {
+          extractions++;
+          feedbackSeen ||= Boolean(input.feedback);
+          const swapped = failure === "content" && !input.feedback;
+          return {
+            relations: [
+              {
+                subjectMention: swapped ? b.id : a.id,
+                objectMention: swapped ? a.id : b.id,
+                predicate: "dependency",
+                direction: "forward",
+                relationText: "Alpha 依赖 Beta。",
+                scope: "source",
+                qualifiers: {},
+                locators: [a.passageId],
+              },
+            ],
+            exclusions: [],
+            complete: true,
+          };
+        }
+        reviews++;
+        feedbackSeen ||= Boolean(input.validationFeedback);
+        const packet = input.packet as { relations: GraphRelation[] };
+        return {
+          evidenceHash:
+            failure === "format" && reviews === 1
+              ? "wrong-hash"
+              : hash(packet.relations),
+          complete: true,
+          relations: packet.relations.map((r) => ({
+            verdict:
+              r.subjectMention === a.id && r.objectMention === b.id
+                ? "supported"
+                : "contradicted",
+            qualifiersChecked: true,
+          })),
+        };
+      }
+    }
+    const f = await fixture(new RepairModel());
+    const maintenance = new MaintenanceService(url!, f.access);
+    try {
+      const operation = await f.source("Alpha 依赖 Beta。");
+      const source = await f.sources.version(f.token, operation.versionId);
+      for (const label of ["Alpha", "Beta"])
+        await f.identities.record(f.token, {
+          version: source.version,
+          passageId: source.passages[0]!.id,
+          label,
+        });
+      await f.graph.workOne(f.token);
+      const report = await f.graph.inspect(f.token, operation.id);
+      expect(report.generations[0]!.state).toBe("active");
+      expect(report.generations[0]!.memberships).toBe(1);
+      expect(reviews).toBe(2);
+      expect(extractions).toBe(failure === "format" ? 1 : 2);
+      expect(feedbackSeen).toBe(true);
+      if (failure === "content")
+        expect(phases).toEqual([
+          "graph_extraction",
+          "graph_review",
+          "graph_extraction",
+          "graph_review",
+        ]);
+      const diagnostic = await maintenance.inspect(f.token, operation.id);
+      const rejected = diagnostic.modelRequests.find(
+        (r) => r.state === "failed",
+      );
+      expect(rejected?.response).toBeDefined();
+      expect(rejected?.validationIssues.length).toBeGreaterThan(0);
+    } finally {
+      await maintenance.close();
+      await f.close();
+    }
+  }, 15000);
+
 for (const swapped of [false, true])
   test(`graph review validates mention bindings (swapped=${swapped})`, async () => {
     class MentionModel extends ScriptedWikiModel {

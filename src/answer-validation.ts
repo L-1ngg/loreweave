@@ -1,5 +1,6 @@
 import type { EvidencePack } from "./evidence.ts";
 import { createHash } from "node:crypto";
+import { ModelValidationError } from "./model-validation.ts";
 export function hash(value: unknown): string {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
 }
@@ -127,6 +128,12 @@ export function validateReview(
   pack: EvidencePack,
   maxBytes = 2000,
 ): Review {
+  const invalid = (
+    issues: string[],
+    repair: "format" | "content" = "format",
+  ) => {
+    throw new ModelValidationError("invalid_review", issues, repair, raw);
+  };
   if (
     !record(raw) ||
     draft.hash !== hash({ text: draft.text, claims: draft.claims }) ||
@@ -136,7 +143,9 @@ export function validateReview(
     !Array.isArray(raw.claims) ||
     new TextEncoder().encode(JSON.stringify(raw)).length > maxBytes
   )
-    throw new Error("invalid_review");
+    return invalid([
+      "review must echo draft.hash and pack.hash and contain claims and unlistedClaims within the output limit",
+    ]);
   const ids = new Set<string>();
   for (const result of raw.claims) {
     if (
@@ -151,16 +160,22 @@ export function validateReview(
       !result.reason.trim() ||
       !Array.isArray(result.spans)
     )
-      throw new Error("invalid_review");
+      return invalid([
+        "every claim needs a unique supplied id, supported/contradicted/insufficient verdict, nonempty reason and spans array",
+      ]);
     if ("standalone" in result && typeof result.standalone !== "boolean")
-      throw new Error("invalid_review");
+      return invalid([`claim ${result.id}: standalone must be a boolean`]);
     ids.add(result.id);
     for (const support of result.spans) {
       if (!record(support) || typeof support.handle !== "string")
-        throw new Error("invalid_review");
+        return invalid([
+          `claim ${result.id}: every support span needs an original handle`,
+        ]);
       const item = pack.items.find((item) => item.handle === support.handle);
       if (!item || !span(support.start, support.end, item.text.length))
-        throw new Error("invalid_review");
+        return invalid([
+          `claim ${result.id}: support span must address an existing original and valid range`,
+        ]);
     }
     const spans = result.spans;
     const claim = draft.claims.find((claim) => claim.id === result.id)!;
@@ -171,10 +186,20 @@ export function validateReview(
         (handle) => !spans.some((support) => support.handle === handle),
       )
     )
-      throw new Error("invalid_review");
+      return invalid(
+        [
+          `claim ${claim.id}: declared citations lack reviewed support: ${claim.handles.filter((handle) => !spans.some((support) => support.handle === handle)).join(", ")}. Correct the claim and its evidence references from the originals; do not fabricate supporting spans.`,
+        ],
+        "content",
+      );
   }
-  if (ids.size !== draft.claims.length || raw.unlistedClaims.length)
-    throw new Error("invalid_review");
+  if (ids.size !== draft.claims.length)
+    return invalid(["review must cover every supplied claim exactly once"]);
+  if (raw.unlistedClaims.length)
+    return invalid(
+      ["generated prose contains claims missing from the manifest"],
+      "content",
+    );
   return raw as unknown as Review;
 }
 export const reviewPrompt =

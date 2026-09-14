@@ -340,6 +340,24 @@ test("Wiki's fixed heading enters the claim manifest and cannot bypass semantic 
       start: 0,
       end: 6,
     });
+    const sectionDraft = validateDraft(
+      await model.request(
+        "generation",
+        {
+          pack,
+          topic: { title: "日志规则", subjectKey: "日志" },
+          section: { purpose: "保留期限" },
+        },
+        new AbortController().signal,
+      ),
+      pack,
+    );
+    expect(sectionDraft.text).toBe("# 日志规则\n\n## 保留期限\n日志保留30天。");
+    expect(sectionDraft.claims.map((claim) => claim.id)).toEqual([
+      "wiki-heading",
+      "wiki-section-heading",
+      "body",
+    ]);
     expect(() =>
       validateReview(
         {
