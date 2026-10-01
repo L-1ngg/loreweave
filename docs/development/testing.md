@@ -12,7 +12,7 @@ executable command source.
 | `bun run typecheck`        | Strict application, scripts and test types            | Installed dependencies                             |
 | `bun run format:check`     | Code and authored documentation format                | Frozen evidence is excluded                        |
 | `bun run check:docs`       | Local targets/anchors, navigation and placement       | No network calls                                   |
-| `bun run eval:verify`      | Evidence/fixture SHA-256 identities                   | No model calls                                     |
+| `bun run fixtures:verify`  | Fixed PDF input SHA-256 identities                    | No model calls                                     |
 | `bun run test`             | PDF/layout/tree, schemas, bounds and output isolation | Controlled/local only                              |
 | `bun run test:conformance` | PostgreSQL MessageStore/RunStore SDK contracts        | Disposable real PG database, Node 24               |
 | `bun run build`            | Compiled Start/Bun app and client bundles             | Replaces `dist`; coordinate with a running service |
@@ -46,7 +46,7 @@ metadata and thread/run history are included.
 
 ## Results and boundaries
 
-Routine checks preserve all tracked files and approved baselines. CI verifies
+Routine checks preserve all tracked files and fixed test inputs. CI verifies
 this after the suite. Per-task `Ran / Not run / Why / Risk` belongs in the live
 issue; dated reviewed results belong in [evaluation](../evaluation/pageindex-v1.md).
 

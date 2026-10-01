@@ -16,7 +16,8 @@ Older commands/contracts are historical context, not current runtime instruction
 
 GitHub Issues retain specifications, dependencies and execution evidence. The
 current tree consolidates implemented behavior into topical documentation and
-keeps required [PageIndex evaluation evidence](../evaluation/baselines/pageindex-v1/README.md).
+keeps a concise [PageIndex evaluation report](evaluation/pageindex-v1.md).
+Raw evaluation records are preserved in external recovery storage.
 Old ticket drafts, per-task journals, retired module documents and obsolete raw
 reports are available from the pinned snapshots instead of another active archive.
 The numbered [ADRs](adr/README.md) retain historical decision rationale.
@@ -34,7 +35,8 @@ The owner's recovery root is
 `/home/l1ngg/.local/share/loreweave-recovery/20261001-pageindex/` (mode `0700`).
 Its private `manifest.json`, `git-status.nul`, restored worktree, database-restore
 record and logical dumps are the recovery authority. Later Forge/research cleanup
-and documentation consolidation have verified additional snapshots beside it.
+and documentation cleanup have verified additional snapshots beside it. Raw
+evaluation records are retained there with their manifests and original bytes.
 Credentials/private originals stay in that private storage.
 
 To recover, verify archive hashes against the private manifest; extract the
@@ -44,5 +46,5 @@ PostgreSQL image. Open the restored database independently and verify logical
 dumps. Preserve the current checkout, configuration, database and originals.
 
 Source licenses and pinned provenance remain in [NOTICE](../NOTICE.md) and
-`docs/licenses/`. The original [delivery manifest](../evaluation/baselines/pageindex-v1/pageindex-delivery-manifest.json)
-is a byte snapshot of its historical delivery, not current-checkout validation.
+`docs/licenses/`. Historical delivery manifests remain in the external archives;
+they describe their recorded revision rather than validating the current checkout.

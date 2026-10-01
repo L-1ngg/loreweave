@@ -12,7 +12,6 @@ htmlcov/
 build/
 dist/
 *.egg-info/
-evaluation/reports/*.json
 node_modules/
 .DS_Store
 test-results/
@@ -22,5 +21,5 @@ playwright-report/
 .pageindex.env
 .pageindex-data/
 .tanstack/
-evaluation/reports/
+/evaluation/
 .scratch/

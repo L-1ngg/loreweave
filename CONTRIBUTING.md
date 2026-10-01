@@ -29,18 +29,18 @@ graphs are [historical context](docs/history.md), not current execution gates.
 
 ## Documentation ownership
 
-| Location                | Owns                                                          |
-| ----------------------- | ------------------------------------------------------------- |
-| `README.md`             | Product introduction and local startup                        |
-| `docs/README.md`        | Navigation by reader purpose                                  |
-| `docs/guides/`          | Current user workflows                                        |
-| `docs/architecture/`    | Current implementation, interfaces and invariants             |
-| `CONTEXT.md`            | One domain glossary, limited to terms and meanings            |
-| `docs/adr/`             | Architectural choices, trade-offs and supersession            |
-| `docs/development/`     | Configuration, testing and evaluation methods                 |
-| `docs/evaluation/`      | Reviewed, dated result reports                                |
-| `evaluation/baselines/` | Explicitly approved, attributable evidence snapshots          |
-| GitHub Issues           | Scope, acceptance criteria, work plans and execution journals |
+| Location             | Owns                                                          |
+| -------------------- | ------------------------------------------------------------- |
+| `README.md`          | Product introduction and local startup                        |
+| `docs/README.md`     | Navigation by reader purpose                                  |
+| `docs/guides/`       | Current user workflows                                        |
+| `docs/architecture/` | Current implementation, interfaces and invariants             |
+| `CONTEXT.md`         | One domain glossary, limited to terms and meanings            |
+| `docs/adr/`          | Architectural choices, trade-offs and supersession            |
+| `docs/development/`  | Configuration, testing and evaluation methods                 |
+| `docs/evaluation/`   | Reviewed, dated result reports                                |
+| `tests/fixtures/`    | Reusable test inputs, source facts and checksum manifests     |
+| GitHub Issues        | Scope, acceptance criteria, work plans and execution journals |
 
 Update the existing topic when behavior changes. Create a new document only for a
 distinct reader need and link it from the index. Completing an issue does not
@@ -63,14 +63,16 @@ private provider file and budget. Runtime credentials and private data remain
 outside committed documentation and evidence.
 
 Tests and evaluation commands write to ignored run directories or an explicit
-external output directory. They must preserve tracked documents and frozen
-baselines. To publish a baseline, select the full evidence dependency set, retain
-failed/rejected inputs, review secret/data exposure, record code/dataset/provider
-identity and checksums, and update the dated report. This is an explicit reviewed
-change, separate from executing a test.
+external output directory. Preserve tracked documents and fixed test inputs.
+Raw outputs, screenshots, call/cost logs, delivery manifests and execution
+snapshots stay outside Git. Archive a run's complete evidence dependency set
+externally, including failures and rejected inputs, and record source/dataset/
+provider identity and checksums there. Publish only a concise, reviewed result
+report with provenance and limitations; task execution evidence stays in its issue.
 
 `bun run check:docs` verifies local targets, heading anchors, navigation coverage
-and document placement. `bun run eval:verify` checks all frozen evidence/fixture
-hashes. CI also checks that validation leaves tracked files unchanged. Temporary
+and document placement, including accidental tracked evaluation outputs.
+`bun run fixtures:verify` checks fixed PDF input hashes. CI also checks that
+validation leaves tracked files unchanged. Temporary
 files are removed after use; `.archify` artifacts and unrelated user work are
 preserved.

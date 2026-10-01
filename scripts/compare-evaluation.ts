@@ -1,41 +1,35 @@
 // Artifact comparison only. Semantic answer/citation review is recorded separately.
 import { hashData } from "../src/server/library";
+import { resolve } from "node:path";
 import {
-  evaluationInputPath,
   evaluationOutputPath,
-  isReviewedBaselineComparison,
-  reviewedBaselineCandidates,
+  requiredEvaluationInput,
   readEvaluationArtifact,
 } from "./evaluation-artifacts";
 
-const candidatePaths = (
-  process.env.LOREWEAVE_COMPARE_CANDIDATES ??
-  reviewedBaselineCandidates.join(",")
-)
+const candidatePaths = requiredEvaluationInput("LOREWEAVE_COMPARE_CANDIDATES")
   .split(",")
-  .map(evaluationInputPath);
+  .map((path) => path.trim())
+  .filter(Boolean)
+  .map((path) => resolve(path));
+if (!candidatePaths.length) throw new Error("candidate_selection_empty");
+const referencePath = resolve(
+  requiredEvaluationInput("LOREWEAVE_COMPARE_REFERENCE"),
+);
 const candidates = await Promise.all(
   candidatePaths.map(async (path) => ({
     path,
     report: await readEvaluationArtifact(path),
   })),
 );
-const referencePath = evaluationInputPath(
-  process.env.LOREWEAVE_COMPARE_REFERENCE ?? "pageindex-full-reference.json",
-);
 const reference = await readEvaluationArtifact(referencePath);
 const additionalReferencePaths = (
-  process.env.LOREWEAVE_COMPARE_REFERENCES ??
-  "pageindex-encrypted-reference.json"
+  process.env.LOREWEAVE_COMPARE_REFERENCES ?? ""
 )
   .split(",")
+  .map((path) => path.trim())
   .filter(Boolean)
-  .map(evaluationInputPath);
-const frozenCandidates = isReviewedBaselineComparison({
-  candidatePaths,
-  referencePath,
-  additionalReferencePaths,
-});
+  .map((path) => resolve(path));
 const referenceRecords = new Map(
   reference.fixtures.map((r: any) => [`${r.mode}:${r.file}`, r]),
 );
@@ -298,9 +292,8 @@ const report = {
     elapsedMs: q.elapsedMs,
     usage: q.run?.usage ?? q.result?.usage,
   })),
-  semanticReview: frozenCandidates
-    ? "docs/evaluation/pageindex-v1.md (implementation-agent original-evidence review; not a blind independent or population-scale benchmark)"
-    : "pending explicit original-evidence review of this candidate cohort",
+  semanticReview:
+    "pending explicit original-evidence review of this candidate cohort",
 };
 await Bun.write(
   evaluationOutputPath("pageindex-paired-comparison.json"),

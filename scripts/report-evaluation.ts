@@ -1,20 +1,23 @@
 // Reproducible descriptive metrics; semantic support is reviewed separately.
+import { resolve } from "node:path";
 import {
-  evaluationInputPath,
   evaluationOutputPath,
-  isReviewedBaselineComparison,
+  requiredEvaluationInput,
   readEvaluationArtifact,
 } from "./evaluation-artifacts";
-const comparisonPath =
-  process.env.LOREWEAVE_COMPARE_INPUT ?? "pageindex-paired-comparison.json";
+const comparisonPath = resolve(
+  requiredEvaluationInput("LOREWEAVE_COMPARE_INPUT"),
+);
+const ledgerPaths = requiredEvaluationInput("LOREWEAVE_MEASUREMENT_LEDGERS")
+  .split(",")
+  .map((path) => path.trim())
+  .filter(Boolean)
+  .map((path) => resolve(path));
+if (!ledgerPaths.length) throw new Error("measurement_ledger_selection_empty");
 const paired = await readEvaluationArtifact(comparisonPath);
-const frozenCandidates = isReviewedBaselineComparison(paired);
-const selectedLedgers = process.env.LOREWEAVE_MEASUREMENT_LEDGERS;
-if (!frozenCandidates && !selectedLedgers)
-  throw new Error("new_candidate_ledger_selection_required");
 const candidates = await Promise.all(
   paired.candidatePaths.map(async (path: string) => ({
-    path: evaluationInputPath(path),
+    path: resolve(path),
     report: await readEvaluationArtifact(path),
   })),
 );
@@ -142,30 +145,13 @@ const measurements = ["flash", "standard"].map((mode) => {
     },
   };
 });
-const ledgerPaths = selectedLedgers
-  ? selectedLedgers.split(",").filter(Boolean)
-  : [
-      "pageindex-real-preflight-failures.json",
-      "pageindex-real-initial-ledger.json",
-      "pageindex-real-ledger.json",
-      "pageindex-regression-real-ledger.json",
-      "pageindex-large-retry-ledger.json",
-      "pageindex-reference-real-ledger.json",
-      "pageindex-encrypted-reference-ledger.json",
-      "pageindex-large-final-ledger.json",
-    ];
-if (!ledgerPaths.length) throw new Error("measurement_ledger_selection_empty");
-const checkpointPath =
-  process.env.LOREWEAVE_MEASUREMENT_CHECKPOINT ??
-  (frozenCandidates && !selectedLedgers
-    ? "pageindex-real-index-checkpoint.json"
-    : undefined);
+const checkpointPath = process.env.LOREWEAVE_MEASUREMENT_CHECKPOINT?.trim();
 const ledgers = await Promise.all(
   ledgerPaths.map(async (path) => {
     const value = await readEvaluationArtifact(path);
     const r = value.ledger ?? value;
     return {
-      path: evaluationInputPath(path),
+      path: resolve(path),
       observedCostUSD: r.observedCostUSD,
       walletDeltaUSD: r.walletDeltaUSD,
       previousCostUSD: r.previousProbeCostUSD,
@@ -208,8 +194,8 @@ const ledgers = await Promise.all(
 const report = {
   date: new Date().toISOString(),
   method:
-    "Latest explicitly selected result per mode/input/question, with all earlier trial failures retained in candidateTrials and ledgers. Descriptive fixed-corpus metrics, not a general quality guarantee. Latency is observed wall time and includes the serialized accounting proxy. Semantic support is in the named review, not inferred from lexical checks.",
-  comparison: evaluationInputPath(comparisonPath),
+    "Latest explicitly selected result per mode/input/question, with all earlier trial failures retained in candidateTrials and ledgers. Descriptive fixed-corpus metrics, not a general quality guarantee. Latency is observed wall time and includes the serialized accounting proxy. Semantic support requires a separate original-evidence review and is not inferred from lexical checks.",
+  comparison: comparisonPath,
   measurements,
   ledgers,
   accountingIntervals: [
@@ -221,7 +207,7 @@ const report = {
     ...(checkpointPath
       ? [
           {
-            path: evaluationInputPath(checkpointPath),
+            path: resolve(checkpointPath),
             ...(await readEvaluationArtifact(checkpointPath)).accounting,
           },
         ]
@@ -229,15 +215,12 @@ const report = {
   ],
   finalKeyAccounting: ledgers.at(-1)?.keyCumulative,
   lifecycle: candidates.flatMap((c) => c.report.observations ?? []),
-  semanticReview: frozenCandidates
-    ? "docs/evaluation/pageindex-v1.md"
-    : "pending explicit original-evidence review of this candidate cohort",
-  service: frozenCandidates
-    ? evaluationInputPath("pageindex-local-service.json")
-    : null,
+  semanticReview:
+    "pending explicit original-evidence review of this candidate cohort",
+  service: null,
   boundaries: [
     "Synthetic acceptance originals; no population benchmark",
-    "Implementation-agent original review; no blind independent reviewer",
+    "Automated metrics do not establish semantic support or independent blind review",
     "Python comparison measures indexing and fixed original reachability, not a Python QA score",
     "Missing provider usage on cancelled/failed calls is not zero usage",
     "Wallet deltas include other account activity; use key actual_cost with USD unit; hard quota is owner controlled",

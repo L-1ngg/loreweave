@@ -63,7 +63,7 @@ run concurrently. This is not a provider-wide quota or a throughput guarantee.
 Tests/measurements write to `.pageindex-data/evaluation/runs/<invocation>/` by
 default. `LOREWEAVE_EVALUATION_OUTPUT_DIRECTORY` can select another ignored run
 directory or an external directory. The artifact helper refuses destinations
-elsewhere in this repository, including docs/baselines and symlink aliases to
+elsewhere in this repository, including tracked documents/fixtures and symlink aliases to
 them. Playwright's own traces/results also remain ignored.
 
 [Evaluation](evaluation.md) lists the input/output overrides and explicitly paid

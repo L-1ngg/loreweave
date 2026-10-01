@@ -17,6 +17,10 @@ export function inspectDocumentation(root: string, files: string[]) {
   for (const file of new Set(files)) {
     if (file.startsWith(".scratch/"))
       failures.push(`${file}: local drafts must be ignored`);
+    if (file.startsWith("evaluation/"))
+      failures.push(
+        `${file}: generated evaluation results must stay outside Git`,
+      );
     if (file.startsWith("docs/")) {
       if (/\/(?:tickets|issues)(?:\/|\.)|\/issue-\d+\.md$/.test(file))
         failures.push(`${file}: task copies belong in GitHub Issues`);
@@ -37,8 +41,6 @@ export function inspectDocumentation(root: string, files: string[]) {
         "CONTEXT.md",
         "AGENTS.md",
         "NOTICE.md",
-        "evaluation/README.md",
-        "evaluation/baselines/pageindex-v1/README.md",
       ].includes(file);
     const path = resolve(root, file);
     if (authored && file.endsWith(".md") && existsSync(path))

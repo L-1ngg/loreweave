@@ -35,11 +35,9 @@ maintain and evaluate it. [README](../README.md) provides local startup;
 - [Testing](development/testing.md): offline checks, PostgreSQL conformance,
   public transports and desktop/mobile browser tests.
 - [Evaluation method](development/evaluation.md): frozen inputs, isolated
-  comparison, real-provider runs and evidence promotion.
+  comparison, real-provider runs and external evidence storage.
 - [PageIndex v1 results](evaluation/pageindex-v1.md): dated measurements and support
   review, including failed trials and unverified boundaries.
-- [Evaluation evidence](../evaluation/README.md): immutable baselines and mutable
-  run outputs.
 - [History and recovery](history.md): prior implementations and fixed revisions.
 - [Source attribution](../NOTICE.md): pinned sources and retained licenses.
 

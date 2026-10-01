@@ -2,10 +2,11 @@ import { extractPdf, PdfFailure } from "../src/server/pdf-engine";
 import { hashData } from "../src/server/library";
 import {
   evaluationOutputPath,
+  requiredEvaluationInput,
   readEvaluationArtifact,
 } from "./evaluation-artifacts";
 const reference = await readEvaluationArtifact(
-  process.env.LOREWEAVE_REFERENCE_INPUT ?? "pageindex-reference.json",
+  requiredEvaluationInput("LOREWEAVE_REFERENCE_INPUT"),
 );
 const records = [];
 const characters = (text: string) =>

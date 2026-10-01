@@ -1,53 +1,54 @@
 # Evaluation
 
 Evaluation separates protocol/lifecycle checks from model compatibility and
-semantic answer support. The current [reviewed report](../evaluation/pageindex-v1.md)
-has an immutable [baseline](../../evaluation/baselines/pageindex-v1/README.md).
-Routine commands create new outputs rather than overwriting that baseline.
+semantic answer support. Git keeps reusable scripts, fixed test inputs, this
+method and concise [reviewed results](../evaluation/pageindex-v1.md). Raw reports,
+screenshots, call/cost logs and execution snapshots belong in ignored run
+directories or external archives.
 
-## Fixed inputs and offline recomputation
+## Fixed inputs and local comparison
 
-[tests/fixtures](../../tests/fixtures/) contains project-authored PDFs, frozen
-questions, source/layout transformations and SHA-256 manifests. Cover all supplied
-inputs, including unsupported or failed imports, in each mode's denominator.
-Original facts and physical pages are the oracle; generated gold prose and upstream
-scores are not substitutes for measured TS answers.
+[tests/fixtures](../../tests/fixtures/) contains project-authored PDFs, fixed
+questions, source/layout transformations and SHA-256 manifests. Verify PDF bytes
+with `bun run fixtures:verify`. Cover all supplied inputs, including unsupported
+or failed imports, in each mode's denominator. Original facts and physical pages
+are the oracle; generated gold prose and upstream scores are not substitutes for
+measured TS answers.
 
-Verify and recompute the preserved comparison without provider calls:
+Comparison commands require explicit existing result paths. They never load an
+old delivery trial automatically. After the TS and full reference runs have
+created their reports and accounting ledgers, select them:
 
 ```sh
-bun run eval:verify
-export LOREWEAVE_EVALUATION_OUTPUT_DIRECTORY=.pageindex-data/evaluation/runs/offline-review
+export LOREWEAVE_EVALUATION_OUTPUT_DIRECTORY=.pageindex-data/evaluation/runs/comparison
+export LOREWEAVE_COMPARE_CANDIDATES=.pageindex-data/evaluation/runs/ts-trial/pageindex-real.json
+export LOREWEAVE_COMPARE_REFERENCE=.pageindex-data/evaluation/runs/reference-trial/pageindex-full-reference.json
 bun run eval:compare
 LOREWEAVE_COMPARE_INPUT="$LOREWEAVE_EVALUATION_OUTPUT_DIRECTORY/pageindex-paired-comparison.json" \
+  LOREWEAVE_MEASUREMENT_LEDGERS=.pageindex-data/evaluation/runs/ts-trial/pageindex-real-ledger.json,.pageindex-data/evaluation/runs/reference-trial/pageindex-real-ledger.json \
   bun run eval:report
 ```
 
-The baseline manifest maps historical embedded paths to byte-preserved files.
-Those paths, database names and URLs describe the original run, not current
-machine state. `eval:compare` and `eval:report` default to this baseline; arbitrary
-new reports are selected explicitly rather than by silently choosing the newest
-file. Input overrides are:
+These two commands make no model requests. Paths may also identify externally
+archived results. Additional or retried trials are selected deliberately:
 
-| Variable                       | Meaning                                                                                 |
-| ------------------------------ | --------------------------------------------------------------------------------------- |
-| `LOREWEAVE_COMPARE_CANDIDATES` | Ordered comma-separated TS reports; later explicit results supersede earlier selections |
-| `LOREWEAVE_COMPARE_REFERENCE`  | Main isolated full-reference report                                                     |
-| `LOREWEAVE_COMPARE_REFERENCES` | Additional explicit reference reports                                                   |
-| `LOREWEAVE_COMPARE_INPUT`      | Paired report to summarize                                                              |
-| `LOREWEAVE_REFERENCE_INPUT`    | Extraction reference for `eval:extraction` / `eval:flash-candidate`                     |
+| Variable                           | Meaning                                                                                 |
+| ---------------------------------- | --------------------------------------------------------------------------------------- |
+| `LOREWEAVE_COMPARE_CANDIDATES`     | Required ordered comma-separated TS reports; later results supersede earlier selections |
+| `LOREWEAVE_COMPARE_REFERENCE`      | Required main isolated full-reference report                                            |
+| `LOREWEAVE_COMPARE_REFERENCES`     | Optional additional reference reports                                                   |
+| `LOREWEAVE_COMPARE_INPUT`          | Required paired report for `eval:report`                                                |
+| `LOREWEAVE_MEASUREMENT_LEDGERS`    | Required comma-separated ledgers for the selected trials                                |
+| `LOREWEAVE_MEASUREMENT_CHECKPOINT` | Optional selected accounting checkpoint                                                 |
+| `LOREWEAVE_REFERENCE_INPUT`        | Required extraction reference for `eval:extraction` / `eval:flash-candidate`            |
 
 `eval:extraction` compares physical page counts and normalized non-whitespace
 characters. Content-stream vs geometric order is recorded separately and checked
 against authored column order. `eval:flash-candidate` measures initial structure,
-not full model-assisted optimization or answer quality. Both default to frozen
-reference input and make no model calls.
-
-For a new candidate cohort, `eval:report` requires
-`LOREWEAVE_MEASUREMENT_LEDGERS` (comma-separated explicit ledgers). Its optional
-`LOREWEAVE_MEASUREMENT_CHECKPOINT` adds the selected accounting checkpoint. New
-model outputs cannot silently inherit baseline costs or its semantic support
-review. Their review remains pending until the new originals/claims are inspected.
+not full model-assisted optimization or answer quality. Both read the explicitly
+selected reference and make no model calls. Reports compute costs from the
+selected ledgers; semantic support remains pending until the selected claims and
+originals are reviewed.
 
 ## Isolated Python comparison
 
@@ -56,6 +57,11 @@ with no model requests. `eval:full-reference` runs full Flash/Standard and **mak
 paid model calls**. Set `LOREWEAVE_PAGEINDEX_REFERENCE` to a clean external checkout
 at `d2693d80791a86345ef78b3234834f5fe53a70a0`; both commands check the revision.
 Python/uv dependencies are isolated development tools, never the app runtime.
+
+For extraction and initial-tree checks, first run `eval:reference` with an explicit
+output directory, then set `LOREWEAVE_REFERENCE_INPUT` to the resulting
+`pageindex-reference.json` before running `eval:extraction` or
+`eval:flash-candidate`.
 
 Accepted trees require valid original anchors, physical bounds, complete coverage
 and summaries. Exact reference hierarchy/IDs are not parity gates. Record reference
@@ -68,11 +74,11 @@ Paid evaluation is opt-in. Supply a private JSON through
 `LOREWEAVE_EVAL_PROVIDER_FILE` with `baseURL`, `model`, `apiKey` and `maxUSD` (positive,
 at most 10), plus an owner-controlled key quota. The development accounting proxy
 requires that gateway's `/v1/usage` to report USD and `actual_cost`; it is not a
-generic runtime OpenAI requirement. Never commit the provider file.
+generic runtime OpenAI requirement. Keep the provider file outside Git.
 
 ```sh
 export LOREWEAVE_EVAL_PROVIDER_FILE=/path/to/private-provider.json
-export LOREWEAVE_EVALUATION_OUTPUT_DIRECTORY=.pageindex-data/evaluation/runs/new-real-trial
+export LOREWEAVE_EVALUATION_OUTPUT_DIRECTORY=.pageindex-data/evaluation/runs/ts-trial
 bun run eval:real
 ```
 
@@ -93,10 +99,10 @@ the full Python comparator cohort.
 Named output overrides are `LOREWEAVE_EVAL_REPORT`, `LOREWEAVE_EVAL_LEDGER` and
 `LOREWEAVE_REFERENCE_REPORT`. Destinations inside the repository must be under
 `.pageindex-data/evaluation/runs/`; external directories are also allowed. The
-helper refuses docs/baselines and their symlink aliases. Use a distinct output
+helper rejects other repository paths and their symlink aliases. Use a distinct
 directory per trial so earlier failures remain inspectable.
 
-## Review and baseline publication
+## Review and evidence storage
 
 Inspect factual claims, arithmetic, qualifications and claim-adjacent cited
 originals. Distinguish supported answers, gaps, clarifications and incomplete
@@ -105,9 +111,9 @@ Identify the reviewer and whether review was blind/independent. Disclose targete
 reruns, latency/calls/usage, missing measurements, remote cancellation uncertainty
 and the provider-declared model identity.
 
-Promote evidence only as a reviewed change: select its complete input dependency
-set, preserve failures, remove credentials/private user content, pin source/dataset/
-provider identity, hash the original bytes and write a dated report. Historical
-snapshots remain immutable; paths can be resolved through a new manifest without
-rewriting embedded provenance. Update the documentation index when publishing a
-new report. Work-item execution evidence remains in its GitHub issue.
+Archive a run's complete input/output dependency set externally, preserve failures
+and rejected inputs, and record source/dataset/provider identity and byte hashes.
+Keep private user content and credentials in private storage. The repository may
+publish a concise, dated, reviewed report with provenance and limitations; update
+the documentation index for a new report. Work-item execution evidence remains
+in its GitHub issue. Running a command does not publish its raw outputs to Git.

@@ -1,11 +1,12 @@
 # PageIndex v1 evaluation
 
 Measured on 2026-10-01 for the TypeScript application delivered in
-`72b8023083e1ca0eab69ad19e7af90cc6c339506`. The published evidence is preserved in
-the [baseline](../../evaluation/baselines/pageindex-v1/README.md), with hashes and
-original-path mapping. This report reorganizes that evidence; it does not claim a
-new real-provider evaluation. [The evaluation method](../development/evaluation.md)
-provides offline recomputation and explicitly paid rerun instructions.
+`72b8023083e1ca0eab69ad19e7af90cc6c339506`. Raw reports, ledgers, screenshots and
+execution snapshots are preserved in [external recovery storage](../history.md#private-recovery).
+This concise report summarizes those records; it does not claim a new
+real-provider evaluation. [The evaluation method](../development/evaluation.md)
+describes explicit local inputs and paid reruns. [Issue #47](https://github.com/L-1ngg/loreweave/issues/47)
+records the delivery acceptance evidence.
 
 ## Corpus and execution
 
@@ -92,8 +93,8 @@ accuracy estimate.
 Literal revenue substring checks fail on equivalent `USD 120 million` wording;
 original review establishes equivalence. Lexical results remain visible and are
 not semantic scores. Server reference validity certifies access/location, not
-claim entailment. The [original semantic review](../../evaluation/baselines/pageindex-v1/pageindex-semantic-review.md.txt)
-retains per-question findings and earlier defects.
+claim entailment. The archived semantic review retains per-question findings and
+earlier defects.
 
 ## Lifecycle, defects and accounting
 
@@ -128,8 +129,8 @@ scenarios, official PG persistence conformance 21 passed / seven optional skips,
 locked install, types/build/format/docs, compiled HTTP/Range/SSE/MCP, protected
 SSR/Query/Form, server-only bundle and private-cache checks. Controlled tests also
 exercise updates/retirement, index retry/restart, revoked credentials and
-conversation deletion races. The [original acceptance snapshot](../../evaluation/baselines/pageindex-v1/pageindex-acceptance.md.txt)
-contains the historical acceptance matrix; [live issue evidence](https://github.com/L-1ngg/loreweave/issues/47)
+conversation deletion races. The archived acceptance snapshot contains the
+historical acceptance matrix; [live issue evidence](https://github.com/L-1ngg/loreweave/issues/47)
 owns work-item completion.
 
 Not run at delivery: hosted CI, other browser engines, a separate direct OpenAI

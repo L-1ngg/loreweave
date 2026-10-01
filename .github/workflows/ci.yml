@@ -35,7 +35,7 @@ jobs:
       - run: bun run typecheck
       - run: bun run format:check
       - run: bun run check:docs
-      - run: bun run eval:verify
+      - run: bun run fixtures:verify
       - run: bun run test
       - run: bun run test:conformance
       - run: bun run build
@@ -45,5 +45,5 @@ jobs:
       - name: Verify checks leave tracked files unchanged
         run: |
           bun run check:docs
-          bun run eval:verify
+          bun run fixtures:verify
           git diff --exit-code

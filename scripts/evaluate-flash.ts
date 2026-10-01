@@ -2,10 +2,11 @@ import { extractPdf } from "../src/server/pdf-engine";
 import { buildFlash, validateTree } from "../src/server/trees";
 import {
   evaluationOutputPath,
+  requiredEvaluationInput,
   readEvaluationArtifact,
 } from "./evaluation-artifacts";
 const reference = await readEvaluationArtifact(
-  process.env.LOREWEAVE_REFERENCE_INPUT ?? "pageindex-reference.json",
+  requiredEvaluationInput("LOREWEAVE_REFERENCE_INPUT"),
 );
 const records = [];
 function flat(nodes: any[]): any[] {
