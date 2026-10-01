@@ -20,6 +20,7 @@ would create a second implementation to maintain. A Bun dependency and a pinned
 vendor/patch workflow are the resulting trade-offs, since the SDK is a private
 workspace package with no npm distribution or Node/Python compatibility promise.
 
-The [reuse investigation](../research/forge-agent-reuse.md) records the inspected
-revision, alternatives, fresh tests and known integration gaps. Source adoption
-and local patches are implementation work, not completed by this decision.
+The former reuse investigation is retained in the
+[verified recovery baseline](../history/pageindex-retirement.md). It records the
+inspected revision, alternatives, fresh tests and known integration gaps. Source
+adoption and local patches were implementation work, not completed by this decision.

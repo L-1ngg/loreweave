@@ -64,8 +64,8 @@ to domain operations. Frontend and MCP consumers share those same interfaces.
 Architectural rationale: [shared provenance](../../adr/0001-shared-wiki-graph-provenance.md),
 [built-in conversation](../../adr/0002-built-in-knowledge-conversation.md), and
 [Forge SDK/Bun host](../../adr/0003-forge-agent-sdk-and-bun-host.md). The
-[Forge reuse investigation](../../research/forge-agent-reuse.md) records the
-source baseline and adapter verification limits.
+[verified recovery baseline](../../history/pageindex-retirement.md) retains the
+former Forge investigation, source baseline and adapter verification limits.
 
 ## Document ownership
 

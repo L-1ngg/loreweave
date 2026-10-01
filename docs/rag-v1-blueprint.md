@@ -336,10 +336,12 @@ owns document identity, versioning and mutation idempotency. Uploaded source
 instructions are document content, not authority to execute operations. The same
 business operations support the browser and external MCP clients.
 
-The [Forge reuse investigation](research/forge-agent-reuse.md) owns the inspected
-source baseline, package/patch import plan, lifecycle obligations and integration
-gaps. The public SDK is not an npm release. Source adoption must include its
-workspace dependencies, licenses, runtime provenance and required provider patch.
+The archived Forge reuse investigation covers the inspected source baseline,
+package/patch import plan, lifecycle obligations and integration gaps; see the
+[verified recovery baseline](history/pageindex-retirement.md) for the original
+investigation and adopted source. The public SDK was not an npm release. Its
+source adoption included workspace dependencies, licenses, runtime provenance
+and the required provider patch.
 
 Persist conversation turns, selected project/document context, operation results,
 and final answer source references in PostgreSQL. Use recent turns plus a bounded

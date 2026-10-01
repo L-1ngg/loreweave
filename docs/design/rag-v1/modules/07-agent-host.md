@@ -24,11 +24,12 @@ parent IDs and selected leaf. Forge invocation symbols remain process-local.
 Register M02/M05 commands and M06 evidence operations as tools; use M08 operation
 IDs to reconcile effects. M01 supplies trusted grants.
 
-The public SDK facade is the dependency seam. Preserve the pinned workspace,
-licenses and provider patch. Configure supported policies first, implement host
-policies outside vendor code, and isolate necessary SDK request-admission changes
-as attributable patches with regression cases. See the Forge reuse investigation
-and ADR-0003 linked from the module map.
+The historical integration used the public SDK facade as its dependency seam,
+with host policies implemented through `streamFn` and `toolHooks`. The SDK source,
+patches and contracts for request admission, tool scope, output budgets and
+checkpoint persistence are retained in the
+[verified recovery baseline](../../../history/pageindex-retirement.md).
+See ADR-0003 for the retired source-SDK and Bun Host decision.
 
 ## Invariants and failure behavior
 

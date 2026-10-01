@@ -29,7 +29,8 @@ contract and relevant ADRs before changing behavior. The blueprint describes the
 target; current runtime/validation commands are in [README](README.md) and root
 package scripts. Read the selected live work item and its blockers before implementation.
 For retired Python/Forge/Wiki/graph behavior or recovery, use the historical
-records linked by the blueprint. Vendor edits retain pinned provenance and attribution.
+[retirement record](docs/history/pageindex-retirement.md). For source attribution,
+read [NOTICE](NOTICE.md).
 
 For domain terminology, read [CONTEXT.md](CONTEXT.md). Current decision provenance
 is in Spec #29's alignment notes and [ADR-0005](docs/adr/0005-pageindex-typescript-replacement.md).

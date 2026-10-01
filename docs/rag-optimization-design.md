@@ -63,9 +63,10 @@ for Wiki and graph representations. Q9 establishes entity-centered retrieval as
 the graph's primary role. Q10 defers corpus-wide Global Search. Library choices
 and the remaining implementation architecture are undecided.
 
-The [Wiki and GraphRAG feasibility study](research/llm-wiki-graphrag-feasibility.md)
-records primary-source findings, candidate designs, and proposed experiments.
-Its recommendations are proposals, not confirmed decisions.
+The former Wiki and GraphRAG feasibility study is retained in the
+[verified recovery baseline](history/pageindex-retirement.md). It records
+primary-source findings, candidate designs, and proposed experiments.
+Its recommendations were proposals, not confirmed decisions.
 
 ### Q3: Wiki as a product deliverable
 
@@ -748,9 +749,10 @@ in My-RAG. This authorization persists for relevant integration work and does
 not require repeated routine confirmation.
 
 Inspect current source and SDK contracts before choosing the reuse approach.
-The [reuse investigation](research/forge-agent-reuse.md) records the inspected
-revision, controlled verification and integration gaps. Under the component-
-selection delegation, [ADR-0003](adr/0003-forge-agent-sdk-and-bun-host.md) chooses
+The former reuse investigation is retained in the
+[verified recovery baseline](history/pageindex-retirement.md); it records the
+inspected revision, controlled verification and integration gaps. Under the
+component-selection delegation, [ADR-0003](adr/0003-forge-agent-sdk-and-bun-host.md) chooses
 direct SDK reuse and a TypeScript/Bun backend, superseding the assistant's earlier
 Python/custom-loop defaults. Keep local patches attributable and report confirmed
 defects or required enhancements accurately; do not manufacture a defect report

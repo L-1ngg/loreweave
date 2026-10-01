@@ -33,9 +33,9 @@ The retained attempt ledger establishes six background cutoffs at approximately
 Two interactive requests were cut off by their run deadlines; the last request
 was dispatched with only 280 ms left. A configured 60-second JSON provider timeout
 was previously ignored in favor of admission's 45-second hard limit. Short final
-answer token limits also do not bound DeepSeek-V4 reasoning time. The
-[provider research](../../../research/siliconflow-request-settlement.md) records
-which cancellation/lookup/lifetime guarantees the public API does not supply.
+answer token limits also do not bound DeepSeek-V4 reasoning time. The archived
+provider research in the [verified recovery baseline](../../../history/pageindex-retirement.md)
+records which cancellation/lookup/lifetime guarantees the public API does not supply.
 
 ## Changed invariant
 
