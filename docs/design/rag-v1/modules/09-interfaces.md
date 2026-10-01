@@ -1,3 +1,7 @@
+> Historical record, retired by Spec #29. Source links resolve through the verified
+> recovery baseline described in docs/history/pageindex-retirement.md. Commands
+> and runtime behavior below are not current PageIndex instructions.
+
 # M09: Product interfaces
 
 M09 presents knowledge operations consistently through browser, HTTP and MCP.

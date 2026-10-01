@@ -1,3 +1,6 @@
+> Historical evaluation of the retired runtime. Source links resolve through
+> docs/history/pageindex-retirement.md; these results do not certify Spec #29.
+
 # Model admission incident recovery — 2026-09-13
 
 The original eight-slot deadlock is reproduced, repaired, and recovered in the

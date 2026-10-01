@@ -1,4 +1,13 @@
+> Historical record, retired by Spec #29. Source links resolve through the verified
+> recovery baseline described in docs/history/pageindex-retirement.md. Commands
+> and runtime behavior below are not current PageIndex instructions.
+
 # LoreWeave: First-Version Construction Blueprint
+
+Historical design: superseded by [Spec #29](https://github.com/L-1ngg/loreweave/issues/29)
+and [the PageIndex v1 blueprint](pageindex-v1-blueprint.md). Interpret the retained
+Wiki/graph/Forge requirements using [the historical glossary](history/rag-v1-glossary.md).
+The original construction record follows; it is not the current replacement contract.
 
 Runtime adoption: [Issue 28 contract](design/rag-v1/issue-28-adoption.md) supersedes the conflicting online-answer, retrieval, admission and incremental-maintenance defaults below; unaffected invariants and historical records remain in force.
 

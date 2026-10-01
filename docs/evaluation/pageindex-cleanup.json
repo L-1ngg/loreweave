@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-01T08:52:03.530Z",
+  "removedDisposableDatabases": [
+    "loreweave_pageindex_evaluation_261326",
+    "loreweave_pageindex_evaluation_205624",
+    "loreweave_pageindex_evaluation_208148",
+    "loreweave_pageindex_evaluation_210474",
+    "loreweave_pageindex_evaluation_224208",
+    "loreweave_pageindex_evaluation_248485"
+  ],
+  "removedDisposableArtifactDirectories": [
+    "/tmp/loreweave-pageindex-evaluation-wKKbfl",
+    "/tmp/loreweave-pageindex-evaluation-VQA0w6",
+    "/tmp/loreweave-pageindex-evaluation-thoL6D",
+    "/tmp/loreweave-pageindex-evaluation-NsANpQ",
+    "/tmp/loreweave-pageindex-evaluation-JEW3L5",
+    "/tmp/loreweave-pageindex-evaluation-OroYsF"
+  ],
+  "privateLogs": "/home/l1ngg/.local/share/loreweave-recovery/20261001-pageindex/evaluation-logs",
+  "originalsForReproduction": "tests/fixtures/pdf + hashes, pages/tree/read evidence in preserved JSON reports",
+  "preserved": "main loreweave_pageindex database/original directory, both existing local services, private P01 recovery, evaluation reports/screenshots"
+}

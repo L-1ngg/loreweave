@@ -19,3 +19,7 @@ test-results/
 playwright-report/
 
 .cache/tokenizers/
+.pageindex.env
+.pageindex-data/
+.tanstack/
+evaluation/reports/

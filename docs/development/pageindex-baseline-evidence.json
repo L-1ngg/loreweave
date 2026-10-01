@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-01T08:09:49.195Z",
+  "bun": "1.3.12",
+  "provider": "controlled loopback; no real-model quality measured",
+  "isolation": "disposable independent PostgreSQL database and original directory; no application-history mutation",
+  "ssrAndPostgres": "passed",
+  "pdfUploadHeadRange": "passed",
+  "sseFirstChunkMs": 30,
+  "toolStructuredZeroObserverReplay": {
+    "passed": true,
+    "streamingCalls": 2,
+    "structuredCalls": 1,
+    "callsAddedByReplay": 0
+  },
+  "explicitCancellation": "SDK abort observed; provider output stopped before completion; remote billing is not asserted",
+  "officialMcpClient": "passed (official client 2.0.0, negotiated Streamable HTTP)",
+  "persistenceContract": "MessageStore and RunStore reference shape passed; PostgreSQL conformance is P11",
+  "hydrationProtectedServerFunction": "passed in compiled Bun app via Chromium",
+  "serverOnlyBundle": "passed"
+}

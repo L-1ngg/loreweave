@@ -1,0 +1,3173 @@
+{
+  "date": "2026-10-01T08:46:26.467Z",
+  "method": "Latest explicitly selected result per mode/input/question, with all earlier trial failures retained in candidateTrials and ledgers. Descriptive fixed-corpus metrics, not a general quality guarantee. Latency is observed wall time and includes the serialized accounting proxy. Semantic support is in the named review, not inferred from lexical checks.",
+  "comparison": "docs/evaluation/pageindex-paired-comparison.json",
+  "measurements": [
+    {
+      "mode": "flash",
+      "imports": {
+        "mode": "flash",
+        "denominator": 15,
+        "tsReady": 11,
+        "tsRejected": [
+          {
+            "file": "inadequate.pdf",
+            "status": "failed",
+            "reason": "structural_extraction_inadequate"
+          },
+          {
+            "file": "scanned.pdf",
+            "status": "unsupported",
+            "reason": "text_layer_required"
+          },
+          {
+            "file": "encrypted.pdf",
+            "status": "unsupported",
+            "reason": "encrypted_pdf_unsupported"
+          },
+          {
+            "file": "malformed.pdf",
+            "status": "failed",
+            "reason": "malformed_or_unreadable_pdf"
+          }
+        ],
+        "pythonCompleted": 10,
+        "pythonRejected": [
+          {
+            "file": "large-section.pdf",
+            "status": "rejected",
+            "reason": "PageIndex Flash found no layout structure in this document (24 pages); try mode='standard', which builds the structure with the model."
+          },
+          {
+            "file": "inadequate.pdf",
+            "status": "rejected",
+            "reason": "PageIndex Flash found no layout structure in this document (25 pages); try mode='standard', which builds the structure with the model."
+          },
+          {
+            "file": "scanned.pdf",
+            "status": "rejected",
+            "reason": "PageIndex Flash found no text layer in this PDF (scanned or image-only); run OCR before indexing it."
+          },
+          {
+            "file": "encrypted.pdf",
+            "status": "failed",
+            "reason": {
+              "type": "FileNotDecryptedError",
+              "message": "File has not been decrypted"
+            }
+          },
+          {
+            "file": "malformed.pdf",
+            "status": "failed",
+            "reason": {
+              "type": "PdfReadError",
+              "message": "EOF marker not found"
+            }
+          }
+        ]
+      },
+      "acceptedTSInvariants": {
+        "accepted": 11,
+        "validRanges": true,
+        "completePhysicalCoverage": true,
+        "summariesOnEveryNode": true
+      },
+      "extraction": {
+        "bothExtracted": 12,
+        "perPageCharacterPreservation": 12,
+        "identicalOrder": 2
+      },
+      "pairedReachability": {
+        "total": 13,
+        "ts": 13,
+        "python": 13
+      },
+      "indexLatency": {
+        "tsReady": {
+          "count": 11,
+          "minMs": 302,
+          "medianMs": 34157,
+          "p95Ms": 88217,
+          "maxMs": 88217
+        },
+        "pythonCompleted": {
+          "count": 10,
+          "minMs": 7,
+          "medianMs": 78,
+          "p95Ms": 29593,
+          "maxMs": 29593
+        }
+      },
+      "selectedIndexAttemptUsage": {
+        "recordsWithUsage": 15,
+        "modelCalls": 39,
+        "toolCalls": 0,
+        "readPages": 0,
+        "inputTokens": 35163,
+        "outputTokens": 4552
+      },
+      "web": {
+        "questions": 11,
+        "completed": 11,
+        "latency": {
+          "count": 11,
+          "minMs": 14965,
+          "medianMs": 27395,
+          "p95Ms": 48132,
+          "maxMs": 48132
+        },
+        "usage": {
+          "recordsWithUsage": 11,
+          "modelCalls": 35,
+          "toolCalls": 30,
+          "readPages": 35,
+          "inputTokens": 109308,
+          "outputTokens": 4270
+        },
+        "outcomes": [
+          {
+            "id": "revenue",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real-regression.json",
+            "lexical": false
+          },
+          {
+            "id": "follow-up",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real.json",
+            "lexical": true
+          },
+          {
+            "id": "missing-fact",
+            "status": "completed",
+            "outcome": "evidence_gap",
+            "report": "docs/evaluation/pageindex-real.json",
+            "lexical": true
+          },
+          {
+            "id": "printed-toc",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real.json",
+            "lexical": true
+          },
+          {
+            "id": "long-navigation",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real-regression.json",
+            "lexical": true
+          },
+          {
+            "id": "mixed-20-21",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real-regression.json",
+            "lexical": true
+          },
+          {
+            "id": "cjk-qualifiers",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real-regression.json",
+            "lexical": true
+          },
+          {
+            "id": "conflict",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real.json",
+            "lexical": true
+          },
+          {
+            "id": "distinct-sources",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real.json",
+            "lexical": true
+          },
+          {
+            "id": "library-clear",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real.json",
+            "lexical": true
+          },
+          {
+            "id": "library-ambiguous",
+            "status": "completed",
+            "outcome": "clarification",
+            "report": "docs/evaluation/pageindex-real.json",
+            "lexical": true
+          }
+        ]
+      },
+      "mcp": {
+        "questions": 1,
+        "completed": 1,
+        "latency": {
+          "count": 1,
+          "minMs": 18400,
+          "medianMs": 18400,
+          "p95Ms": 18400,
+          "maxMs": 18400
+        },
+        "usage": {
+          "recordsWithUsage": 1,
+          "modelCalls": 3,
+          "toolCalls": 2,
+          "readPages": 2,
+          "inputTokens": 7652,
+          "outputTokens": 226
+        }
+      }
+    },
+    {
+      "mode": "standard",
+      "imports": {
+        "mode": "standard",
+        "denominator": 15,
+        "tsReady": 12,
+        "tsRejected": [
+          {
+            "file": "scanned.pdf",
+            "status": "unsupported",
+            "reason": "text_layer_required"
+          },
+          {
+            "file": "encrypted.pdf",
+            "status": "unsupported",
+            "reason": "encrypted_pdf_unsupported"
+          },
+          {
+            "file": "malformed.pdf",
+            "status": "failed",
+            "reason": "malformed_or_unreadable_pdf"
+          }
+        ],
+        "pythonCompleted": 10,
+        "pythonRejected": [
+          {
+            "file": "large-section.pdf",
+            "status": "failed",
+            "reason": {
+              "type": "Exception",
+              "message": "Processing failed"
+            }
+          },
+          {
+            "file": "inadequate.pdf",
+            "status": "failed",
+            "reason": {
+              "type": "Exception",
+              "message": "Processing failed"
+            }
+          },
+          {
+            "file": "scanned.pdf",
+            "status": "failed",
+            "reason": {
+              "type": "ValueError",
+              "message": "unreadable_text_layer"
+            }
+          },
+          {
+            "file": "encrypted.pdf",
+            "status": "failed",
+            "reason": {
+              "type": "FileNotDecryptedError",
+              "message": "File has not been decrypted"
+            }
+          },
+          {
+            "file": "malformed.pdf",
+            "status": "failed",
+            "reason": {
+              "type": "PdfReadError",
+              "message": "EOF marker not found"
+            }
+          }
+        ]
+      },
+      "acceptedTSInvariants": {
+        "accepted": 12,
+        "validRanges": true,
+        "completePhysicalCoverage": true,
+        "summariesOnEveryNode": true
+      },
+      "extraction": {
+        "bothExtracted": 12,
+        "perPageCharacterPreservation": 12,
+        "identicalOrder": 2
+      },
+      "pairedReachability": {
+        "total": 13,
+        "ts": 13,
+        "python": 13
+      },
+      "indexLatency": {
+        "tsReady": {
+          "count": 12,
+          "minMs": 6892,
+          "medianMs": 19571,
+          "p95Ms": 146309,
+          "maxMs": 146309
+        },
+        "pythonCompleted": {
+          "count": 10,
+          "minMs": 26617,
+          "medianMs": 120557,
+          "p95Ms": 210185,
+          "maxMs": 210185
+        }
+      },
+      "selectedIndexAttemptUsage": {
+        "recordsWithUsage": 15,
+        "modelCalls": 60,
+        "toolCalls": 0,
+        "readPages": 0,
+        "inputTokens": 55074,
+        "outputTokens": 5105
+      },
+      "web": {
+        "questions": 11,
+        "completed": 11,
+        "latency": {
+          "count": 11,
+          "minMs": 16674,
+          "medianMs": 22191,
+          "p95Ms": 63094,
+          "maxMs": 63094
+        },
+        "usage": {
+          "recordsWithUsage": 11,
+          "modelCalls": 33,
+          "toolCalls": 29,
+          "readPages": 44,
+          "inputTokens": 103607,
+          "outputTokens": 4223
+        },
+        "outcomes": [
+          {
+            "id": "revenue",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real-regression.json",
+            "lexical": false
+          },
+          {
+            "id": "follow-up",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real.json",
+            "lexical": true
+          },
+          {
+            "id": "missing-fact",
+            "status": "completed",
+            "outcome": "evidence_gap",
+            "report": "docs/evaluation/pageindex-real.json",
+            "lexical": true
+          },
+          {
+            "id": "printed-toc",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real.json",
+            "lexical": true
+          },
+          {
+            "id": "long-navigation",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real-regression.json",
+            "lexical": true
+          },
+          {
+            "id": "mixed-20-21",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real-regression.json",
+            "lexical": true
+          },
+          {
+            "id": "cjk-qualifiers",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real-regression.json",
+            "lexical": true
+          },
+          {
+            "id": "conflict",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real.json",
+            "lexical": true
+          },
+          {
+            "id": "distinct-sources",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real.json",
+            "lexical": true
+          },
+          {
+            "id": "library-clear",
+            "status": "completed",
+            "outcome": "answer",
+            "report": "docs/evaluation/pageindex-real.json",
+            "lexical": true
+          },
+          {
+            "id": "library-ambiguous",
+            "status": "completed",
+            "outcome": "clarification",
+            "report": "docs/evaluation/pageindex-real.json",
+            "lexical": true
+          }
+        ]
+      },
+      "mcp": {
+        "questions": 1,
+        "completed": 1,
+        "latency": {
+          "count": 1,
+          "minMs": 18200,
+          "medianMs": 18200,
+          "p95Ms": 18200,
+          "maxMs": 18200
+        },
+        "usage": {
+          "recordsWithUsage": 1,
+          "modelCalls": 3,
+          "toolCalls": 2,
+          "readPages": 6,
+          "inputTokens": 8321,
+          "outputTokens": 234
+        }
+      }
+    }
+  ],
+  "ledgers": [
+    {
+      "path": "docs/evaluation/pageindex-real-preflight-failures.json",
+      "observedCostUSD": 0.00013872,
+      "walletDeltaUSD": 0.6454117100000012,
+      "previousCostUSD": 0.00009288,
+      "keyCumulative": null,
+      "recordedCalls": 6,
+      "recordsWithoutUsage": 1,
+      "cancellations": 0,
+      "requestErrors": [
+        {
+          "lane": "verify:qa",
+          "error": "AbortError: The connection was closed."
+        }
+      ],
+      "inputTokens": 313,
+      "outputTokens": 53,
+      "lanes": [
+        {
+          "lane": "verify:index",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 3515,
+            "medianMs": 10818,
+            "p95Ms": 12974,
+            "maxMs": 12974
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1723,
+            "medianMs": 8775,
+            "p95Ms": 11446,
+            "maxMs": 11446
+          },
+          "inputTokens": 177,
+          "outputTokens": 33
+        },
+        {
+          "lane": "verify:qa",
+          "calls": 3,
+          "recordsWithoutUsage": 1,
+          "latency": {
+            "count": 3,
+            "minMs": 509,
+            "medianMs": 3525,
+            "p95Ms": 25332,
+            "maxMs": 25332
+          },
+          "firstOutput": {
+            "count": 2,
+            "minMs": 1634,
+            "medianMs": 1634,
+            "p95Ms": 10804,
+            "maxMs": 10804
+          },
+          "inputTokens": 136,
+          "outputTokens": 20
+        }
+      ]
+    },
+    {
+      "path": "docs/evaluation/pageindex-real-initial-ledger.json",
+      "observedCostUSD": 0.036200832,
+      "walletDeltaUSD": 3.259091550000001,
+      "previousCostUSD": 0.0002316,
+      "keyCumulative": null,
+      "recordedCalls": 82,
+      "recordsWithoutUsage": 0,
+      "cancellations": 0,
+      "requestErrors": [],
+      "inputTokens": 143332,
+      "outputTokens": 10123,
+      "lanes": [
+        {
+          "lane": "verify:index",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 3310,
+            "medianMs": 3557,
+            "p95Ms": 7598,
+            "maxMs": 7598
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1168,
+            "medianMs": 1756,
+            "p95Ms": 4683,
+            "maxMs": 4683
+          },
+          "inputTokens": 177,
+          "outputTokens": 33
+        },
+        {
+          "lane": "verify:qa",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 2949,
+            "medianMs": 3649,
+            "p95Ms": 6784,
+            "maxMs": 6784
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1278,
+            "medianMs": 1716,
+            "p95Ms": 4771,
+            "maxMs": 4771
+          },
+          "inputTokens": 177,
+          "outputTokens": 33
+        },
+        {
+          "lane": "ts:flash:single-column.pdf",
+          "calls": 4,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 4,
+            "minMs": 6545,
+            "medianMs": 8045,
+            "p95Ms": 15407,
+            "maxMs": 15407
+          },
+          "firstOutput": {
+            "count": 4,
+            "minMs": 1720,
+            "medianMs": 1809,
+            "p95Ms": 11174,
+            "maxMs": 11174
+          },
+          "inputTokens": 1678,
+          "outputTokens": 329
+        },
+        {
+          "lane": "ts:flash:bookmarks.pdf",
+          "calls": 4,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 4,
+            "minMs": 4700,
+            "medianMs": 5554,
+            "p95Ms": 16115,
+            "maxMs": 16115
+          },
+          "firstOutput": {
+            "count": 4,
+            "minMs": 1181,
+            "medianMs": 1437,
+            "p95Ms": 7800,
+            "maxMs": 7800
+          },
+          "inputTokens": 1656,
+          "outputTokens": 323
+        },
+        {
+          "lane": "ts:flash:toc-offset.pdf",
+          "calls": 4,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 4,
+            "minMs": 5523,
+            "medianMs": 5880,
+            "p95Ms": 14811,
+            "maxMs": 14811
+          },
+          "firstOutput": {
+            "count": 4,
+            "minMs": 1222,
+            "medianMs": 1630,
+            "p95Ms": 1849,
+            "maxMs": 1849
+          },
+          "inputTokens": 1977,
+          "outputTokens": 519
+        },
+        {
+          "lane": "ts:flash:no-toc.pdf",
+          "calls": 8,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 8,
+            "minMs": 4734,
+            "medianMs": 7230,
+            "p95Ms": 17130,
+            "maxMs": 17130
+          },
+          "firstOutput": {
+            "count": 8,
+            "minMs": 1159,
+            "medianMs": 1395,
+            "p95Ms": 4134,
+            "maxMs": 4134
+          },
+          "inputTokens": 4384,
+          "outputTokens": 772
+        },
+        {
+          "lane": "ts:flash:large-section.pdf",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 4626,
+            "medianMs": 10264,
+            "p95Ms": 39028,
+            "maxMs": 39028
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1327,
+            "medianMs": 1693,
+            "p95Ms": 1722,
+            "maxMs": 1722
+          },
+          "inputTokens": 7586,
+          "outputTokens": 832
+        },
+        {
+          "lane": "ts:flash:boundary-20.pdf",
+          "calls": 8,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 8,
+            "minMs": 5275,
+            "medianMs": 7733,
+            "p95Ms": 74523,
+            "maxMs": 74523
+          },
+          "firstOutput": {
+            "count": 8,
+            "minMs": 1347,
+            "medianMs": 1690,
+            "p95Ms": 71370,
+            "maxMs": 71370
+          },
+          "inputTokens": 4229,
+          "outputTokens": 699
+        },
+        {
+          "lane": "qa:flash:revenue",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 5644,
+            "medianMs": 8765,
+            "p95Ms": 13818,
+            "maxMs": 13818
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1114,
+            "medianMs": 4341,
+            "p95Ms": 4529,
+            "maxMs": 4529
+          },
+          "inputTokens": 7742,
+          "outputTokens": 244
+        },
+        {
+          "lane": "qa:flash:follow-up",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 5561,
+            "medianMs": 6934,
+            "p95Ms": 10280,
+            "maxMs": 10280
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1091,
+            "medianMs": 1094,
+            "p95Ms": 1439,
+            "maxMs": 1439
+          },
+          "inputTokens": 13570,
+          "outputTokens": 343
+        },
+        {
+          "lane": "qa:flash:missing-fact",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 4812,
+            "medianMs": 5336,
+            "p95Ms": 8349,
+            "maxMs": 8349
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1137,
+            "medianMs": 1207,
+            "p95Ms": 1344,
+            "maxMs": 1344
+          },
+          "inputTokens": 7762,
+          "outputTokens": 339
+        },
+        {
+          "lane": "qa:flash:printed-toc",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 5274,
+            "medianMs": 5515,
+            "p95Ms": 8451,
+            "maxMs": 8451
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1266,
+            "medianMs": 1614,
+            "p95Ms": 1944,
+            "maxMs": 1944
+          },
+          "inputTokens": 7125,
+          "outputTokens": 293
+        },
+        {
+          "lane": "qa:flash:long-navigation",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 17824,
+            "medianMs": 19579,
+            "p95Ms": 26581,
+            "maxMs": 26581
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1329,
+            "medianMs": 1913,
+            "p95Ms": 2271,
+            "maxMs": 2271
+          },
+          "inputTokens": 11838,
+          "outputTokens": 916
+        },
+        {
+          "lane": "qa:flash:mixed-20-21",
+          "calls": 5,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 5,
+            "minMs": 5366,
+            "medianMs": 7235,
+            "p95Ms": 8821,
+            "maxMs": 8821
+          },
+          "firstOutput": {
+            "count": 5,
+            "minMs": 1204,
+            "medianMs": 1357,
+            "p95Ms": 2338,
+            "maxMs": 2338
+          },
+          "inputTokens": 24066,
+          "outputTokens": 666
+        },
+        {
+          "lane": "qa:flash:cjk-qualifiers",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 4904,
+            "medianMs": 4954,
+            "p95Ms": 11347,
+            "maxMs": 11347
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1182,
+            "medianMs": 1534,
+            "p95Ms": 1621,
+            "maxMs": 1621
+          },
+          "inputTokens": 7184,
+          "outputTokens": 364
+        },
+        {
+          "lane": "qa:flash:conflict",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 7820,
+            "medianMs": 7862,
+            "p95Ms": 17205,
+            "maxMs": 17205
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1274,
+            "medianMs": 1433,
+            "p95Ms": 2066,
+            "maxMs": 2066
+          },
+          "inputTokens": 10151,
+          "outputTokens": 768
+        },
+        {
+          "lane": "qa:flash:distinct-sources",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 7293,
+            "medianMs": 8559,
+            "p95Ms": 9491,
+            "maxMs": 9491
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1017,
+            "medianMs": 1263,
+            "p95Ms": 2532,
+            "maxMs": 2532
+          },
+          "inputTokens": 10010,
+          "outputTokens": 467
+        },
+        {
+          "lane": "qa:flash:library-clear",
+          "calls": 4,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 4,
+            "minMs": 5086,
+            "medianMs": 5306,
+            "p95Ms": 6392,
+            "maxMs": 6392
+          },
+          "firstOutput": {
+            "count": 4,
+            "minMs": 1354,
+            "medianMs": 1396,
+            "p95Ms": 2876,
+            "maxMs": 2876
+          },
+          "inputTokens": 8768,
+          "outputTokens": 252
+        },
+        {
+          "lane": "qa:flash:library-ambiguous",
+          "calls": 1,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 1,
+            "minMs": 4941,
+            "medianMs": 4941,
+            "p95Ms": 4941,
+            "maxMs": 4941
+          },
+          "firstOutput": {
+            "count": 1,
+            "minMs": 1407,
+            "medianMs": 1407,
+            "p95Ms": 1407,
+            "maxMs": 1407
+          },
+          "inputTokens": 1496,
+          "outputTokens": 46
+        },
+        {
+          "lane": "mcp:flash:revenue",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 5136,
+            "medianMs": 5512,
+            "p95Ms": 5521,
+            "maxMs": 5521
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1039,
+            "medianMs": 1364,
+            "p95Ms": 1664,
+            "maxMs": 1664
+          },
+          "inputTokens": 7745,
+          "outputTokens": 245
+        },
+        {
+          "lane": "ts:standard:single-column.pdf",
+          "calls": 6,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 6,
+            "minMs": 4665,
+            "medianMs": 5968,
+            "p95Ms": 75628,
+            "maxMs": 75628
+          },
+          "firstOutput": {
+            "count": 6,
+            "minMs": 1223,
+            "medianMs": 1234,
+            "p95Ms": 1647,
+            "maxMs": 1647
+          },
+          "inputTokens": 2743,
+          "outputTokens": 681
+        },
+        {
+          "lane": "ts:standard:multi-column.pdf",
+          "calls": 1,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 1,
+            "minMs": 26409,
+            "medianMs": 26409,
+            "p95Ms": 26409,
+            "maxMs": 26409
+          },
+          "firstOutput": {
+            "count": 1,
+            "minMs": 1307,
+            "medianMs": 1307,
+            "p95Ms": 1307,
+            "maxMs": 1307
+          },
+          "inputTokens": 904,
+          "outputTokens": 819
+        },
+        {
+          "lane": "ts:standard:mixed-cjk.pdf",
+          "calls": 1,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 1,
+            "minMs": 16415,
+            "medianMs": 16415,
+            "p95Ms": 16415,
+            "maxMs": 16415
+          },
+          "firstOutput": {
+            "count": 1,
+            "minMs": 1305,
+            "medianMs": 1305,
+            "p95Ms": 1305,
+            "maxMs": 1305
+          },
+          "inputTokens": 364,
+          "outputTokens": 140
+        }
+      ]
+    },
+    {
+      "path": "docs/evaluation/pageindex-real-ledger.json",
+      "observedCostUSD": 0.04910515199999999,
+      "walletDeltaUSD": 0.2094572200000009,
+      "previousCostUSD": 0.05011824,
+      "keyCumulative": null,
+      "recordedCalls": 111,
+      "recordsWithoutUsage": 1,
+      "cancellations": 1,
+      "requestErrors": [
+        {
+          "lane": "qa:standard:long-navigation",
+          "error": "TypeError [ERR_INVALID_STATE]: Invalid state: Controller is already closed"
+        }
+      ],
+      "inputTokens": 227725,
+      "outputTokens": 12327,
+      "lanes": [
+        {
+          "lane": "verify:index",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 3065,
+            "medianMs": 3838,
+            "p95Ms": 4121,
+            "maxMs": 4121
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 979,
+            "medianMs": 1428,
+            "p95Ms": 1592,
+            "maxMs": 1592
+          },
+          "inputTokens": 177,
+          "outputTokens": 33
+        },
+        {
+          "lane": "verify:qa",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 2868,
+            "medianMs": 3141,
+            "p95Ms": 5192,
+            "maxMs": 5192
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 920,
+            "medianMs": 1275,
+            "p95Ms": 2011,
+            "maxMs": 2011
+          },
+          "inputTokens": 177,
+          "outputTokens": 33
+        },
+        {
+          "lane": "qa:flash:revenue",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 4976,
+            "medianMs": 4982,
+            "p95Ms": 5318,
+            "maxMs": 5318
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1107,
+            "medianMs": 1252,
+            "p95Ms": 1453,
+            "maxMs": 1453
+          },
+          "inputTokens": 7875,
+          "outputTokens": 233
+        },
+        {
+          "lane": "qa:flash:follow-up",
+          "calls": 4,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 4,
+            "minMs": 5195,
+            "medianMs": 5926,
+            "p95Ms": 7693,
+            "maxMs": 7693
+          },
+          "firstOutput": {
+            "count": 4,
+            "minMs": 1325,
+            "medianMs": 1349,
+            "p95Ms": 2102,
+            "maxMs": 2102
+          },
+          "inputTokens": 17852,
+          "outputTokens": 375
+        },
+        {
+          "lane": "qa:flash:missing-fact",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 14466,
+            "medianMs": 15559,
+            "p95Ms": 16594,
+            "maxMs": 16594
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1076,
+            "medianMs": 1874,
+            "p95Ms": 2138,
+            "maxMs": 2138
+          },
+          "inputTokens": 8395,
+          "outputTokens": 279
+        },
+        {
+          "lane": "qa:flash:printed-toc",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 5102,
+            "medianMs": 6290,
+            "p95Ms": 8154,
+            "maxMs": 8154
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1405,
+            "medianMs": 1422,
+            "p95Ms": 1487,
+            "maxMs": 1487
+          },
+          "inputTokens": 8589,
+          "outputTokens": 296
+        },
+        {
+          "lane": "qa:flash:long-navigation",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 16478,
+            "medianMs": 19302,
+            "p95Ms": 30550,
+            "maxMs": 30550
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1143,
+            "medianMs": 1308,
+            "p95Ms": 3546,
+            "maxMs": 3546
+          },
+          "inputTokens": 7821,
+          "outputTokens": 488
+        },
+        {
+          "lane": "qa:flash:mixed-20-21",
+          "calls": 4,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 4,
+            "minMs": 4949,
+            "medianMs": 7546,
+            "p95Ms": 8683,
+            "maxMs": 8683
+          },
+          "firstOutput": {
+            "count": 4,
+            "minMs": 1114,
+            "medianMs": 1128,
+            "p95Ms": 1901,
+            "maxMs": 1901
+          },
+          "inputTokens": 15674,
+          "outputTokens": 566
+        },
+        {
+          "lane": "qa:flash:cjk-qualifiers",
+          "calls": 2,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 2,
+            "minMs": 11673,
+            "medianMs": 11673,
+            "p95Ms": 26239,
+            "maxMs": 26239
+          },
+          "firstOutput": {
+            "count": 2,
+            "minMs": 1345,
+            "medianMs": 1345,
+            "p95Ms": 1624,
+            "maxMs": 1624
+          },
+          "inputTokens": 4072,
+          "outputTokens": 362
+        },
+        {
+          "lane": "qa:flash:conflict",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 9648,
+            "medianMs": 10912,
+            "p95Ms": 18326,
+            "maxMs": 18326
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1256,
+            "medianMs": 1347,
+            "p95Ms": 2031,
+            "maxMs": 2031
+          },
+          "inputTokens": 10673,
+          "outputTokens": 804
+        },
+        {
+          "lane": "qa:flash:distinct-sources",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 6650,
+            "medianMs": 7699,
+            "p95Ms": 8501,
+            "maxMs": 8501
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 995,
+            "medianMs": 1192,
+            "p95Ms": 1199,
+            "maxMs": 1199
+          },
+          "inputTokens": 9760,
+          "outputTokens": 464
+        },
+        {
+          "lane": "qa:flash:library-clear",
+          "calls": 4,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 4,
+            "minMs": 10584,
+            "medianMs": 11178,
+            "p95Ms": 13910,
+            "maxMs": 13910
+          },
+          "firstOutput": {
+            "count": 4,
+            "minMs": 1280,
+            "medianMs": 1564,
+            "p95Ms": 5104,
+            "maxMs": 5104
+          },
+          "inputTokens": 9389,
+          "outputTokens": 264
+        },
+        {
+          "lane": "qa:flash:library-ambiguous",
+          "calls": 1,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 1,
+            "minMs": 14866,
+            "medianMs": 14866,
+            "p95Ms": 14866,
+            "maxMs": 14866
+          },
+          "firstOutput": {
+            "count": 1,
+            "minMs": 1809,
+            "medianMs": 1809,
+            "p95Ms": 1809,
+            "maxMs": 1809
+          },
+          "inputTokens": 1661,
+          "outputTokens": 52
+        },
+        {
+          "lane": "mcp:flash:revenue",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 5070,
+            "medianMs": 5256,
+            "p95Ms": 9369,
+            "maxMs": 9369
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1115,
+            "medianMs": 1243,
+            "p95Ms": 1481,
+            "maxMs": 1481
+          },
+          "inputTokens": 7878,
+          "outputTokens": 231
+        },
+        {
+          "lane": "ts:standard:single-column.pdf",
+          "calls": 6,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 6,
+            "minMs": 4370,
+            "medianMs": 6276,
+            "p95Ms": 14624,
+            "maxMs": 14624
+          },
+          "firstOutput": {
+            "count": 6,
+            "minMs": 1195,
+            "medianMs": 1426,
+            "p95Ms": 1786,
+            "maxMs": 1786
+          },
+          "inputTokens": 3176,
+          "outputTokens": 558
+        },
+        {
+          "lane": "ts:standard:multi-column.pdf",
+          "calls": 2,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 2,
+            "minMs": 6463,
+            "medianMs": 6463,
+            "p95Ms": 9792,
+            "maxMs": 9792
+          },
+          "firstOutput": {
+            "count": 2,
+            "minMs": 1417,
+            "medianMs": 1417,
+            "p95Ms": 2364,
+            "maxMs": 2364
+          },
+          "inputTokens": 1915,
+          "outputTokens": 182
+        },
+        {
+          "lane": "ts:standard:mixed-cjk.pdf",
+          "calls": 1,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 1,
+            "minMs": 11347,
+            "medianMs": 11347,
+            "p95Ms": 11347,
+            "maxMs": 11347
+          },
+          "firstOutput": {
+            "count": 1,
+            "minMs": 1339,
+            "medianMs": 1339,
+            "p95Ms": 1339,
+            "maxMs": 1339
+          },
+          "inputTokens": 441,
+          "outputTokens": 199
+        },
+        {
+          "lane": "ts:standard:rotated.pdf",
+          "calls": 1,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 1,
+            "minMs": 16472,
+            "medianMs": 16472,
+            "p95Ms": 16472,
+            "maxMs": 16472
+          },
+          "firstOutput": {
+            "count": 1,
+            "minMs": 1823,
+            "medianMs": 1823,
+            "p95Ms": 1823,
+            "maxMs": 1823
+          },
+          "inputTokens": 289,
+          "outputTokens": 95
+        },
+        {
+          "lane": "ts:standard:bookmarks.pdf",
+          "calls": 5,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 5,
+            "minMs": 6091,
+            "medianMs": 8826,
+            "p95Ms": 19064,
+            "maxMs": 19064
+          },
+          "firstOutput": {
+            "count": 5,
+            "minMs": 1368,
+            "medianMs": 1625,
+            "p95Ms": 1839,
+            "maxMs": 1839
+          },
+          "inputTokens": 3040,
+          "outputTokens": 634
+        },
+        {
+          "lane": "ts:standard:toc-offset.pdf",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 5727,
+            "medianMs": 6068,
+            "p95Ms": 6725,
+            "maxMs": 6725
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1176,
+            "medianMs": 1496,
+            "p95Ms": 1761,
+            "maxMs": 1761
+          },
+          "inputTokens": 1532,
+          "outputTokens": 260
+        },
+        {
+          "lane": "ts:standard:no-toc.pdf",
+          "calls": 11,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 11,
+            "minMs": 4974,
+            "medianMs": 6953,
+            "p95Ms": 19067,
+            "maxMs": 19067
+          },
+          "firstOutput": {
+            "count": 11,
+            "minMs": 1126,
+            "medianMs": 1549,
+            "p95Ms": 2191,
+            "maxMs": 2191
+          },
+          "inputTokens": 8691,
+          "outputTokens": 1242
+        },
+        {
+          "lane": "ts:standard:large-section.pdf",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 4840,
+            "medianMs": 6136,
+            "p95Ms": 11418,
+            "maxMs": 11418
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1908,
+            "medianMs": 1988,
+            "p95Ms": 2869,
+            "maxMs": 2869
+          },
+          "inputTokens": 7751,
+          "outputTokens": 241
+        },
+        {
+          "lane": "ts:standard:inadequate.pdf",
+          "calls": 4,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 4,
+            "minMs": 5154,
+            "medianMs": 5907,
+            "p95Ms": 11417,
+            "maxMs": 11417
+          },
+          "firstOutput": {
+            "count": 4,
+            "minMs": 1547,
+            "medianMs": 1727,
+            "p95Ms": 2168,
+            "maxMs": 2168
+          },
+          "inputTokens": 4591,
+          "outputTokens": 486
+        },
+        {
+          "lane": "ts:standard:conflicting-source.pdf",
+          "calls": 1,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 1,
+            "minMs": 18737,
+            "medianMs": 18737,
+            "p95Ms": 18737,
+            "maxMs": 18737
+          },
+          "firstOutput": {
+            "count": 1,
+            "minMs": 3831,
+            "medianMs": 3831,
+            "p95Ms": 3831,
+            "maxMs": 3831
+          },
+          "inputTokens": 318,
+          "outputTokens": 106
+        },
+        {
+          "lane": "ts:standard:other-company.pdf",
+          "calls": 1,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 1,
+            "minMs": 7023,
+            "medianMs": 7023,
+            "p95Ms": 7023,
+            "maxMs": 7023
+          },
+          "firstOutput": {
+            "count": 1,
+            "minMs": 1850,
+            "medianMs": 1850,
+            "p95Ms": 1850,
+            "maxMs": 1850
+          },
+          "inputTokens": 315,
+          "outputTokens": 135
+        },
+        {
+          "lane": "ts:standard:boundary-20.pdf",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 5236,
+            "medianMs": 7477,
+            "p95Ms": 33492,
+            "maxMs": 33492
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1523,
+            "medianMs": 1537,
+            "p95Ms": 1635,
+            "maxMs": 1635
+          },
+          "inputTokens": 3455,
+          "outputTokens": 634
+        },
+        {
+          "lane": "qa:standard:revenue",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 5238,
+            "medianMs": 5713,
+            "p95Ms": 6208,
+            "maxMs": 6208
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1119,
+            "medianMs": 1246,
+            "p95Ms": 1378,
+            "maxMs": 1378
+          },
+          "inputTokens": 8340,
+          "outputTokens": 238
+        },
+        {
+          "lane": "qa:standard:follow-up",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 4983,
+            "medianMs": 5328,
+            "p95Ms": 9416,
+            "maxMs": 9416
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1197,
+            "medianMs": 1328,
+            "p95Ms": 1646,
+            "maxMs": 1646
+          },
+          "inputTokens": 14330,
+          "outputTokens": 346
+        },
+        {
+          "lane": "qa:standard:missing-fact",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 5229,
+            "medianMs": 5303,
+            "p95Ms": 8800,
+            "maxMs": 8800
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1057,
+            "medianMs": 2096,
+            "p95Ms": 2237,
+            "maxMs": 2237
+          },
+          "inputTokens": 8366,
+          "outputTokens": 334
+        },
+        {
+          "lane": "qa:standard:printed-toc",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 4642,
+            "medianMs": 5111,
+            "p95Ms": 6551,
+            "maxMs": 6551
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1073,
+            "medianMs": 1453,
+            "p95Ms": 1647,
+            "maxMs": 1647
+          },
+          "inputTokens": 8548,
+          "outputTokens": 268
+        },
+        {
+          "lane": "qa:standard:long-navigation",
+          "calls": 2,
+          "recordsWithoutUsage": 1,
+          "latency": {
+            "count": 2,
+            "minMs": 14557,
+            "medianMs": 14557,
+            "p95Ms": 17166,
+            "maxMs": 17166
+          },
+          "firstOutput": {
+            "count": 2,
+            "minMs": 1514,
+            "medianMs": 1514,
+            "p95Ms": 2073,
+            "maxMs": 2073
+          },
+          "inputTokens": 1774,
+          "outputTokens": 91
+        },
+        {
+          "lane": "qa:standard:conflict",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 6621,
+            "medianMs": 7866,
+            "p95Ms": 19501,
+            "maxMs": 19501
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1325,
+            "medianMs": 1352,
+            "p95Ms": 3206,
+            "maxMs": 3206
+          },
+          "inputTokens": 10723,
+          "outputTokens": 771
+        },
+        {
+          "lane": "qa:standard:distinct-sources",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 7333,
+            "medianMs": 7427,
+            "p95Ms": 7997,
+            "maxMs": 7997
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1254,
+            "medianMs": 1306,
+            "p95Ms": 1366,
+            "maxMs": 1366
+          },
+          "inputTokens": 10651,
+          "outputTokens": 463
+        },
+        {
+          "lane": "qa:standard:library-clear",
+          "calls": 4,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 4,
+            "minMs": 14583,
+            "medianMs": 15456,
+            "p95Ms": 16398,
+            "maxMs": 16398
+          },
+          "firstOutput": {
+            "count": 4,
+            "minMs": 975,
+            "medianMs": 1480,
+            "p95Ms": 2659,
+            "maxMs": 2659
+          },
+          "inputTokens": 9475,
+          "outputTokens": 271
+        },
+        {
+          "lane": "qa:standard:library-ambiguous",
+          "calls": 1,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 1,
+            "minMs": 16535,
+            "medianMs": 16535,
+            "p95Ms": 16535,
+            "maxMs": 16535
+          },
+          "firstOutput": {
+            "count": 1,
+            "minMs": 1494,
+            "medianMs": 1494,
+            "p95Ms": 1494,
+            "maxMs": 1494
+          },
+          "inputTokens": 1661,
+          "outputTokens": 48
+        },
+        {
+          "lane": "mcp:standard:revenue",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 5674,
+            "medianMs": 5919,
+            "p95Ms": 6069,
+            "maxMs": 6069
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1065,
+            "medianMs": 1408,
+            "p95Ms": 2044,
+            "maxMs": 2044
+          },
+          "inputTokens": 8350,
+          "outputTokens": 245
+        }
+      ]
+    },
+    {
+      "path": "docs/evaluation/pageindex-regression-real-ledger.json",
+      "observedCostUSD": 0.049172592000000015,
+      "walletDeltaUSD": 2.5252330999999977,
+      "previousCostUSD": 0.099223392,
+      "keyCumulative": null,
+      "recordedCalls": 120,
+      "recordsWithoutUsage": 4,
+      "cancellations": 4,
+      "requestErrors": [
+        {
+          "lane": "lifetime:flash:stop",
+          "error": "TypeError [ERR_INVALID_STATE]: Invalid state: Controller is already closed"
+        },
+        {
+          "lane": "lifetime:flash:interruption",
+          "error": "TypeError [ERR_INVALID_STATE]: Invalid state: Controller is already closed"
+        },
+        {
+          "lane": "lifetime:standard:stop",
+          "error": "TypeError [ERR_INVALID_STATE]: Invalid state: Controller is already closed"
+        },
+        {
+          "lane": "lifetime:standard:interruption",
+          "error": "TypeError [ERR_INVALID_STATE]: Invalid state: Controller is already closed"
+        }
+      ],
+      "inputTokens": 183976,
+      "outputTokens": 11477,
+      "lanes": [
+        {
+          "lane": "verify:index",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 2806,
+            "medianMs": 4053,
+            "p95Ms": 4559,
+            "maxMs": 4559
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1226,
+            "medianMs": 1236,
+            "p95Ms": 2028,
+            "maxMs": 2028
+          },
+          "inputTokens": 177,
+          "outputTokens": 33
+        },
+        {
+          "lane": "verify:qa",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 3758,
+            "medianMs": 3995,
+            "p95Ms": 5082,
+            "maxMs": 5082
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1233,
+            "medianMs": 1266,
+            "p95Ms": 2943,
+            "maxMs": 2943
+          },
+          "inputTokens": 177,
+          "outputTokens": 33
+        },
+        {
+          "lane": "ts:flash:single-column.pdf",
+          "calls": 4,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 4,
+            "minMs": 4980,
+            "medianMs": 7208,
+            "p95Ms": 13081,
+            "maxMs": 13081
+          },
+          "firstOutput": {
+            "count": 4,
+            "minMs": 1310,
+            "medianMs": 1316,
+            "p95Ms": 1767,
+            "maxMs": 1767
+          },
+          "inputTokens": 2092,
+          "outputTokens": 581
+        },
+        {
+          "lane": "ts:flash:no-toc.pdf",
+          "calls": 8,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 8,
+            "minMs": 5690,
+            "medianMs": 6679,
+            "p95Ms": 24935,
+            "maxMs": 24935
+          },
+          "firstOutput": {
+            "count": 8,
+            "minMs": 1234,
+            "medianMs": 1362,
+            "p95Ms": 2164,
+            "maxMs": 2164
+          },
+          "inputTokens": 5396,
+          "outputTokens": 992
+        },
+        {
+          "lane": "ts:flash:large-section.pdf",
+          "calls": 11,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 11,
+            "minMs": 4832,
+            "medianMs": 6292,
+            "p95Ms": 20330,
+            "maxMs": 20330
+          },
+          "firstOutput": {
+            "count": 11,
+            "minMs": 1157,
+            "medianMs": 1442,
+            "p95Ms": 3624,
+            "maxMs": 3624
+          },
+          "inputTokens": 18174,
+          "outputTokens": 1043
+        },
+        {
+          "lane": "ts:flash:boundary-20.pdf",
+          "calls": 8,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 8,
+            "minMs": 4988,
+            "medianMs": 6142,
+            "p95Ms": 9696,
+            "maxMs": 9696
+          },
+          "firstOutput": {
+            "count": 8,
+            "minMs": 1145,
+            "medianMs": 1332,
+            "p95Ms": 2156,
+            "maxMs": 2156
+          },
+          "inputTokens": 5244,
+          "outputTokens": 721
+        },
+        {
+          "lane": "qa:flash:revenue",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 5205,
+            "medianMs": 5506,
+            "p95Ms": 6621,
+            "maxMs": 6621
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1140,
+            "medianMs": 1211,
+            "p95Ms": 1478,
+            "maxMs": 1478
+          },
+          "inputTokens": 7650,
+          "outputTokens": 236
+        },
+        {
+          "lane": "qa:flash:long-navigation",
+          "calls": 4,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 4,
+            "minMs": 5217,
+            "medianMs": 7171,
+            "p95Ms": 12319,
+            "maxMs": 12319
+          },
+          "firstOutput": {
+            "count": 4,
+            "minMs": 1115,
+            "medianMs": 1233,
+            "p95Ms": 1703,
+            "maxMs": 1703
+          },
+          "inputTokens": 11979,
+          "outputTokens": 467
+        },
+        {
+          "lane": "qa:flash:mixed-20-21",
+          "calls": 4,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 4,
+            "minMs": 4849,
+            "medianMs": 7390,
+            "p95Ms": 8827,
+            "maxMs": 8827
+          },
+          "firstOutput": {
+            "count": 4,
+            "minMs": 1141,
+            "medianMs": 1170,
+            "p95Ms": 1331,
+            "maxMs": 1331
+          },
+          "inputTokens": 15719,
+          "outputTokens": 564
+        },
+        {
+          "lane": "qa:flash:cjk-qualifiers",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 4949,
+            "medianMs": 5184,
+            "p95Ms": 14649,
+            "maxMs": 14649
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1144,
+            "medianMs": 1342,
+            "p95Ms": 1673,
+            "maxMs": 1673
+          },
+          "inputTokens": 7641,
+          "outputTokens": 469
+        },
+        {
+          "lane": "mcp:flash:revenue",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 5042,
+            "medianMs": 5735,
+            "p95Ms": 6967,
+            "maxMs": 6967
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1324,
+            "medianMs": 1426,
+            "p95Ms": 1520,
+            "maxMs": 1520
+          },
+          "inputTokens": 7652,
+          "outputTokens": 226
+        },
+        {
+          "lane": "lifetime:flash:disconnect",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 16877,
+            "medianMs": 17358,
+            "p95Ms": 24117,
+            "maxMs": 24117
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1244,
+            "medianMs": 1533,
+            "p95Ms": 2105,
+            "maxMs": 2105
+          },
+          "inputTokens": 7849,
+          "outputTokens": 579
+        },
+        {
+          "lane": "lifetime:flash:stop",
+          "calls": 1,
+          "recordsWithoutUsage": 1,
+          "latency": {
+            "count": 1,
+            "minMs": 1342,
+            "medianMs": 1342,
+            "p95Ms": 1342,
+            "maxMs": 1342
+          },
+          "firstOutput": {
+            "count": 1,
+            "minMs": 1302,
+            "medianMs": 1302,
+            "p95Ms": 1302,
+            "maxMs": 1302
+          },
+          "inputTokens": 0,
+          "outputTokens": 0
+        },
+        {
+          "lane": "lifetime:flash:interruption",
+          "calls": 1,
+          "recordsWithoutUsage": 1,
+          "latency": {
+            "count": 1,
+            "minMs": 1708,
+            "medianMs": 1708,
+            "p95Ms": 1708,
+            "maxMs": 1708
+          },
+          "firstOutput": {
+            "count": 1,
+            "minMs": 1672,
+            "medianMs": 1672,
+            "p95Ms": 1672,
+            "maxMs": 1672
+          },
+          "inputTokens": 0,
+          "outputTokens": 0
+        },
+        {
+          "lane": "ts:standard:single-column.pdf",
+          "calls": 5,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 5,
+            "minMs": 6204,
+            "medianMs": 6932,
+            "p95Ms": 11193,
+            "maxMs": 11193
+          },
+          "firstOutput": {
+            "count": 5,
+            "minMs": 1134,
+            "medianMs": 1461,
+            "p95Ms": 1851,
+            "maxMs": 1851
+          },
+          "inputTokens": 3129,
+          "outputTokens": 507
+        },
+        {
+          "lane": "ts:standard:mixed-cjk.pdf",
+          "calls": 1,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 1,
+            "minMs": 6651,
+            "medianMs": 6651,
+            "p95Ms": 6651,
+            "maxMs": 6651
+          },
+          "firstOutput": {
+            "count": 1,
+            "minMs": 1783,
+            "medianMs": 1783,
+            "p95Ms": 1783,
+            "maxMs": 1783
+          },
+          "inputTokens": 461,
+          "outputTokens": 70
+        },
+        {
+          "lane": "ts:standard:no-toc.pdf",
+          "calls": 9,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 9,
+            "minMs": 4684,
+            "medianMs": 5810,
+            "p95Ms": 6992,
+            "maxMs": 6992
+          },
+          "firstOutput": {
+            "count": 9,
+            "minMs": 1131,
+            "medianMs": 1350,
+            "p95Ms": 2120,
+            "maxMs": 2120
+          },
+          "inputTokens": 8127,
+          "outputTokens": 635
+        },
+        {
+          "lane": "ts:standard:large-section.pdf",
+          "calls": 4,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 4,
+            "minMs": 2800,
+            "medianMs": 4241,
+            "p95Ms": 6707,
+            "maxMs": 6707
+          },
+          "firstOutput": {
+            "count": 4,
+            "minMs": 1321,
+            "medianMs": 1376,
+            "p95Ms": 2509,
+            "maxMs": 2509
+          },
+          "inputTokens": 7559,
+          "outputTokens": 186
+        },
+        {
+          "lane": "ts:standard:inadequate.pdf",
+          "calls": 12,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 12,
+            "minMs": 4064,
+            "medianMs": 5592,
+            "p95Ms": 18984,
+            "maxMs": 18984
+          },
+          "firstOutput": {
+            "count": 12,
+            "minMs": 1134,
+            "medianMs": 1366,
+            "p95Ms": 2268,
+            "maxMs": 2268
+          },
+          "inputTokens": 10540,
+          "outputTokens": 965
+        },
+        {
+          "lane": "ts:standard:boundary-20.pdf",
+          "calls": 9,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 9,
+            "minMs": 4360,
+            "medianMs": 5748,
+            "p95Ms": 20182,
+            "maxMs": 20182
+          },
+          "firstOutput": {
+            "count": 9,
+            "minMs": 1200,
+            "medianMs": 1582,
+            "p95Ms": 2663,
+            "maxMs": 2663
+          },
+          "inputTokens": 7886,
+          "outputTokens": 788
+        },
+        {
+          "lane": "qa:standard:revenue",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 5401,
+            "medianMs": 6018,
+            "p95Ms": 10049,
+            "maxMs": 10049
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1405,
+            "medianMs": 1752,
+            "p95Ms": 5535,
+            "maxMs": 5535
+          },
+          "inputTokens": 8323,
+          "outputTokens": 232
+        },
+        {
+          "lane": "qa:standard:long-navigation",
+          "calls": 4,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 4,
+            "minMs": 4426,
+            "medianMs": 5453,
+            "p95Ms": 10723,
+            "maxMs": 10723
+          },
+          "firstOutput": {
+            "count": 4,
+            "minMs": 1120,
+            "medianMs": 1274,
+            "p95Ms": 1440,
+            "maxMs": 1440
+          },
+          "inputTokens": 12020,
+          "outputTokens": 457
+        },
+        {
+          "lane": "qa:standard:mixed-20-21",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 9438,
+            "medianMs": 10157,
+            "p95Ms": 14086,
+            "maxMs": 14086
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1455,
+            "medianMs": 1733,
+            "p95Ms": 3007,
+            "maxMs": 3007
+          },
+          "inputTokens": 11787,
+          "outputTokens": 652
+        },
+        {
+          "lane": "qa:standard:cjk-qualifiers",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 3964,
+            "medianMs": 4385,
+            "p95Ms": 12429,
+            "maxMs": 12429
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1019,
+            "medianMs": 1358,
+            "p95Ms": 5616,
+            "maxMs": 5616
+          },
+          "inputTokens": 7723,
+          "outputTokens": 381
+        },
+        {
+          "lane": "mcp:standard:revenue",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 4817,
+            "medianMs": 6080,
+            "p95Ms": 6226,
+            "maxMs": 6226
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1195,
+            "medianMs": 1423,
+            "p95Ms": 1574,
+            "maxMs": 1574
+          },
+          "inputTokens": 8321,
+          "outputTokens": 234
+        },
+        {
+          "lane": "lifetime:standard:disconnect",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 5248,
+            "medianMs": 8686,
+            "p95Ms": 17289,
+            "maxMs": 17289
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1248,
+            "medianMs": 1357,
+            "p95Ms": 1693,
+            "maxMs": 1693
+          },
+          "inputTokens": 8350,
+          "outputTokens": 426
+        },
+        {
+          "lane": "lifetime:standard:stop",
+          "calls": 1,
+          "recordsWithoutUsage": 1,
+          "latency": {
+            "count": 1,
+            "minMs": 1560,
+            "medianMs": 1560,
+            "p95Ms": 1560,
+            "maxMs": 1560
+          },
+          "firstOutput": {
+            "count": 1,
+            "minMs": 1531,
+            "medianMs": 1531,
+            "p95Ms": 1531,
+            "maxMs": 1531
+          },
+          "inputTokens": 0,
+          "outputTokens": 0
+        },
+        {
+          "lane": "lifetime:standard:interruption",
+          "calls": 1,
+          "recordsWithoutUsage": 1,
+          "latency": {
+            "count": 1,
+            "minMs": 1750,
+            "medianMs": 1750,
+            "p95Ms": 1750,
+            "maxMs": 1750
+          },
+          "firstOutput": {
+            "count": 1,
+            "minMs": 1710,
+            "medianMs": 1710,
+            "p95Ms": 1710,
+            "maxMs": 1710
+          },
+          "inputTokens": 0,
+          "outputTokens": 0
+        }
+      ]
+    },
+    {
+      "path": "docs/evaluation/pageindex-large-retry-ledger.json",
+      "observedCostUSD": 0.0030366719999999903,
+      "walletDeltaUSD": 0.06253014000000334,
+      "previousCostUSD": 0.149481744,
+      "keyCumulative": null,
+      "recordedCalls": 14,
+      "recordsWithoutUsage": 1,
+      "cancellations": 1,
+      "requestErrors": [
+        {
+          "lane": "ts:standard:large-section.pdf",
+          "error": "TypeError [ERR_INVALID_STATE]: Invalid state: Controller is already closed"
+        }
+      ],
+      "inputTokens": 13947,
+      "outputTokens": 641,
+      "lanes": [
+        {
+          "lane": "verify:index",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 3146,
+            "medianMs": 3858,
+            "p95Ms": 4648,
+            "maxMs": 4648
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1238,
+            "medianMs": 1442,
+            "p95Ms": 1610,
+            "maxMs": 1610
+          },
+          "inputTokens": 177,
+          "outputTokens": 33
+        },
+        {
+          "lane": "verify:qa",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 2918,
+            "medianMs": 3377,
+            "p95Ms": 3418,
+            "maxMs": 3418
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1126,
+            "medianMs": 1251,
+            "p95Ms": 1625,
+            "maxMs": 1625
+          },
+          "inputTokens": 177,
+          "outputTokens": 33
+        },
+        {
+          "lane": "ts:standard:large-section.pdf",
+          "calls": 8,
+          "recordsWithoutUsage": 1,
+          "latency": {
+            "count": 8,
+            "minMs": 4222,
+            "medianMs": 5746,
+            "p95Ms": 21925,
+            "maxMs": 21925
+          },
+          "firstOutput": {
+            "count": 8,
+            "minMs": 1108,
+            "medianMs": 1487,
+            "p95Ms": 3298,
+            "maxMs": 3298
+          },
+          "inputTokens": 13593,
+          "outputTokens": 575
+        }
+      ]
+    },
+    {
+      "path": "docs/evaluation/pageindex-reference-real-ledger.json",
+      "observedCostUSD": 0.04200748800000001,
+      "walletDeltaUSD": 7.021329189999998,
+      "previousCostUSD": 0.152518416,
+      "keyCumulative": null,
+      "recordedCalls": 224,
+      "recordsWithoutUsage": 0,
+      "cancellations": 0,
+      "requestErrors": [],
+      "inputTokens": 109589,
+      "outputTokens": 13283,
+      "lanes": [
+        {
+          "lane": "python:flash:single-column.pdf",
+          "calls": 2,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 2,
+            "minMs": 4795,
+            "medianMs": 4795,
+            "p95Ms": 5082,
+            "maxMs": 5082
+          },
+          "firstOutput": {
+            "count": 2,
+            "minMs": 4795,
+            "medianMs": 4795,
+            "p95Ms": 5082,
+            "maxMs": 5082
+          },
+          "inputTokens": 720,
+          "outputTokens": 159
+        },
+        {
+          "lane": "python:flash:bookmarks.pdf",
+          "calls": 2,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 2,
+            "minMs": 5340,
+            "medianMs": 5340,
+            "p95Ms": 5422,
+            "maxMs": 5422
+          },
+          "firstOutput": {
+            "count": 2,
+            "minMs": 5339,
+            "medianMs": 5339,
+            "p95Ms": 5422,
+            "maxMs": 5422
+          },
+          "inputTokens": 725,
+          "outputTokens": 202
+        },
+        {
+          "lane": "python:flash:toc-offset.pdf",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 5082,
+            "medianMs": 5583,
+            "p95Ms": 6290,
+            "maxMs": 6290
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 5082,
+            "medianMs": 5583,
+            "p95Ms": 6289,
+            "maxMs": 6289
+          },
+          "inputTokens": 1074,
+          "outputTokens": 228
+        },
+        {
+          "lane": "python:flash:no-toc.pdf",
+          "calls": 6,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 6,
+            "minMs": 2278,
+            "medianMs": 2552,
+            "p95Ms": 7458,
+            "maxMs": 7458
+          },
+          "firstOutput": {
+            "count": 6,
+            "minMs": 2278,
+            "medianMs": 2552,
+            "p95Ms": 7458,
+            "maxMs": 7458
+          },
+          "inputTokens": 7798,
+          "outputTokens": 254
+        },
+        {
+          "lane": "python:flash:boundary-20.pdf",
+          "calls": 6,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 6,
+            "minMs": 3192,
+            "medianMs": 3367,
+            "p95Ms": 7881,
+            "maxMs": 7881
+          },
+          "firstOutput": {
+            "count": 6,
+            "minMs": 3192,
+            "medianMs": 3366,
+            "p95Ms": 7881,
+            "maxMs": 7881
+          },
+          "inputTokens": 7798,
+          "outputTokens": 348
+        },
+        {
+          "lane": "python:standard:single-column.pdf",
+          "calls": 18,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 18,
+            "minMs": 2813,
+            "medianMs": 4505,
+            "p95Ms": 58386,
+            "maxMs": 58386
+          },
+          "firstOutput": {
+            "count": 18,
+            "minMs": 2813,
+            "medianMs": 4505,
+            "p95Ms": 58386,
+            "maxMs": 58386
+          },
+          "inputTokens": 6996,
+          "outputTokens": 1184
+        },
+        {
+          "lane": "python:standard:multi-column.pdf",
+          "calls": 17,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 17,
+            "minMs": 3025,
+            "medianMs": 5205,
+            "p95Ms": 36988,
+            "maxMs": 36988
+          },
+          "firstOutput": {
+            "count": 17,
+            "minMs": 3025,
+            "medianMs": 5205,
+            "p95Ms": 36988,
+            "maxMs": 36988
+          },
+          "inputTokens": 7044,
+          "outputTokens": 1105
+        },
+        {
+          "lane": "python:standard:mixed-cjk.pdf",
+          "calls": 13,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 13,
+            "minMs": 4565,
+            "medianMs": 5261,
+            "p95Ms": 34388,
+            "maxMs": 34388
+          },
+          "firstOutput": {
+            "count": 13,
+            "minMs": 4565,
+            "medianMs": 5261,
+            "p95Ms": 34387,
+            "maxMs": 34387
+          },
+          "inputTokens": 3553,
+          "outputTokens": 811
+        },
+        {
+          "lane": "python:standard:rotated.pdf",
+          "calls": 5,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 5,
+            "minMs": 3435,
+            "medianMs": 5904,
+            "p95Ms": 20692,
+            "maxMs": 20692
+          },
+          "firstOutput": {
+            "count": 5,
+            "minMs": 3435,
+            "medianMs": 5904,
+            "p95Ms": 20692,
+            "maxMs": 20692
+          },
+          "inputTokens": 1224,
+          "outputTokens": 404
+        },
+        {
+          "lane": "python:standard:bookmarks.pdf",
+          "calls": 21,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 21,
+            "minMs": 3306,
+            "medianMs": 5293,
+            "p95Ms": 13551,
+            "maxMs": 16949
+          },
+          "firstOutput": {
+            "count": 21,
+            "minMs": 3305,
+            "medianMs": 5293,
+            "p95Ms": 13551,
+            "maxMs": 16949
+          },
+          "inputTokens": 8149,
+          "outputTokens": 1311
+        },
+        {
+          "lane": "python:standard:toc-offset.pdf",
+          "calls": 18,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 18,
+            "minMs": 3646,
+            "medianMs": 5258,
+            "p95Ms": 23652,
+            "maxMs": 23652
+          },
+          "firstOutput": {
+            "count": 18,
+            "minMs": 3645,
+            "medianMs": 5258,
+            "p95Ms": 23652,
+            "maxMs": 23652
+          },
+          "inputTokens": 6565,
+          "outputTokens": 1182
+        },
+        {
+          "lane": "python:standard:no-toc.pdf",
+          "calls": 32,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 32,
+            "minMs": 3134,
+            "medianMs": 5086,
+            "p95Ms": 12198,
+            "maxMs": 14461
+          },
+          "firstOutput": {
+            "count": 32,
+            "minMs": 3134,
+            "medianMs": 5085,
+            "p95Ms": 12198,
+            "maxMs": 14461
+          },
+          "inputTokens": 15053,
+          "outputTokens": 1831
+        },
+        {
+          "lane": "python:standard:large-section.pdf",
+          "calls": 21,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 21,
+            "minMs": 3339,
+            "medianMs": 4325,
+            "p95Ms": 7531,
+            "maxMs": 7585
+          },
+          "firstOutput": {
+            "count": 21,
+            "minMs": 3339,
+            "medianMs": 4325,
+            "p95Ms": 7531,
+            "maxMs": 7585
+          },
+          "inputTokens": 16133,
+          "outputTokens": 1070
+        },
+        {
+          "lane": "python:standard:inadequate.pdf",
+          "calls": 21,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 21,
+            "minMs": 3628,
+            "medianMs": 4857,
+            "p95Ms": 25211,
+            "maxMs": 35456
+          },
+          "firstOutput": {
+            "count": 21,
+            "minMs": 3628,
+            "medianMs": 4857,
+            "p95Ms": 25211,
+            "maxMs": 35456
+          },
+          "inputTokens": 10248,
+          "outputTokens": 1191
+        },
+        {
+          "lane": "python:standard:conflicting-source.pdf",
+          "calls": 5,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 5,
+            "minMs": 3749,
+            "medianMs": 4288,
+            "p95Ms": 8398,
+            "maxMs": 8398
+          },
+          "firstOutput": {
+            "count": 5,
+            "minMs": 3749,
+            "medianMs": 4288,
+            "p95Ms": 8397,
+            "maxMs": 8397
+          },
+          "inputTokens": 1371,
+          "outputTokens": 250
+        },
+        {
+          "lane": "python:standard:other-company.pdf",
+          "calls": 5,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 5,
+            "minMs": 3832,
+            "medianMs": 4887,
+            "p95Ms": 23328,
+            "maxMs": 23328
+          },
+          "firstOutput": {
+            "count": 5,
+            "minMs": 3832,
+            "medianMs": 4887,
+            "p95Ms": 23328,
+            "maxMs": 23328
+          },
+          "inputTokens": 1354,
+          "outputTokens": 218
+        },
+        {
+          "lane": "python:standard:boundary-20.pdf",
+          "calls": 29,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 29,
+            "minMs": 3856,
+            "medianMs": 4818,
+            "p95Ms": 16084,
+            "maxMs": 25056
+          },
+          "firstOutput": {
+            "count": 29,
+            "minMs": 3856,
+            "medianMs": 4818,
+            "p95Ms": 16084,
+            "maxMs": 25056
+          },
+          "inputTokens": 13784,
+          "outputTokens": 1535
+        }
+      ]
+    },
+    {
+      "path": "docs/evaluation/pageindex-encrypted-reference-ledger.json",
+      "observedCostUSD": 0,
+      "walletDeltaUSD": 0,
+      "previousCostUSD": 0.194525904,
+      "keyCumulative": {
+        "unit": "USD",
+        "actual_cost": 0.194525904,
+        "cache_creation_tokens": 0,
+        "cache_read_tokens": 193792,
+        "cost": 1.6210492,
+        "input_tokens": 536170,
+        "output_tokens": 52933,
+        "requests": 606,
+        "total_tokens": 782895
+      },
+      "recordedCalls": 0,
+      "recordsWithoutUsage": 0,
+      "cancellations": 0,
+      "requestErrors": [],
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "lanes": []
+    },
+    {
+      "path": "docs/evaluation/pageindex-large-final-ledger.json",
+      "observedCostUSD": 0.0050422079999999925,
+      "walletDeltaUSD": 0.48391509,
+      "previousCostUSD": 0.194525904,
+      "keyCumulative": {
+        "unit": "USD",
+        "actual_cost": 0.199568112,
+        "cache_creation_tokens": 0,
+        "cache_read_tokens": 210176,
+        "cost": 1.6630676,
+        "input_tokens": 550440,
+        "output_tokens": 54117,
+        "requests": 630,
+        "total_tokens": 814733
+      },
+      "recordedCalls": 24,
+      "recordsWithoutUsage": 1,
+      "cancellations": 0,
+      "requestErrors": [],
+      "inputTokens": 30654,
+      "outputTokens": 1184,
+      "lanes": [
+        {
+          "lane": "verify:index",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 2943,
+            "medianMs": 3371,
+            "p95Ms": 4862,
+            "maxMs": 4862
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1193,
+            "medianMs": 1499,
+            "p95Ms": 4068,
+            "maxMs": 4068
+          },
+          "inputTokens": 177,
+          "outputTokens": 33
+        },
+        {
+          "lane": "verify:qa",
+          "calls": 3,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 3,
+            "minMs": 3683,
+            "medianMs": 3746,
+            "p95Ms": 4122,
+            "maxMs": 4122
+          },
+          "firstOutput": {
+            "count": 3,
+            "minMs": 1111,
+            "medianMs": 1302,
+            "p95Ms": 2160,
+            "maxMs": 2160
+          },
+          "inputTokens": 177,
+          "outputTokens": 33
+        },
+        {
+          "lane": "ts:standard:large-section.pdf",
+          "calls": 7,
+          "recordsWithoutUsage": 1,
+          "latency": {
+            "count": 7,
+            "minMs": 5315,
+            "medianMs": 7437,
+            "p95Ms": 21571,
+            "maxMs": 21571
+          },
+          "firstOutput": {
+            "count": 7,
+            "minMs": 1156,
+            "medianMs": 1694,
+            "p95Ms": 2239,
+            "maxMs": 2239
+          },
+          "inputTokens": 12778,
+          "outputTokens": 390
+        },
+        {
+          "lane": "ts:standard:large-section.pdf:deliberate-retry",
+          "calls": 11,
+          "recordsWithoutUsage": 0,
+          "latency": {
+            "count": 11,
+            "minMs": 4761,
+            "medianMs": 6065,
+            "p95Ms": 14295,
+            "maxMs": 14295
+          },
+          "firstOutput": {
+            "count": 11,
+            "minMs": 1177,
+            "medianMs": 1432,
+            "p95Ms": 2697,
+            "maxMs": 2697
+          },
+          "inputTokens": 17522,
+          "outputTokens": 728
+        }
+      ]
+    }
+  ],
+  "accountingIntervals": [
+    {
+      "path": "docs/evaluation/pageindex-real-preflight-failures.json",
+      "previousCostUSD": 0.00009288,
+      "observedCostUSD": 0.00013872
+    },
+    {
+      "path": "docs/evaluation/pageindex-real-initial-ledger.json",
+      "previousCostUSD": 0.0002316,
+      "observedCostUSD": 0.036200832
+    },
+    {
+      "path": "docs/evaluation/pageindex-real-ledger.json",
+      "previousCostUSD": 0.05011824,
+      "observedCostUSD": 0.04910515199999999
+    },
+    {
+      "path": "docs/evaluation/pageindex-regression-real-ledger.json",
+      "previousCostUSD": 0.099223392,
+      "observedCostUSD": 0.049172592000000015
+    },
+    {
+      "path": "docs/evaluation/pageindex-large-retry-ledger.json",
+      "previousCostUSD": 0.149481744,
+      "observedCostUSD": 0.0030366719999999903
+    },
+    {
+      "path": "docs/evaluation/pageindex-reference-real-ledger.json",
+      "previousCostUSD": 0.152518416,
+      "observedCostUSD": 0.04200748800000001
+    },
+    {
+      "path": "docs/evaluation/pageindex-encrypted-reference-ledger.json",
+      "previousCostUSD": 0.194525904,
+      "observedCostUSD": 0
+    },
+    {
+      "path": "docs/evaluation/pageindex-large-final-ledger.json",
+      "previousCostUSD": 0.194525904,
+      "observedCostUSD": 0.0050422079999999925
+    },
+    {
+      "path": "docs/evaluation/pageindex-real-index-checkpoint.json",
+      "observedCostUSD": 0.013685808,
+      "walletDeltaUSD": 0.17489624999999975,
+      "previousProbeCostUSD": 0.036432432
+    }
+  ],
+  "finalKeyAccounting": {
+    "unit": "USD",
+    "actual_cost": 0.199568112,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 210176,
+    "cost": 1.6630676,
+    "input_tokens": 550440,
+    "output_tokens": 54117,
+    "requests": 630,
+    "total_tokens": 814733
+  },
+  "lifecycle": [
+    {
+      "mode": "flash",
+      "kind": "real_disconnect_reload_closure",
+      "runId": "107b1b2c-5804-4d43-8dbf-b648dbcd878d",
+      "firstEventBytes": 137,
+      "statusAfterReaderCancellation": "running",
+      "terminalStatus": "completed",
+      "callsAtCompletion": 57,
+      "callsAfterReattach": 57,
+      "extraCallsAfterReattach": 0,
+      "duplicate": {
+        "runId": "107b1b2c-5804-4d43-8dbf-b648dbcd878d",
+        "questionId": "107b1b2c-5804-4d43-8dbf-b648dbcd878d",
+        "created": false
+      },
+      "userMessages": 1
+    },
+    {
+      "mode": "flash",
+      "kind": "real_explicit_stop",
+      "runId": "2509ab47-8016-4d34-9b86-fe302681dfc2",
+      "status": "stopped",
+      "localStopMs": 59,
+      "proxyObservedAbort": true,
+      "requestError": "TypeError [ERR_INVALID_STATE]: Invalid state: Controller is already closed",
+      "usage": {
+        "elapsedMs": 1376,
+        "readPages": 0,
+        "toolCalls": 0,
+        "modelCalls": 1,
+        "inputTokens": 0,
+        "outputTokens": 0
+      },
+      "remoteExecutionEnded": "not observable; local abort is not proof of remote termination or zero billing"
+    },
+    {
+      "mode": "flash",
+      "kind": "real_process_interruption",
+      "runId": "8ee389bb-3335-465b-938f-472405c09ee8",
+      "status": "interrupted",
+      "reason": "application_restarted",
+      "committedMessages": 6,
+      "runStatuses": [
+        "interrupted",
+        "stopped",
+        "completed"
+      ],
+      "callsBeforeRestart": 59,
+      "callsAfterRestart": 59,
+      "replayedCalls": 0,
+      "remoteExecutionEnded": "unknown after process loss; no automatic replay"
+    },
+    {
+      "mode": "standard",
+      "kind": "real_disconnect_reload_closure",
+      "runId": "0725c279-1a27-4f33-9867-931534dc482a",
+      "firstEventBytes": 137,
+      "statusAfterReaderCancellation": "running",
+      "terminalStatus": "completed",
+      "callsAtCompletion": 118,
+      "callsAfterReattach": 118,
+      "extraCallsAfterReattach": 0,
+      "duplicate": {
+        "runId": "0725c279-1a27-4f33-9867-931534dc482a",
+        "questionId": "0725c279-1a27-4f33-9867-931534dc482a",
+        "created": false
+      },
+      "userMessages": 1
+    },
+    {
+      "mode": "standard",
+      "kind": "real_explicit_stop",
+      "runId": "dc7e3193-07a4-4ed2-9732-89fe0a03d208",
+      "status": "stopped",
+      "localStopMs": 61,
+      "proxyObservedAbort": true,
+      "requestError": "TypeError [ERR_INVALID_STATE]: Invalid state: Controller is already closed",
+      "usage": {
+        "elapsedMs": 1597,
+        "readPages": 0,
+        "toolCalls": 0,
+        "modelCalls": 1,
+        "inputTokens": 0,
+        "outputTokens": 0
+      },
+      "remoteExecutionEnded": "not observable; local abort is not proof of remote termination or zero billing"
+    },
+    {
+      "mode": "standard",
+      "kind": "real_process_interruption",
+      "runId": "c5dc5401-67b1-40c1-8810-06bfd47e34eb",
+      "status": "interrupted",
+      "reason": "application_restarted",
+      "committedMessages": 6,
+      "runStatuses": [
+        "interrupted",
+        "stopped",
+        "completed"
+      ],
+      "callsBeforeRestart": 120,
+      "callsAfterRestart": 120,
+      "replayedCalls": 0,
+      "remoteExecutionEnded": "unknown after process loss; no automatic replay"
+    }
+  ],
+  "semanticReview": "docs/evaluation/pageindex-semantic-review.md",
+  "service": "docs/development/pageindex-local-service.json",
+  "boundaries": [
+    "Synthetic acceptance originals; no population benchmark",
+    "Implementation-agent original review; no blind independent reviewer",
+    "Python comparison measures indexing and fixed original reachability, not a Python QA score",
+    "Missing provider usage on cancelled/failed calls is not zero usage",
+    "Wallet deltas include other account activity; use key actual_cost with USD unit; hard quota is owner controlled"
+  ]
+}

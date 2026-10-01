@@ -1,3 +1,6 @@
+> Historical evaluation of the retired runtime. Source links resolve through
+> docs/history/pageindex-retirement.md; these results do not certify Spec #29.
+
 # Issue #25 verification
 
 Starting commit: `f7645e7304e7021989039cc8865cc9b8cf8762b6`. The initial index,

@@ -1,3 +1,7 @@
+> Historical record, retired by Spec #29. Source links resolve through the verified
+> recovery baseline described in docs/history/pageindex-retirement.md. Commands
+> and runtime behavior below are not current PageIndex instructions.
+
 # Real model integration
 
 The explicit `bun run dev:real` entry point loads `.env`, sets

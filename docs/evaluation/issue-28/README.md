@@ -1,3 +1,6 @@
+> Historical evaluation of the retired runtime. Source links resolve through
+> docs/history/pageindex-retirement.md; these results do not certify Spec #29.
+
 # Issue 28 implementation evidence
 
 The application implements direct Agent answers, explicit evidence routes, durable

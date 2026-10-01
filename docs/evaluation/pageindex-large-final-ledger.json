@@ -1,0 +1,469 @@
+{
+  "date": "2026-10-01T08:44:47.051Z",
+  "baseURL": "https://hiopenai.cc/v1",
+  "model": "gpt-6.1-sol",
+  "maxUSD": 10,
+  "accounting": "provider /v1/usage actual_cost plus wallet delta; external key cap controlled by owner",
+  "observedCostUSD": 0.0050422079999999925,
+  "walletDeltaUSD": 0.48391509,
+  "previousProbeCostUSD": 0.194525904,
+  "keyCumulative": {
+    "unit": "USD",
+    "actual_cost": 0.199568112,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 210176,
+    "cost": 1.6630676,
+    "input_tokens": 550440,
+    "output_tokens": 54117,
+    "requests": 630,
+    "total_tokens": 814733
+  },
+  "calls": [
+    {
+      "lane": "verify:index",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": false,
+      "tools": [
+        "capability_probe"
+      ],
+      "inputChars": 72,
+      "status": 200,
+      "firstOutputMs": 1499,
+      "elapsedMs": 3371,
+      "usage": {
+        "prompt_tokens": 52,
+        "completion_tokens": 15,
+        "total_tokens": 67
+      }
+    },
+    {
+      "lane": "verify:index",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": false,
+      "tools": [
+        "capability_probe"
+      ],
+      "inputChars": 326,
+      "status": 200,
+      "firstOutputMs": 1193,
+      "elapsedMs": 2943,
+      "usage": {
+        "prompt_tokens": 84,
+        "completion_tokens": 5,
+        "total_tokens": 89
+      }
+    },
+    {
+      "lane": "verify:index",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 70,
+      "status": 200,
+      "firstOutputMs": 4068,
+      "elapsedMs": 4862,
+      "usage": {
+        "prompt_tokens": 41,
+        "completion_tokens": 13,
+        "total_tokens": 54
+      },
+      "output": "{\"value\":42}"
+    },
+    {
+      "lane": "verify:qa",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": false,
+      "tools": [
+        "capability_probe"
+      ],
+      "inputChars": 72,
+      "status": 200,
+      "firstOutputMs": 1302,
+      "elapsedMs": 4122,
+      "usage": {
+        "prompt_tokens": 52,
+        "completion_tokens": 15,
+        "total_tokens": 67
+      }
+    },
+    {
+      "lane": "verify:qa",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": false,
+      "tools": [
+        "capability_probe"
+      ],
+      "inputChars": 326,
+      "status": 200,
+      "firstOutputMs": 2160,
+      "elapsedMs": 3746,
+      "usage": {
+        "prompt_tokens": 84,
+        "completion_tokens": 5,
+        "total_tokens": 89
+      }
+    },
+    {
+      "lane": "verify:qa",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 70,
+      "status": 200,
+      "firstOutputMs": 1111,
+      "elapsedMs": 3683,
+      "usage": {
+        "prompt_tokens": 41,
+        "completion_tokens": 13,
+        "total_tokens": 54
+      },
+      "output": "{\"value\":42}"
+    },
+    {
+      "lane": "ts:standard:large-section.pdf",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 9795,
+      "task": "no_toc",
+      "status": 200,
+      "firstOutputMs": 1694,
+      "elapsedMs": 6296,
+      "usage": {
+        "prompt_tokens": 2577,
+        "completion_tokens": 34,
+        "total_tokens": 2611,
+        "prompt_tokens_details": {
+          "cached_tokens": 2432
+        }
+      },
+      "output": "{\"headings\":[{\"anchor\":\"1 Operating Results\",\"depth\":0,\"page\":1,\"title\":\"1 Operating Results\"}]}"
+    },
+    {
+      "lane": "ts:standard:large-section.pdf",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 9389,
+      "task": "no_toc",
+      "status": 200,
+      "firstOutputMs": 1508,
+      "elapsedMs": 10116,
+      "usage": {
+        "prompt_tokens": 2521,
+        "completion_tokens": 106,
+        "total_tokens": 2627,
+        "prompt_tokens_details": {
+          "cached_tokens": 2304
+        }
+      },
+      "output": "{\"headings\":[{\"anchor\":\"Acme 2026 revenue was 120 million USD.\",\"depth\":0,\"page\":9,\"title\":\"Acme 2026 Domestic Revenue and Net Profit\"},{\"anchor\":\"Regional Operating Details\",\"depth\":1,\"page\":11,\"title\":\"Regional Operating Details\"},{\"anchor\":\"Acme 2025 revenue was 100 million USD.\",\"depth\":0,\"page\":13,\"title\":\"Acme 2025 Audited Domestic Revenue and Net Profit\"}]}"
+    },
+    {
+      "lane": "ts:standard:large-section.pdf",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 8941,
+      "task": "no_toc",
+      "status": 200,
+      "firstOutputMs": 1864,
+      "elapsedMs": 5568,
+      "usage": {
+        "prompt_tokens": 2461,
+        "completion_tokens": 50,
+        "total_tokens": 2511
+      },
+      "output": "{\"headings\":[{\"anchor\":\"Acme 2025 revenue was 100 million USD.\",\"depth\":0,\"page\":17,\"title\":\"Acme 2025 audited domestic revenue and net profit\"}]}"
+    },
+    {
+      "lane": "ts:standard:large-section.pdf",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 9076,
+      "task": "summarize_leaf",
+      "status": 200,
+      "firstOutputMs": 1270,
+      "elapsedMs": 5315,
+      "usage": {
+        "prompt_tokens": 2486,
+        "completion_tokens": 53,
+        "total_tokens": 2539,
+        "prompt_tokens_details": {
+          "cached_tokens": 2304
+        }
+      },
+      "output": "{\"summary\":\"Physical pages 17–24 repeatedly report Acme’s 2025 audited domestic-only totals: revenue of 100 million USD and net profit of 9 million USD. These figures cover domestic operations only.\"}"
+    },
+    {
+      "lane": "ts:standard:large-section.pdf",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 6070,
+      "task": "summarize_leaf",
+      "status": 200,
+      "firstOutputMs": 2239,
+      "elapsedMs": 8464,
+      "usage": {
+        "prompt_tokens": 1638,
+        "completion_tokens": 55,
+        "total_tokens": 1693
+      },
+      "output": "{\"summary\":\"Pages 13–17 repeat Acme’s 2025 audited domestic-only financial totals: revenue of 100 million USD and net profit of 9 million USD. All five pages report the same figures and qualification.\"}"
+    },
+    {
+      "lane": "ts:standard:large-section.pdf",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 4282,
+      "task": "summarize_leaf",
+      "status": 200,
+      "firstOutputMs": 2056,
+      "elapsedMs": 7437,
+      "usage": {
+        "prompt_tokens": 1095,
+        "completion_tokens": 92,
+        "total_tokens": 1187
+      },
+      "output": "{\"summary\":\"Regional Operating Details (physical pages 11–13) presents Acme’s domestic financial totals. Pages 11–12 report 2026 revenue of 120 million USD and net profit of 12 million USD; coverage is domestic operations only, excluding subsidiaries. Page 13 reports audited domestic-only totals for 2025: revenue of 100 million USD and net profit of 9 million USD.\"}"
+    },
+    {
+      "lane": "ts:standard:large-section.pdf",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 3264,
+      "task": "summarize_leaf",
+      "status": 200,
+      "firstOutputMs": 1156,
+      "elapsedMs": 21571,
+      "output": ""
+    },
+    {
+      "lane": "ts:standard:large-section.pdf:deliberate-retry",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 9795,
+      "task": "no_toc",
+      "status": 200,
+      "firstOutputMs": 1312,
+      "elapsedMs": 4761,
+      "usage": {
+        "prompt_tokens": 2577,
+        "completion_tokens": 34,
+        "total_tokens": 2611,
+        "prompt_tokens_details": {
+          "cached_tokens": 2432
+        }
+      },
+      "output": "{\"headings\":[{\"anchor\":\"1 Operating Results\",\"depth\":0,\"page\":1,\"title\":\"1 Operating Results\"}]}"
+    },
+    {
+      "lane": "ts:standard:large-section.pdf:deliberate-retry",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 9389,
+      "task": "no_toc",
+      "status": 200,
+      "firstOutputMs": 1370,
+      "elapsedMs": 6065,
+      "usage": {
+        "prompt_tokens": 2521,
+        "completion_tokens": 102,
+        "total_tokens": 2623,
+        "prompt_tokens_details": {
+          "cached_tokens": 2304
+        }
+      },
+      "output": "{\"headings\":[{\"anchor\":\"Acme 2026 revenue was 120 million USD.\",\"depth\":0,\"page\":9,\"title\":\"Acme 2026 Domestic Financial Results\"},{\"anchor\":\"Regional Operating Details\",\"depth\":1,\"page\":11,\"title\":\"Regional Operating Details\"},{\"anchor\":\"Acme 2025 revenue was 100 million USD.\",\"depth\":0,\"page\":13,\"title\":\"Acme 2025 Audited Domestic Financial Results\"}]}"
+    },
+    {
+      "lane": "ts:standard:large-section.pdf:deliberate-retry",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 8941,
+      "task": "no_toc",
+      "status": 200,
+      "firstOutputMs": 1595,
+      "elapsedMs": 6232,
+      "usage": {
+        "prompt_tokens": 2461,
+        "completion_tokens": 50,
+        "total_tokens": 2511,
+        "prompt_tokens_details": {
+          "cached_tokens": 2304
+        }
+      },
+      "output": "{\"headings\":[{\"anchor\":\"Acme 2025 revenue was 100 million USD.\",\"depth\":0,\"page\":17,\"title\":\"Acme 2025 audited domestic revenue and net profit\"}]}"
+    },
+    {
+      "lane": "ts:standard:large-section.pdf:deliberate-retry",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 9076,
+      "task": "summarize_leaf",
+      "status": 200,
+      "firstOutputMs": 1430,
+      "elapsedMs": 9396,
+      "usage": {
+        "prompt_tokens": 2486,
+        "completion_tokens": 56,
+        "total_tokens": 2542,
+        "prompt_tokens_details": {
+          "cached_tokens": 2304
+        }
+      },
+      "output": "{\"summary\":\"Physical pages 17–24 repeat Acme’s 2025 audited domestic-only totals: revenue of 100 million USD and net profit of 9 million USD. This section covers domestic financial results, not worldwide totals.\"}"
+    },
+    {
+      "lane": "ts:standard:large-section.pdf:deliberate-retry",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 6065,
+      "task": "summarize_leaf",
+      "status": 200,
+      "firstOutputMs": 1816,
+      "elapsedMs": 4868,
+      "usage": {
+        "prompt_tokens": 1636,
+        "completion_tokens": 48,
+        "total_tokens": 1684
+      },
+      "output": "{\"summary\":\"Physical pages 13–17 repeatedly report Acme’s audited domestic-only financial totals for 2025: revenue of 100 million USD and net profit of 9 million USD.\"}"
+    },
+    {
+      "lane": "ts:standard:large-section.pdf:deliberate-retry",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 4282,
+      "task": "summarize_leaf",
+      "status": 200,
+      "firstOutputMs": 1285,
+      "elapsedMs": 7364,
+      "usage": {
+        "prompt_tokens": 1095,
+        "completion_tokens": 90,
+        "total_tokens": 1185
+      },
+      "output": "{\"summary\":\"Regional Operating Details (physical pages 11–13): Acme’s 2026 revenue was 120 million USD and net profit was 12 million USD, covering domestic operations only and excluding subsidiaries (pages 11–12). For 2025, revenue was 100 million USD and net profit was 9 million USD; these figures are audited domestic-only totals (page 13).\"}"
+    },
+    {
+      "lane": "ts:standard:large-section.pdf:deliberate-retry",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 3259,
+      "task": "summarize_leaf",
+      "status": 200,
+      "firstOutputMs": 1725,
+      "elapsedMs": 5628,
+      "usage": {
+        "prompt_tokens": 813,
+        "completion_tokens": 62,
+        "total_tokens": 875
+      },
+      "output": "{\"summary\":\"Pages 9–10 report Acme’s 2026 financial results: revenue of 120 million USD and net profit of 12 million USD. The figures cover domestic operations only and exclude subsidiaries. Both pages repeat these same results and scope qualification.\"}"
+    },
+    {
+      "lane": "ts:standard:large-section.pdf:deliberate-retry",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 2146,
+      "task": "summarize_parent",
+      "status": 200,
+      "firstOutputMs": 1177,
+      "elapsedMs": 14295,
+      "usage": {
+        "prompt_tokens": 437,
+        "completion_tokens": 115,
+        "total_tokens": 552
+      },
+      "output": "{\"summary\":\"Pages 9–13 cover Acme’s domestic financial results and Regional Operating Details. Pages 9–10 each report 2026 revenue of 120 million USD and net profit of 12 million USD, covering domestic operations only and excluding subsidiaries. Regional Operating Details spans pages 11–13: pages 11–12 report the same 2026 results and scope qualification; page 13 reports audited 2025 domestic-only totals of 100 million USD in revenue and 9 million USD in net profit.\"}"
+    },
+    {
+      "lane": "ts:standard:large-section.pdf:deliberate-retry",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 9892,
+      "task": "summarize_leaf",
+      "status": 200,
+      "firstOutputMs": 1457,
+      "elapsedMs": 6044,
+      "usage": {
+        "prompt_tokens": 2594,
+        "completion_tokens": 66,
+        "total_tokens": 2660
+      },
+      "output": "{\"summary\":\"Operating Results (physical pages 1–8): Acme’s 2026 revenue was 120 million USD and net profit was 12 million USD. The reported coverage is domestic operations only, excluding subsidiaries. These figures and the scope qualification are repeated throughout the section.\"}"
+    },
+    {
+      "lane": "ts:standard:large-section.pdf:deliberate-retry",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 2135,
+      "task": "summarize_leaf",
+      "status": 200,
+      "firstOutputMs": 1432,
+      "elapsedMs": 4773,
+      "usage": {
+        "prompt_tokens": 511,
+        "completion_tokens": 51,
+        "total_tokens": 562
+      },
+      "output": "{\"summary\":\"Acme’s 2026 operating results: revenue of 120 million USD and net profit of 12 million USD. The figures cover domestic operations only, excluding subsidiaries (physical page 9).\"}"
+    },
+    {
+      "lane": "ts:standard:large-section.pdf:deliberate-retry",
+      "model": "gpt-6.1-sol",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "inputChars": 1951,
+      "task": "summarize_parent",
+      "status": 200,
+      "firstOutputMs": 2697,
+      "elapsedMs": 6418,
+      "usage": {
+        "prompt_tokens": 391,
+        "completion_tokens": 54,
+        "total_tokens": 445
+      },
+      "output": "{\"summary\":\"Operating Results (physical pages 1–9): Acme’s 2026 revenue was 120 million USD and net profit was 12 million USD. The reported figures cover domestic operations only and exclude subsidiaries.\"}"
+    }
+  ]
+}

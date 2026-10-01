@@ -1,3 +1,6 @@
+> Historical evaluation of the retired runtime. Source links resolve through
+> docs/history/pageindex-retirement.md; these results do not certify Spec #29.
+
 # Frozen route experiment: independent agent development scoring
 
 The experiment stopped after 17 of 96 planned case/profile combinations produced terminal records. Four delivered answers; thirteen did not. Eight unresolved HTTP requests consumed all admission permits. The remaining 79 combinations have no completed evaluation result and are not failed model answers. One interrupted, still-queued interactive request is outside the 17 completed records. The experiment did not reach a comparison of four usable routes.

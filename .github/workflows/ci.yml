@@ -1,26 +1,28 @@
 name: ci
-
 on:
   push:
   pull_request:
-
 jobs:
-  bootstrap:
+  pageindex:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: pgvector/pgvector:0.8.2-pg17
+        image: postgres:17.6-alpine
         env:
           POSTGRES_USER: loreweave
           POSTGRES_PASSWORD: loreweave_test
-          POSTGRES_DB: loreweave_test
+          POSTGRES_DB: loreweave_pageindex_test
         ports:
           - 5432:5432
         options: >-
-          --health-cmd pg_isready --health-interval 5s
-          --health-timeout 5s --health-retries 10
+          --health-cmd pg_isready --health-interval 2s
+          --health-timeout 5s --health-retries 20
     env:
-      TEST_DATABASE_URL: postgres://loreweave:loreweave_test@127.0.0.1:5432/loreweave_test
+      LOREWEAVE_DATABASE_URL: postgres://loreweave:loreweave_test@127.0.0.1:5432/loreweave_pageindex_test
+      LOREWEAVE_ARTIFACT_DIRECTORY: .pageindex-data/ci
+      LOREWEAVE_ACCESS_PASSWORD: ci-fixture-password
+      LOREWEAVE_SECRET_KEY: "0000000000000000000000000000000000000000000000000000000000000000"
+      LOREWEAVE_MODE: fixture
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,36 +35,9 @@ jobs:
       - run: bun run typecheck
       - run: bun run format:check
       - run: bun run check:docs
-      - run: bun run check:vendor
       - run: bun run test
-      - run: bun run test:providers
-      - run: bun run test:persistence
-      - run: bun run test:access
-      - run: bun run prepare:tokenizer
-      - run: bun --no-env-file test tests/embedding-tokenizer.test.ts
-      - run: bun run test:ingestion
-      - run: bun run test:sources
-      - run: bun run test:evidence
-      - run: bun run test:updates
-      - run: bun run test:evaluation
-      - run: bun run test:capacity
-      - run: bun run test:maintenance-evaluation
-      - run: bun run test:operations
-      - run: bun run test:graph
-      - run: bun run test:mcp
-      - run: bun run test:intents
-      - run: bun run test:identity
-      - run: bun run test:wiki
-      - run: bun run test:wiki-refresh
-      - run: bun run test:wiki-history
-      - run: bun run test:upstream
-      - run: bun x playwright install --with-deps chromium
-      # Browser workers execute queued jobs globally; keep module failure fixtures
-      # in their own database so they cannot consume browser maintenance admission.
-      - run: createdb -h 127.0.0.1 -U loreweave loreweave_browser_test
-        env:
-          PGPASSWORD: loreweave_test
-      - run: bun run test:browser
-        env:
-          TEST_DATABASE_URL: postgres://loreweave:loreweave_test@127.0.0.1:5432/loreweave_browser_test
+      - run: bun run test:conformance
       - run: bun run build
+      - run: bun x playwright install --with-deps chromium
+      - run: bun run check:baseline
+      - run: bun run test:browser

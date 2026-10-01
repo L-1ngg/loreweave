@@ -1,3 +1,6 @@
+> Historical evaluation of the retired runtime. Source links resolve through
+> docs/history/pageindex-retirement.md; these results do not certify Spec #29.
+
 # Issue 28: independent agent development scoring
 
 This is **independent agent development scoring**, based on the frozen artifacts below. The scoring agent read the source corpus, expected outcomes, delivered answer text, citations, diagnostics, and transport records; it did not generate the evaluated answers or change the implementation. This is not human review, a blinded holdout, or formal issue #18 semantic, capacity, or HA acceptance. Both runs are development iterations on the same six disclosed questions. The rerun therefore cannot establish generalization or a causal performance improvement.

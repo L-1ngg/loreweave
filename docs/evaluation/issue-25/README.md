@@ -1,3 +1,6 @@
+> Historical evaluation of the retired runtime. Source links resolve through
+> docs/history/pageindex-retirement.md; these results do not certify Spec #29.
+
 # Issue #25 route comparison assessment
 
 **Measurement complete; quality/latency acceptance not met.** The independent

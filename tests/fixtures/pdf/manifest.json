@@ -1,0 +1,106 @@
+{
+  "revision": "2026-10-01-v1",
+  "font": {
+    "name": "NotoSansSC[wght].ttf",
+    "sha256": "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da",
+    "license": "SIL Open Font License 1.1",
+    "url": "https://github.com/google/fonts/tree/main/ofl/notosanssc"
+  },
+  "fixtures": [
+    {
+      "file": "single-column.pdf",
+      "sha256": "0d45d88d4be7c4c2872d4641a69dc72557fc3d5e2eec833b9c60d46c640415f5",
+      "pages": 6,
+      "kind": "single",
+      "origin": "Generated from scripts/generate-fixtures.ts; fixed original facts and layout",
+      "expected": "shared extraction"
+    },
+    {
+      "file": "multi-column.pdf",
+      "sha256": "84a343a4175b393e1b1b0094299a0145a2fcbf445882ae959212ef2aababc8ad",
+      "pages": 4,
+      "kind": "columns",
+      "origin": "Generated from scripts/generate-fixtures.ts; fixed original facts and layout",
+      "expected": "shared extraction"
+    },
+    {
+      "file": "mixed-cjk.pdf",
+      "sha256": "4541dc2c2626addd505e3a61636e71618286a21461a46d8c11056a88b52212f8",
+      "pages": 3,
+      "kind": "cjk",
+      "origin": "Generated from scripts/generate-fixtures.ts; fixed original facts and layout",
+      "expected": "shared extraction"
+    },
+    {
+      "file": "rotated.pdf",
+      "sha256": "145dbe98778762e0b0640763e831f39e62dc1b9042bb1f1dc1a79ca16cb87d0f",
+      "pages": 1,
+      "kind": "rotated",
+      "origin": "Generated from scripts/generate-fixtures.ts; fixed original facts and layout",
+      "expected": "shared extraction"
+    },
+    {
+      "file": "bookmarks.pdf",
+      "sha256": "2d4b638d6af94338a118234b3bfe059407dc8817eaf099f70b6fb0108a7a1500",
+      "pages": 6,
+      "kind": "bookmarks",
+      "origin": "Generated from scripts/generate-fixtures.ts; fixed original facts and layout",
+      "expected": "shared extraction"
+    },
+    {
+      "file": "toc-offset.pdf",
+      "sha256": "3cd5cfa70b5ea8c52aef0989a43bb7a9a7d3cad0619834bdc3cfdd80717d12c0",
+      "pages": 8,
+      "kind": "toc",
+      "origin": "Generated from scripts/generate-fixtures.ts; fixed original facts and layout",
+      "expected": "shared extraction"
+    },
+    {
+      "file": "no-toc.pdf",
+      "sha256": "1bc7b7e1ee7651e382058b97fd94596702cc77a967a3b915b27029fcb7d40120",
+      "pages": 21,
+      "kind": "no-toc",
+      "origin": "Generated from scripts/generate-fixtures.ts; fixed original facts and layout",
+      "expected": "shared extraction"
+    },
+    {
+      "file": "large-section.pdf",
+      "sha256": "bc79654c4fc3dee6c358a253f1b6b8ddb74b5567add188970cdbf7e97067d04b",
+      "pages": 24,
+      "kind": "large",
+      "origin": "Generated from scripts/generate-fixtures.ts; fixed original facts and layout",
+      "expected": "shared extraction"
+    },
+    {
+      "file": "inadequate.pdf",
+      "sha256": "72b962657e63d5abc08910f3fbb724083118b8eca3530ada39e43450ee0d411a",
+      "pages": 25,
+      "kind": "flat",
+      "origin": "Generated from scripts/generate-fixtures.ts; fixed original facts and layout",
+      "expected": "Flash structural failure"
+    },
+    {
+      "file": "scanned.pdf",
+      "sha256": "89445c8c5eae28ec27d44db0b5d368f02875f6ecddfe6462437c4bc1850339e3",
+      "pages": 2,
+      "kind": "scanned",
+      "origin": "Generated from scripts/generate-fixtures.ts; fixed original facts and layout",
+      "expected": "unsupported"
+    },
+    {
+      "file": "encrypted.pdf",
+      "sha256": "ed81615f32e052a0597fce88cc09a4f86bdf954e44e7e2b812212750b9224c57",
+      "pages": 6,
+      "kind": "encrypted",
+      "expected": "unsupported",
+      "origin": "qpdf 12.2.0 --encrypt fixture-password fixture-owner 256 -- single-column.pdf encrypted.pdf; fixed committed bytes"
+    },
+    {
+      "file": "malformed.pdf",
+      "sha256": "d6022836fb9329611bcc28a265a024bb8efd1b21b48ce41685068a4a4c787cf9",
+      "pages": 0,
+      "kind": "malformed",
+      "expected": "failed"
+    }
+  ]
+}

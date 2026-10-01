@@ -1,0 +1,169 @@
+{
+  "revision": "2026-10-01-v1",
+  "provenance": "Repository-authored fixed questions. Expected evidence is a physical-page fact, never a model-produced reference answer.",
+  "questions": [
+    {
+      "id": "revenue",
+      "files": ["single-column.pdf"],
+      "question": "What was Acme's 2026 revenue? State currency, business scope and exclusions.",
+      "outcome": "answer",
+      "expected": ["120 million USD", "domestic", "subsidiaries"],
+      "evidence": [
+        {
+          "file": "single-column.pdf",
+          "pages": [1, 2, 3],
+          "contains": "Acme 2026 revenue was 120 million USD."
+        }
+      ]
+    },
+    {
+      "id": "follow-up",
+      "after": "revenue",
+      "files": ["single-column.pdf"],
+      "question": "And the previous year's revenue and net profit, on the same basis?",
+      "outcome": "answer",
+      "expected": ["100 million", "9 million", "2025", "domestic"],
+      "evidence": [
+        {
+          "file": "single-column.pdf",
+          "pages": [4, 5, 6],
+          "contains": "Acme 2025 revenue was 100 million USD."
+        }
+      ]
+    },
+    {
+      "id": "missing-fact",
+      "files": ["single-column.pdf"],
+      "question": "How many employees did Acme have in 2026? Do not infer an employee count from revenue.",
+      "outcome": "evidence_gap",
+      "expected": [],
+      "evidence": []
+    },
+    {
+      "id": "printed-toc",
+      "files": ["toc-offset.pdf"],
+      "question": "Give Acme 2025 revenue and net profit with qualifications. Cite original physical pages, not printed page labels.",
+      "outcome": "answer",
+      "expected": ["100 million", "9 million", "2025"],
+      "evidence": [
+        {
+          "file": "toc-offset.pdf",
+          "pages": [5, 6, 7, 8],
+          "contains": "Acme 2025 net profit was 9 million USD."
+        }
+      ]
+    },
+    {
+      "id": "long-navigation",
+      "files": ["no-toc.pdf"],
+      "question": "Compare Acme domestic revenue in 2026 and 2025 and state whether subsidiaries are included.",
+      "outcome": "answer",
+      "expected": ["120 million", "100 million", "domestic", "subsidiaries"],
+      "evidence": [
+        {
+          "file": "no-toc.pdf",
+          "pages": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          "contains": "Acme 2026 revenue was 120 million USD."
+        },
+        {
+          "file": "no-toc.pdf",
+          "pages": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
+          "contains": "Acme 2025 revenue was 100 million USD."
+        }
+      ]
+    },
+    {
+      "id": "mixed-20-21",
+      "files": ["boundary-20.pdf", "no-toc.pdf"],
+      "question": "From each of these two Acme reports, give the 2026 revenue and its scope, with separate citations.",
+      "outcome": "answer",
+      "expected": ["120 million", "domestic"],
+      "evidence": [
+        {
+          "file": "boundary-20.pdf",
+          "pages": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          "contains": "Acme 2026 revenue was 120 million USD."
+        },
+        {
+          "file": "no-toc.pdf",
+          "pages": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          "contains": "Acme 2026 revenue was 120 million USD."
+        }
+      ]
+    },
+    {
+      "id": "cjk-qualifiers",
+      "files": ["mixed-cjk.pdf"],
+      "question": "上海公司2026年收入是多少？比2025年增加多少？说明币种和业务范围，不得与美元金额合并。",
+      "outcome": "answer",
+      "expected": ["120", "100", "20", "境内"],
+      "evidence": [
+        {
+          "file": "mixed-cjk.pdf",
+          "pages": [1, 2, 3],
+          "contains": "上海公司2026年收入为120万元，仅指境内业务。"
+        }
+      ]
+    },
+    {
+      "id": "conflict",
+      "files": ["single-column.pdf", "conflicting-source.pdf"],
+      "question": "Both sources claim Acme's audited domestic-only 2026 revenue. What does each report say, and can you resolve the disagreement from these originals alone?",
+      "outcome": "answer",
+      "expected": ["120", "130"],
+      "evidence": [
+        {
+          "file": "single-column.pdf",
+          "pages": [1, 2, 3],
+          "contains": "Acme 2026 revenue was 120 million USD."
+        },
+        {
+          "file": "conflicting-source.pdf",
+          "pages": [1],
+          "contains": "Acme 2026 revenue was 130 million USD."
+        }
+      ]
+    },
+    {
+      "id": "distinct-sources",
+      "files": ["single-column.pdf", "other-company.pdf"],
+      "question": "Give Acme and Beta 2026 revenue, preserving their respective currency, scope and subsidiary qualifications. Do not add these amounts.",
+      "outcome": "answer",
+      "expected": ["120", "999", "USD", "EUR", "domestic", "global"],
+      "evidence": [
+        {
+          "file": "single-column.pdf",
+          "pages": [1, 2, 3],
+          "contains": "Acme 2026 revenue was 120 million USD."
+        },
+        {
+          "file": "other-company.pdf",
+          "pages": [1],
+          "contains": "Beta 2026 revenue was 999 million EUR."
+        }
+      ]
+    },
+    {
+      "id": "library-clear",
+      "files": [],
+      "question": "Find the Beta Annual Report 2026 in the current library and give Beta's 2026 revenue with currency and scope.",
+      "outcome": "answer",
+      "expected": ["999", "EUR", "global"],
+      "evidence": [
+        {
+          "file": "other-company.pdf",
+          "pages": [1],
+          "contains": "Beta 2026 revenue was 999 million EUR."
+        }
+      ]
+    },
+    {
+      "id": "library-ambiguous",
+      "files": [],
+      "question": "What was revenue in the annual report? I have not specified a company or year.",
+      "outcome": "clarification",
+      "expected": [],
+      "evidence": []
+    }
+  ]
+}

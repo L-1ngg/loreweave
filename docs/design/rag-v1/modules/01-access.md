@@ -1,3 +1,7 @@
+> Historical record, retired by Spec #29. Source links resolve through the verified
+> recovery baseline described in docs/history/pageindex-retirement.md. Commands
+> and runtime behavior below are not current PageIndex instructions.
+
 # M01: Access and scope
 
 M01 turns credentials and a user's project selection into trusted operation

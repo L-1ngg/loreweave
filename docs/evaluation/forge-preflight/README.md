@@ -1,3 +1,6 @@
+> Historical evaluation of the retired runtime. Source links resolve through
+> docs/history/pageindex-retirement.md; these results do not certify Spec #29.
+
 # Forge 文档小规模预验收（2026-09-12）
 
 本轮是用户授权的真实文档、真实模型预验收，不是 #18 的正式发布验收。

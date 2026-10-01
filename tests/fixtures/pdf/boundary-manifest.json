@@ -1,0 +1,12 @@
+{
+  "revision": "2026-10-01-boundary-v1",
+  "file": "boundary-20.pdf",
+  "sha256": "1e0db5c64c63a0f25a16b1f210b8f020a392007ce43deaa9e79e88e8d9f26c1d",
+  "pages": 20,
+  "origin": {
+    "file": "tests/fixtures/pdf/no-toc.pdf",
+    "sha256": "1bc7b7e1ee7651e382058b97fd94596702cc77a967a3b915b27029fcb7d40120",
+    "transformation": "pdf-lib 1.17.1 removePage(20), retain first 20 physical pages; updateMetadata:false"
+  },
+  "license": "Project-generated acceptance original"
+}

@@ -1,3 +1,6 @@
+> Historical evaluation of the retired runtime. Source links resolve through
+> docs/history/pageindex-retirement.md; these results do not certify Spec #29.
+
 # Real-provider 比较独立 agent 评分
 
 独立审查全部 96 个 case/profile：93 个 timed_out、3 个 partial，completed 为零。无答案的 93 条全部给 0 分和四项 false，包括缺失题；超时不能算正确拒答。

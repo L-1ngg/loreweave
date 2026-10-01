@@ -1,0 +1,3797 @@
+{
+  "date": "2026-10-01T08:46:26.315Z",
+  "candidatePaths": [
+    "docs/evaluation/pageindex-real.json",
+    "docs/evaluation/pageindex-real-regression.json",
+    "docs/evaluation/pageindex-large-retry.json",
+    "docs/evaluation/pageindex-large-final.json"
+  ],
+  "candidateTrials": [
+    {
+      "path": "docs/evaluation/pageindex-real.json",
+      "selection": {
+        "fixtures": null,
+        "questions": null
+      },
+      "imports": [
+        {
+          "mode": "flash",
+          "observed": 15,
+          "ready": 11,
+          "rejected": [
+            {
+              "file": "inadequate.pdf",
+              "status": "failed",
+              "reason": "structural_extraction_inadequate"
+            },
+            {
+              "file": "scanned.pdf",
+              "status": "unsupported",
+              "reason": "text_layer_required"
+            },
+            {
+              "file": "encrypted.pdf",
+              "status": "unsupported",
+              "reason": "encrypted_pdf_unsupported"
+            },
+            {
+              "file": "malformed.pdf",
+              "status": "failed",
+              "reason": "malformed_or_unreadable_pdf"
+            }
+          ],
+          "earlierFailedAttempts": []
+        },
+        {
+          "mode": "standard",
+          "observed": 15,
+          "ready": 8,
+          "rejected": [
+            {
+              "file": "mixed-cjk.pdf",
+              "status": "failed",
+              "reason": "model_heading_unverified"
+            },
+            {
+              "file": "large-section.pdf",
+              "status": "failed",
+              "reason": "model_heading_unverified"
+            },
+            {
+              "file": "inadequate.pdf",
+              "status": "failed",
+              "reason": "model_heading_unverified"
+            },
+            {
+              "file": "scanned.pdf",
+              "status": "unsupported",
+              "reason": "text_layer_required"
+            },
+            {
+              "file": "encrypted.pdf",
+              "status": "unsupported",
+              "reason": "encrypted_pdf_unsupported"
+            },
+            {
+              "file": "malformed.pdf",
+              "status": "failed",
+              "reason": "malformed_or_unreadable_pdf"
+            },
+            {
+              "file": "boundary-20.pdf",
+              "status": "failed",
+              "reason": "model_heading_unverified"
+            }
+          ],
+          "earlierFailedAttempts": []
+        }
+      ],
+      "questionOutcomes": [
+        {
+          "mode": "flash",
+          "id": "revenue",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "flash",
+          "id": "follow-up",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "flash",
+          "id": "missing-fact",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "flash",
+          "id": "printed-toc",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "flash",
+          "id": "long-navigation",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "flash",
+          "id": "mixed-20-21",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "flash",
+          "id": "cjk-qualifiers",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "flash",
+          "id": "conflict",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "flash",
+          "id": "distinct-sources",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "flash",
+          "id": "library-clear",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "flash",
+          "id": "library-ambiguous",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "flash",
+          "id": "mcp-revenue",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "standard",
+          "id": "revenue",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "standard",
+          "id": "follow-up",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "standard",
+          "id": "missing-fact",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "standard",
+          "id": "printed-toc",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "standard",
+          "id": "long-navigation",
+          "status": "failed",
+          "reason": "Our servers are currently overloaded. Please try again later."
+        },
+        {
+          "mode": "standard",
+          "id": "mixed-20-21",
+          "status": "not_run",
+          "reason": "required import not ready"
+        },
+        {
+          "mode": "standard",
+          "id": "cjk-qualifiers",
+          "status": "not_run",
+          "reason": "required import not ready"
+        },
+        {
+          "mode": "standard",
+          "id": "conflict",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "standard",
+          "id": "distinct-sources",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "standard",
+          "id": "library-clear",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "standard",
+          "id": "library-ambiguous",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "standard",
+          "id": "mcp-revenue",
+          "status": "completed",
+          "reason": null
+        }
+      ],
+      "failures": []
+    },
+    {
+      "path": "docs/evaluation/pageindex-real-regression.json",
+      "selection": {
+        "fixtures": [
+          "single-column.pdf",
+          "mixed-cjk.pdf",
+          "no-toc.pdf",
+          "large-section.pdf",
+          "inadequate.pdf",
+          "boundary-20.pdf"
+        ],
+        "questions": [
+          "revenue",
+          "long-navigation",
+          "mixed-20-21",
+          "cjk-qualifiers"
+        ]
+      },
+      "imports": [
+        {
+          "mode": "flash",
+          "observed": 6,
+          "ready": 5,
+          "rejected": [
+            {
+              "file": "inadequate.pdf",
+              "status": "failed",
+              "reason": "structural_extraction_inadequate"
+            }
+          ],
+          "earlierFailedAttempts": []
+        },
+        {
+          "mode": "standard",
+          "observed": 6,
+          "ready": 5,
+          "rejected": [
+            {
+              "file": "large-section.pdf",
+              "status": "failed",
+              "reason": "The response was cut off because the maximum token limit was reached (finish_reason=length); raise the output token limit."
+            }
+          ],
+          "earlierFailedAttempts": []
+        }
+      ],
+      "questionOutcomes": [
+        {
+          "mode": "flash",
+          "id": "revenue",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "flash",
+          "id": "long-navigation",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "flash",
+          "id": "mixed-20-21",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "flash",
+          "id": "cjk-qualifiers",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "flash",
+          "id": "mcp-revenue",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "standard",
+          "id": "revenue",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "standard",
+          "id": "long-navigation",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "standard",
+          "id": "mixed-20-21",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "standard",
+          "id": "cjk-qualifiers",
+          "status": "completed",
+          "reason": null
+        },
+        {
+          "mode": "standard",
+          "id": "mcp-revenue",
+          "status": "completed",
+          "reason": null
+        }
+      ],
+      "failures": []
+    },
+    {
+      "path": "docs/evaluation/pageindex-large-retry.json",
+      "selection": {
+        "fixtures": [
+          "large-section.pdf"
+        ],
+        "questions": [
+          "none"
+        ]
+      },
+      "imports": [
+        {
+          "mode": "flash",
+          "observed": 0,
+          "ready": 0,
+          "rejected": [],
+          "earlierFailedAttempts": []
+        },
+        {
+          "mode": "standard",
+          "observed": 1,
+          "ready": 0,
+          "rejected": [
+            {
+              "file": "large-section.pdf",
+              "status": "failed",
+              "reason": "Our servers are currently overloaded. Please try again later."
+            }
+          ],
+          "earlierFailedAttempts": []
+        }
+      ],
+      "questionOutcomes": [],
+      "failures": []
+    },
+    {
+      "path": "docs/evaluation/pageindex-large-final.json",
+      "selection": {
+        "fixtures": [
+          "large-section.pdf"
+        ],
+        "questions": [
+          "none"
+        ],
+        "deliberateFailedImportRetry": true
+      },
+      "imports": [
+        {
+          "mode": "flash",
+          "observed": 0,
+          "ready": 0,
+          "rejected": [],
+          "earlierFailedAttempts": []
+        },
+        {
+          "mode": "standard",
+          "observed": 1,
+          "ready": 1,
+          "rejected": [],
+          "earlierFailedAttempts": [
+            {
+              "file": "large-section.pdf",
+              "outcome": {
+                "status": "failed",
+                "reason": "Our servers are currently overloaded. Please try again later."
+              }
+            }
+          ]
+        }
+      ],
+      "questionOutcomes": [],
+      "failures": []
+    }
+  ],
+  "referencePath": "docs/evaluation/pageindex-full-reference.json",
+  "additionalReferencePaths": [
+    "docs/evaluation/pageindex-encrypted-reference.json"
+  ],
+  "referenceRevision": "d2693d80791a86345ef78b3234834f5fe53a70a0",
+  "questionSHA256": "33957bdfcfed48d758de888109edd22452537ac037dc9459d99237e800064c4e",
+  "method": "Paired frozen bytes, same declared model, complete modes and default summaries/optimization. Shape/range and character metrics describe raw artifacts, including rejected trees. Reachability requires an accepted index and the shared fixed question's original phrase on an indexed physical page; it is not a Python QA quality score or proof of semantic summary correctness.",
+  "coverage": [
+    {
+      "mode": "flash",
+      "denominator": 15,
+      "tsReady": 11,
+      "tsRejected": [
+        {
+          "file": "inadequate.pdf",
+          "status": "failed",
+          "reason": "structural_extraction_inadequate"
+        },
+        {
+          "file": "scanned.pdf",
+          "status": "unsupported",
+          "reason": "text_layer_required"
+        },
+        {
+          "file": "encrypted.pdf",
+          "status": "unsupported",
+          "reason": "encrypted_pdf_unsupported"
+        },
+        {
+          "file": "malformed.pdf",
+          "status": "failed",
+          "reason": "malformed_or_unreadable_pdf"
+        }
+      ],
+      "pythonCompleted": 10,
+      "pythonRejected": [
+        {
+          "file": "large-section.pdf",
+          "status": "rejected",
+          "reason": "PageIndex Flash found no layout structure in this document (24 pages); try mode='standard', which builds the structure with the model."
+        },
+        {
+          "file": "inadequate.pdf",
+          "status": "rejected",
+          "reason": "PageIndex Flash found no layout structure in this document (25 pages); try mode='standard', which builds the structure with the model."
+        },
+        {
+          "file": "scanned.pdf",
+          "status": "rejected",
+          "reason": "PageIndex Flash found no text layer in this PDF (scanned or image-only); run OCR before indexing it."
+        },
+        {
+          "file": "encrypted.pdf",
+          "status": "failed",
+          "reason": {
+            "type": "FileNotDecryptedError",
+            "message": "File has not been decrypted"
+          }
+        },
+        {
+          "file": "malformed.pdf",
+          "status": "failed",
+          "reason": {
+            "type": "PdfReadError",
+            "message": "EOF marker not found"
+          }
+        }
+      ]
+    },
+    {
+      "mode": "standard",
+      "denominator": 15,
+      "tsReady": 12,
+      "tsRejected": [
+        {
+          "file": "scanned.pdf",
+          "status": "unsupported",
+          "reason": "text_layer_required"
+        },
+        {
+          "file": "encrypted.pdf",
+          "status": "unsupported",
+          "reason": "encrypted_pdf_unsupported"
+        },
+        {
+          "file": "malformed.pdf",
+          "status": "failed",
+          "reason": "malformed_or_unreadable_pdf"
+        }
+      ],
+      "pythonCompleted": 10,
+      "pythonRejected": [
+        {
+          "file": "large-section.pdf",
+          "status": "failed",
+          "reason": {
+            "type": "Exception",
+            "message": "Processing failed"
+          }
+        },
+        {
+          "file": "inadequate.pdf",
+          "status": "failed",
+          "reason": {
+            "type": "Exception",
+            "message": "Processing failed"
+          }
+        },
+        {
+          "file": "scanned.pdf",
+          "status": "failed",
+          "reason": {
+            "type": "ValueError",
+            "message": "unreadable_text_layer"
+          }
+        },
+        {
+          "file": "encrypted.pdf",
+          "status": "failed",
+          "reason": {
+            "type": "FileNotDecryptedError",
+            "message": "File has not been decrypted"
+          }
+        },
+        {
+          "file": "malformed.pdf",
+          "status": "failed",
+          "reason": {
+            "type": "PdfReadError",
+            "message": "EOF marker not found"
+          }
+        }
+      ]
+    }
+  ],
+  "records": [
+    {
+      "mode": "flash",
+      "file": "single-column.pdf",
+      "sha256": "0d45d88d4be7c4c2872d4641a69dc72557fc3d5e2eec833b9c60d46c640415f5",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real-regression.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 34157,
+        "usage": {
+          "elapsedMs": 33877,
+          "modelCalls": 4,
+          "inputTokens": 2092,
+          "outputTokens": 581
+        },
+        "shape": {
+          "nodes": 3,
+          "roots": 1,
+          "maxDepth": 1,
+          "validRanges": 3,
+          "coveredPhysicalPages": 6,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 3,
+          "locations": [
+            {
+              "title": "Annual Report 2026",
+              "start": 1,
+              "end": 6,
+              "depth": 0
+            },
+            {
+              "title": "1 Overview",
+              "start": 2,
+              "end": 4,
+              "depth": 1
+            },
+            {
+              "title": "2 Results",
+              "start": 4,
+              "end": 6,
+              "depth": 1
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 16896,
+        "shape": {
+          "nodes": 4,
+          "roots": 4,
+          "maxDepth": 0,
+          "validRanges": 4,
+          "coveredPhysicalPages": 6,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 4,
+          "locations": [
+            {
+              "title": "Preface",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            },
+            {
+              "title": "1 Overview",
+              "start": 2,
+              "end": 3,
+              "depth": 0
+            },
+            {
+              "title": "2 Results",
+              "start": 4,
+              "end": 5,
+              "depth": 0
+            },
+            {
+              "title": "Appendix ",
+              "start": 6,
+              "end": 6,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": [
+        {
+          "question": "revenue",
+          "ts": true,
+          "python": true
+        },
+        {
+          "question": "follow-up",
+          "ts": true,
+          "python": true
+        },
+        {
+          "question": "conflict",
+          "ts": true,
+          "python": true
+        },
+        {
+          "question": "distinct-sources",
+          "ts": true,
+          "python": true
+        }
+      ]
+    },
+    {
+      "mode": "flash",
+      "file": "multi-column.pdf",
+      "sha256": "84a343a4175b393e1b1b0094299a0145a2fcbf445882ae959212ef2aababc8ad",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 312,
+        "usage": {
+          "modelCalls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0
+        },
+        "shape": {
+          "nodes": 4,
+          "roots": 4,
+          "maxDepth": 0,
+          "validRanges": 4,
+          "coveredPhysicalPages": 4,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 4,
+          "locations": [
+            {
+              "title": "1 Two-column Analysis",
+              "start": 1,
+              "end": 2,
+              "depth": 0
+            },
+            {
+              "title": "2 Two-column Analysis",
+              "start": 2,
+              "end": 3,
+              "depth": 0
+            },
+            {
+              "title": "3 Two-column Analysis",
+              "start": 3,
+              "end": 4,
+              "depth": 0
+            },
+            {
+              "title": "4 Two-column Analysis",
+              "start": 4,
+              "end": 4,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 78,
+        "shape": {
+          "nodes": 4,
+          "roots": 4,
+          "maxDepth": 0,
+          "validRanges": 4,
+          "coveredPhysicalPages": 4,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 4,
+          "locations": [
+            {
+              "title": "Page 1",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            },
+            {
+              "title": "Page 2",
+              "start": 2,
+              "end": 2,
+              "depth": 0
+            },
+            {
+              "title": "Page 3",
+              "start": 3,
+              "end": 3,
+              "depth": 0
+            },
+            {
+              "title": "Page 4",
+              "start": 4,
+              "end": 4,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": []
+    },
+    {
+      "mode": "flash",
+      "file": "mixed-cjk.pdf",
+      "sha256": "4541dc2c2626addd505e3a61636e71618286a21461a46d8c11056a88b52212f8",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real-regression.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 318,
+        "usage": {
+          "modelCalls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0
+        },
+        "shape": {
+          "nodes": 1,
+          "roots": 1,
+          "maxDepth": 0,
+          "validRanges": 1,
+          "coveredPhysicalPages": 3,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 1,
+          "locations": [
+            {
+              "title": "1 营业结果",
+              "start": 1,
+              "end": 3,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 30,
+        "shape": {
+          "nodes": 3,
+          "roots": 3,
+          "maxDepth": 0,
+          "validRanges": 3,
+          "coveredPhysicalPages": 3,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 3,
+          "locations": [
+            {
+              "title": "Page 1",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            },
+            {
+              "title": "Page 2",
+              "start": 2,
+              "end": 2,
+              "depth": 0
+            },
+            {
+              "title": "Page 3",
+              "start": 3,
+              "end": 3,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": [
+        {
+          "question": "cjk-qualifiers",
+          "ts": true,
+          "python": true
+        }
+      ]
+    },
+    {
+      "mode": "flash",
+      "file": "rotated.pdf",
+      "sha256": "145dbe98778762e0b0640763e831f39e62dc1b9042bb1f1dc1a79ca16cb87d0f",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 305,
+        "usage": {
+          "modelCalls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0
+        },
+        "shape": {
+          "nodes": 1,
+          "roots": 1,
+          "maxDepth": 0,
+          "validRanges": 1,
+          "coveredPhysicalPages": 1,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 1,
+          "locations": [
+            {
+              "title": "1 Rotated source",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 7,
+        "shape": {
+          "nodes": 1,
+          "roots": 1,
+          "maxDepth": 0,
+          "validRanges": 1,
+          "coveredPhysicalPages": 1,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 1,
+          "locations": [
+            {
+              "title": "Page 1",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": []
+    },
+    {
+      "mode": "flash",
+      "file": "bookmarks.pdf",
+      "sha256": "2d4b638d6af94338a118234b3bfe059407dc8817eaf099f70b6fb0108a7a1500",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 61344,
+        "usage": {
+          "elapsedMs": 61029,
+          "modelCalls": 4,
+          "inputTokens": 1990,
+          "outputTokens": 546
+        },
+        "shape": {
+          "nodes": 4,
+          "roots": 1,
+          "maxDepth": 2,
+          "validRanges": 4,
+          "coveredPhysicalPages": 6,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 4,
+          "locations": [
+            {
+              "title": "Annual Report 2026",
+              "start": 1,
+              "end": 6,
+              "depth": 0
+            },
+            {
+              "title": "1 Overview",
+              "start": 2,
+              "end": 4,
+              "depth": 1
+            },
+            {
+              "title": "1.1 Scope",
+              "start": 2,
+              "end": 4,
+              "depth": 2
+            },
+            {
+              "title": "2 Results",
+              "start": 4,
+              "end": 6,
+              "depth": 1
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 11703,
+        "shape": {
+          "nodes": 4,
+          "roots": 4,
+          "maxDepth": 0,
+          "validRanges": 4,
+          "coveredPhysicalPages": 6,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 4,
+          "locations": [
+            {
+              "title": "Preface",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            },
+            {
+              "title": "1 Overview",
+              "start": 2,
+              "end": 3,
+              "depth": 0
+            },
+            {
+              "title": "2 Results",
+              "start": 4,
+              "end": 5,
+              "depth": 0
+            },
+            {
+              "title": "Appendix ",
+              "start": 6,
+              "end": 6,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": []
+    },
+    {
+      "mode": "flash",
+      "file": "toc-offset.pdf",
+      "sha256": "3cd5cfa70b5ea8c52aef0989a43bb7a9a7d3cad0619834bdc3cfdd80717d12c0",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 46803,
+        "usage": {
+          "elapsedMs": 46584,
+          "modelCalls": 4,
+          "inputTokens": 2267,
+          "outputTokens": 669
+        },
+        "shape": {
+          "nodes": 5,
+          "roots": 1,
+          "maxDepth": 1,
+          "validRanges": 5,
+          "coveredPhysicalPages": 8,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 5,
+          "locations": [
+            {
+              "title": "Annual Report 2026",
+              "start": 1,
+              "end": 8,
+              "depth": 0
+            },
+            {
+              "title": "Contents",
+              "start": 2,
+              "end": 3,
+              "depth": 1
+            },
+            {
+              "title": "1 Overview",
+              "start": 3,
+              "end": 5,
+              "depth": 1
+            },
+            {
+              "title": "2 Results",
+              "start": 5,
+              "end": 7,
+              "depth": 1
+            },
+            {
+              "title": "Appendix",
+              "start": 7,
+              "end": 8,
+              "depth": 1
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 17825,
+        "shape": {
+          "nodes": 4,
+          "roots": 4,
+          "maxDepth": 0,
+          "validRanges": 4,
+          "coveredPhysicalPages": 8,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 4,
+          "locations": [
+            {
+              "title": "Preface",
+              "start": 1,
+              "end": 2,
+              "depth": 0
+            },
+            {
+              "title": "1 Overview",
+              "start": 3,
+              "end": 4,
+              "depth": 0
+            },
+            {
+              "title": "2 Results",
+              "start": 5,
+              "end": 6,
+              "depth": 0
+            },
+            {
+              "title": "Appendix ",
+              "start": 7,
+              "end": 8,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": [
+        {
+          "question": "printed-toc",
+          "ts": true,
+          "python": true
+        }
+      ]
+    },
+    {
+      "mode": "flash",
+      "file": "no-toc.pdf",
+      "sha256": "1bc7b7e1ee7651e382058b97fd94596702cc77a967a3b915b27029fcb7d40120",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real-regression.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 86459,
+        "usage": {
+          "elapsedMs": 86127,
+          "modelCalls": 8,
+          "inputTokens": 5396,
+          "outputTokens": 992
+        },
+        "shape": {
+          "nodes": 3,
+          "roots": 1,
+          "maxDepth": 1,
+          "validRanges": 3,
+          "coveredPhysicalPages": 21,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 3,
+          "locations": [
+            {
+              "title": "Annual Report 2026",
+              "start": 1,
+              "end": 21,
+              "depth": 0
+            },
+            {
+              "title": "1 Overview",
+              "start": 2,
+              "end": 11,
+              "depth": 1
+            },
+            {
+              "title": "2 Results",
+              "start": 11,
+              "end": 21,
+              "depth": 1
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 25782,
+        "shape": {
+          "nodes": 4,
+          "roots": 4,
+          "maxDepth": 0,
+          "validRanges": 4,
+          "coveredPhysicalPages": 21,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 4,
+          "locations": [
+            {
+              "title": "Preface",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            },
+            {
+              "title": "1 Overview",
+              "start": 2,
+              "end": 10,
+              "depth": 0
+            },
+            {
+              "title": "2 Results",
+              "start": 11,
+              "end": 20,
+              "depth": 0
+            },
+            {
+              "title": "Appendix ",
+              "start": 21,
+              "end": 21,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": [
+        {
+          "question": "long-navigation",
+          "ts": true,
+          "python": true
+        },
+        {
+          "question": "long-navigation",
+          "ts": true,
+          "python": true
+        },
+        {
+          "question": "mixed-20-21",
+          "ts": true,
+          "python": true
+        }
+      ]
+    },
+    {
+      "mode": "flash",
+      "file": "large-section.pdf",
+      "sha256": "bc79654c4fc3dee6c358a253f1b6b8ddb74b5567add188970cdbf7e97067d04b",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real-regression.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 88217,
+        "usage": {
+          "elapsedMs": 88017,
+          "modelCalls": 11,
+          "inputTokens": 18174,
+          "outputTokens": 1043
+        },
+        "shape": {
+          "nodes": 6,
+          "roots": 1,
+          "maxDepth": 1,
+          "validRanges": 6,
+          "coveredPhysicalPages": 24,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 6,
+          "locations": [
+            {
+              "title": "1 Operating Results",
+              "start": 1,
+              "end": 24,
+              "depth": 0
+            },
+            {
+              "title": "2026 Domestic Operating Results: Revenue and Net Profit",
+              "start": 1,
+              "end": 9,
+              "depth": 1
+            },
+            {
+              "title": "2026 Domestic Operating Results",
+              "start": 9,
+              "end": 11,
+              "depth": 1
+            },
+            {
+              "title": "Regional Operating Details",
+              "start": 11,
+              "end": 13,
+              "depth": 1
+            },
+            {
+              "title": "2025 Audited Domestic Operating Results",
+              "start": 13,
+              "end": 17,
+              "depth": 1
+            },
+            {
+              "title": "Acme 2025 Audited Domestic Revenue and Net Profit",
+              "start": 17,
+              "end": 24,
+              "depth": 1
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "rejected",
+        "error": "PageIndex Flash found no layout structure in this document (24 pages); try mode='standard', which builds the structure with the model.",
+        "elapsedMs": 655,
+        "shape": {
+          "nodes": 24,
+          "roots": 24,
+          "maxDepth": 0,
+          "validRanges": 24,
+          "coveredPhysicalPages": 24,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 0,
+          "locations": [
+            {
+              "title": "Page 1",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            },
+            {
+              "title": "Page 2",
+              "start": 2,
+              "end": 2,
+              "depth": 0
+            },
+            {
+              "title": "Page 3",
+              "start": 3,
+              "end": 3,
+              "depth": 0
+            },
+            {
+              "title": "Page 4",
+              "start": 4,
+              "end": 4,
+              "depth": 0
+            },
+            {
+              "title": "Page 5",
+              "start": 5,
+              "end": 5,
+              "depth": 0
+            },
+            {
+              "title": "Page 6",
+              "start": 6,
+              "end": 6,
+              "depth": 0
+            },
+            {
+              "title": "Page 7",
+              "start": 7,
+              "end": 7,
+              "depth": 0
+            },
+            {
+              "title": "Page 8",
+              "start": 8,
+              "end": 8,
+              "depth": 0
+            },
+            {
+              "title": "Page 9",
+              "start": 9,
+              "end": 9,
+              "depth": 0
+            },
+            {
+              "title": "Page 10",
+              "start": 10,
+              "end": 10,
+              "depth": 0
+            },
+            {
+              "title": "Page 11",
+              "start": 11,
+              "end": 11,
+              "depth": 0
+            },
+            {
+              "title": "Page 12",
+              "start": 12,
+              "end": 12,
+              "depth": 0
+            },
+            {
+              "title": "Page 13",
+              "start": 13,
+              "end": 13,
+              "depth": 0
+            },
+            {
+              "title": "Page 14",
+              "start": 14,
+              "end": 14,
+              "depth": 0
+            },
+            {
+              "title": "Page 15",
+              "start": 15,
+              "end": 15,
+              "depth": 0
+            },
+            {
+              "title": "Page 16",
+              "start": 16,
+              "end": 16,
+              "depth": 0
+            },
+            {
+              "title": "Page 17",
+              "start": 17,
+              "end": 17,
+              "depth": 0
+            },
+            {
+              "title": "Page 18",
+              "start": 18,
+              "end": 18,
+              "depth": 0
+            },
+            {
+              "title": "Page 19",
+              "start": 19,
+              "end": 19,
+              "depth": 0
+            },
+            {
+              "title": "Page 20",
+              "start": 20,
+              "end": 20,
+              "depth": 0
+            },
+            {
+              "title": "Page 21",
+              "start": 21,
+              "end": 21,
+              "depth": 0
+            },
+            {
+              "title": "Page 22",
+              "start": 22,
+              "end": 22,
+              "depth": 0
+            },
+            {
+              "title": "Page 23",
+              "start": 23,
+              "end": 23,
+              "depth": 0
+            },
+            {
+              "title": "Page 24",
+              "start": 24,
+              "end": 24,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": []
+    },
+    {
+      "mode": "flash",
+      "file": "inadequate.pdf",
+      "sha256": "72b962657e63d5abc08910f3fbb724083118b8eca3530ada39e43450ee0d411a",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real-regression.json",
+        "status": "failed",
+        "reason": "structural_extraction_inadequate",
+        "elapsedMs": 302,
+        "usage": {
+          "modelCalls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0
+        },
+        "shape": {
+          "nodes": 0,
+          "roots": 0,
+          "maxDepth": 0,
+          "validRanges": 0,
+          "coveredPhysicalPages": 0,
+          "completePageCoverage": false,
+          "nodesWithSummaries": 0,
+          "locations": []
+        }
+      },
+      "python": {
+        "status": "rejected",
+        "error": "PageIndex Flash found no layout structure in this document (25 pages); try mode='standard', which builds the structure with the model.",
+        "elapsedMs": 347,
+        "shape": {
+          "nodes": 25,
+          "roots": 25,
+          "maxDepth": 0,
+          "validRanges": 25,
+          "coveredPhysicalPages": 25,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 0,
+          "locations": [
+            {
+              "title": "Page 1",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            },
+            {
+              "title": "Page 2",
+              "start": 2,
+              "end": 2,
+              "depth": 0
+            },
+            {
+              "title": "Page 3",
+              "start": 3,
+              "end": 3,
+              "depth": 0
+            },
+            {
+              "title": "Page 4",
+              "start": 4,
+              "end": 4,
+              "depth": 0
+            },
+            {
+              "title": "Page 5",
+              "start": 5,
+              "end": 5,
+              "depth": 0
+            },
+            {
+              "title": "Page 6",
+              "start": 6,
+              "end": 6,
+              "depth": 0
+            },
+            {
+              "title": "Page 7",
+              "start": 7,
+              "end": 7,
+              "depth": 0
+            },
+            {
+              "title": "Page 8",
+              "start": 8,
+              "end": 8,
+              "depth": 0
+            },
+            {
+              "title": "Page 9",
+              "start": 9,
+              "end": 9,
+              "depth": 0
+            },
+            {
+              "title": "Page 10",
+              "start": 10,
+              "end": 10,
+              "depth": 0
+            },
+            {
+              "title": "Page 11",
+              "start": 11,
+              "end": 11,
+              "depth": 0
+            },
+            {
+              "title": "Page 12",
+              "start": 12,
+              "end": 12,
+              "depth": 0
+            },
+            {
+              "title": "Page 13",
+              "start": 13,
+              "end": 13,
+              "depth": 0
+            },
+            {
+              "title": "Page 14",
+              "start": 14,
+              "end": 14,
+              "depth": 0
+            },
+            {
+              "title": "Page 15",
+              "start": 15,
+              "end": 15,
+              "depth": 0
+            },
+            {
+              "title": "Page 16",
+              "start": 16,
+              "end": 16,
+              "depth": 0
+            },
+            {
+              "title": "Page 17",
+              "start": 17,
+              "end": 17,
+              "depth": 0
+            },
+            {
+              "title": "Page 18",
+              "start": 18,
+              "end": 18,
+              "depth": 0
+            },
+            {
+              "title": "Page 19",
+              "start": 19,
+              "end": 19,
+              "depth": 0
+            },
+            {
+              "title": "Page 20",
+              "start": 20,
+              "end": 20,
+              "depth": 0
+            },
+            {
+              "title": "Page 21",
+              "start": 21,
+              "end": 21,
+              "depth": 0
+            },
+            {
+              "title": "Page 22",
+              "start": 22,
+              "end": 22,
+              "depth": 0
+            },
+            {
+              "title": "Page 23",
+              "start": 23,
+              "end": 23,
+              "depth": 0
+            },
+            {
+              "title": "Page 24",
+              "start": 24,
+              "end": 24,
+              "depth": 0
+            },
+            {
+              "title": "Page 25",
+              "start": 25,
+              "end": 25,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": []
+    },
+    {
+      "mode": "flash",
+      "file": "scanned.pdf",
+      "sha256": "89445c8c5eae28ec27d44db0b5d368f02875f6ecddfe6462437c4bc1850339e3",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "unsupported",
+        "reason": "text_layer_required",
+        "elapsedMs": 301,
+        "usage": {
+          "modelCalls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0
+        },
+        "shape": {
+          "nodes": 0,
+          "roots": 0,
+          "maxDepth": 0,
+          "validRanges": 0,
+          "coveredPhysicalPages": 0,
+          "completePageCoverage": false,
+          "nodesWithSummaries": 0,
+          "locations": []
+        }
+      },
+      "python": {
+        "status": "rejected",
+        "error": "PageIndex Flash found no text layer in this PDF (scanned or image-only); run OCR before indexing it.",
+        "elapsedMs": 4,
+        "shape": {
+          "nodes": 0,
+          "roots": 0,
+          "maxDepth": 0,
+          "validRanges": 0,
+          "coveredPhysicalPages": 0,
+          "completePageCoverage": false,
+          "nodesWithSummaries": 0,
+          "locations": []
+        }
+      },
+      "extraction": {
+        "bothExtracted": false,
+        "samePageCount": false,
+        "sameCharacters": false,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": []
+    },
+    {
+      "mode": "flash",
+      "file": "encrypted.pdf",
+      "sha256": "ed81615f32e052a0597fce88cc09a4f86bdf954e44e7e2b812212750b9224c57",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "unsupported",
+        "reason": "encrypted_pdf_unsupported",
+        "elapsedMs": 294,
+        "usage": {
+          "modelCalls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0
+        },
+        "shape": {
+          "nodes": 0,
+          "roots": 0,
+          "maxDepth": 0,
+          "validRanges": 0,
+          "coveredPhysicalPages": 0,
+          "completePageCoverage": false,
+          "nodesWithSummaries": 0,
+          "locations": []
+        }
+      },
+      "python": {
+        "status": "failed",
+        "error": {
+          "type": "FileNotDecryptedError",
+          "message": "File has not been decrypted"
+        },
+        "elapsedMs": 19,
+        "shape": {
+          "nodes": 0,
+          "roots": 0,
+          "maxDepth": 0,
+          "validRanges": 0,
+          "coveredPhysicalPages": 0,
+          "completePageCoverage": false,
+          "nodesWithSummaries": 0,
+          "locations": []
+        }
+      },
+      "extraction": {
+        "bothExtracted": false,
+        "samePageCount": false,
+        "sameCharacters": false,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": []
+    },
+    {
+      "mode": "flash",
+      "file": "malformed.pdf",
+      "sha256": "d6022836fb9329611bcc28a265a024bb8efd1b21b48ce41685068a4a4c787cf9",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "failed",
+        "reason": "malformed_or_unreadable_pdf",
+        "elapsedMs": 294,
+        "usage": {
+          "modelCalls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0
+        },
+        "shape": {
+          "nodes": 0,
+          "roots": 0,
+          "maxDepth": 0,
+          "validRanges": 0,
+          "coveredPhysicalPages": 0,
+          "completePageCoverage": false,
+          "nodesWithSummaries": 0,
+          "locations": []
+        }
+      },
+      "python": {
+        "status": "failed",
+        "error": {
+          "type": "PdfReadError",
+          "message": "EOF marker not found"
+        },
+        "elapsedMs": 1,
+        "shape": {
+          "nodes": 0,
+          "roots": 0,
+          "maxDepth": 0,
+          "validRanges": 0,
+          "coveredPhysicalPages": 0,
+          "completePageCoverage": false,
+          "nodesWithSummaries": 0,
+          "locations": []
+        }
+      },
+      "extraction": {
+        "bothExtracted": false,
+        "samePageCount": false,
+        "sameCharacters": false,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": []
+    },
+    {
+      "mode": "flash",
+      "file": "conflicting-source.pdf",
+      "sha256": "fc120c6c1875393a40c0bda1d2a431d6654f2a08d9476298a1dbe06d41a78f3c",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 302,
+        "usage": {
+          "modelCalls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0
+        },
+        "shape": {
+          "nodes": 1,
+          "roots": 1,
+          "maxDepth": 0,
+          "validRanges": 1,
+          "coveredPhysicalPages": 1,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 1,
+          "locations": [
+            {
+              "title": "Acme Independent Audit 2026",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 11,
+        "shape": {
+          "nodes": 1,
+          "roots": 1,
+          "maxDepth": 0,
+          "validRanges": 1,
+          "coveredPhysicalPages": 1,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 1,
+          "locations": [
+            {
+              "title": "Page 1",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": true
+      },
+      "evidenceReachability": [
+        {
+          "question": "conflict",
+          "ts": true,
+          "python": true
+        }
+      ]
+    },
+    {
+      "mode": "flash",
+      "file": "other-company.pdf",
+      "sha256": "3ac83f71b659fb38293e26c5b0af2b5e93ff688e148723092aa7221593d2f735",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 307,
+        "usage": {
+          "modelCalls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0
+        },
+        "shape": {
+          "nodes": 1,
+          "roots": 1,
+          "maxDepth": 0,
+          "validRanges": 1,
+          "coveredPhysicalPages": 1,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 1,
+          "locations": [
+            {
+              "title": "Beta Annual Report 2026",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 13,
+        "shape": {
+          "nodes": 1,
+          "roots": 1,
+          "maxDepth": 0,
+          "validRanges": 1,
+          "coveredPhysicalPages": 1,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 1,
+          "locations": [
+            {
+              "title": "Page 1",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": true
+      },
+      "evidenceReachability": [
+        {
+          "question": "distinct-sources",
+          "ts": true,
+          "python": true
+        },
+        {
+          "question": "library-clear",
+          "ts": true,
+          "python": true
+        }
+      ]
+    },
+    {
+      "mode": "flash",
+      "file": "boundary-20.pdf",
+      "sha256": "1e0db5c64c63a0f25a16b1f210b8f020a392007ce43deaa9e79e88e8d9f26c1d",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real-regression.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 58062,
+        "usage": {
+          "elapsedMs": 57742,
+          "modelCalls": 8,
+          "inputTokens": 5244,
+          "outputTokens": 721
+        },
+        "shape": {
+          "nodes": 3,
+          "roots": 1,
+          "maxDepth": 1,
+          "validRanges": 3,
+          "coveredPhysicalPages": 20,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 3,
+          "locations": [
+            {
+              "title": "Annual Report 2026",
+              "start": 1,
+              "end": 20,
+              "depth": 0
+            },
+            {
+              "title": "1 Overview",
+              "start": 2,
+              "end": 11,
+              "depth": 1
+            },
+            {
+              "title": "2 Results",
+              "start": 11,
+              "end": 20,
+              "depth": 1
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 29593,
+        "shape": {
+          "nodes": 3,
+          "roots": 3,
+          "maxDepth": 0,
+          "validRanges": 3,
+          "coveredPhysicalPages": 20,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 3,
+          "locations": [
+            {
+              "title": "Preface",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            },
+            {
+              "title": "1 Overview",
+              "start": 2,
+              "end": 10,
+              "depth": 0
+            },
+            {
+              "title": "2 Results",
+              "start": 11,
+              "end": 20,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": [
+        {
+          "question": "mixed-20-21",
+          "ts": true,
+          "python": true
+        }
+      ]
+    },
+    {
+      "mode": "standard",
+      "file": "single-column.pdf",
+      "sha256": "0d45d88d4be7c4c2872d4641a69dc72557fc3d5e2eec833b9c60d46c640415f5",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real-regression.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 39650,
+        "usage": {
+          "elapsedMs": 39373,
+          "modelCalls": 5,
+          "inputTokens": 3129,
+          "outputTokens": 507
+        },
+        "shape": {
+          "nodes": 3,
+          "roots": 1,
+          "maxDepth": 1,
+          "validRanges": 3,
+          "coveredPhysicalPages": 6,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 3,
+          "locations": [
+            {
+              "title": "Annual Report 2026",
+              "start": 1,
+              "end": 6,
+              "depth": 0
+            },
+            {
+              "title": "1 Overview",
+              "start": 2,
+              "end": 4,
+              "depth": 1
+            },
+            {
+              "title": "2 Results",
+              "start": 4,
+              "end": 6,
+              "depth": 1
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 150862,
+        "shape": {
+          "nodes": 4,
+          "roots": 4,
+          "maxDepth": 0,
+          "validRanges": 4,
+          "coveredPhysicalPages": 6,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 4,
+          "locations": [
+            {
+              "title": "Preface",
+              "start": 1,
+              "end": 2,
+              "depth": 0
+            },
+            {
+              "title": "1 Overview",
+              "start": 2,
+              "end": 4,
+              "depth": 0
+            },
+            {
+              "title": "2 Results",
+              "start": 4,
+              "end": 6,
+              "depth": 0
+            },
+            {
+              "title": "Appendix",
+              "start": 6,
+              "end": 6,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": [
+        {
+          "question": "revenue",
+          "ts": true,
+          "python": true
+        },
+        {
+          "question": "follow-up",
+          "ts": true,
+          "python": true
+        },
+        {
+          "question": "conflict",
+          "ts": true,
+          "python": true
+        },
+        {
+          "question": "distinct-sources",
+          "ts": true,
+          "python": true
+        }
+      ]
+    },
+    {
+      "mode": "standard",
+      "file": "multi-column.pdf",
+      "sha256": "84a343a4175b393e1b1b0094299a0145a2fcbf445882ae959212ef2aababc8ad",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 16974,
+        "usage": {
+          "elapsedMs": 16790,
+          "modelCalls": 2,
+          "inputTokens": 1915,
+          "outputTokens": 182
+        },
+        "shape": {
+          "nodes": 1,
+          "roots": 1,
+          "maxDepth": 0,
+          "validRanges": 1,
+          "coveredPhysicalPages": 4,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 1,
+          "locations": [
+            {
+              "title": "Two-column Analysis",
+              "start": 1,
+              "end": 4,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 133715,
+        "shape": {
+          "nodes": 4,
+          "roots": 4,
+          "maxDepth": 0,
+          "validRanges": 4,
+          "coveredPhysicalPages": 4,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 4,
+          "locations": [
+            {
+              "title": "Two-column Analysis",
+              "start": 1,
+              "end": 2,
+              "depth": 0
+            },
+            {
+              "title": "Two-column Analysis",
+              "start": 2,
+              "end": 3,
+              "depth": 0
+            },
+            {
+              "title": "Two-column Analysis",
+              "start": 3,
+              "end": 4,
+              "depth": 0
+            },
+            {
+              "title": "Two-column Analysis",
+              "start": 4,
+              "end": 4,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": []
+    },
+    {
+      "mode": "standard",
+      "file": "mixed-cjk.pdf",
+      "sha256": "4541dc2c2626addd505e3a61636e71618286a21461a46d8c11056a88b52212f8",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real-regression.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 6892,
+        "usage": {
+          "elapsedMs": 6759,
+          "modelCalls": 1,
+          "inputTokens": 461,
+          "outputTokens": 70
+        },
+        "shape": {
+          "nodes": 1,
+          "roots": 1,
+          "maxDepth": 0,
+          "validRanges": 1,
+          "coveredPhysicalPages": 3,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 1,
+          "locations": [
+            {
+              "title": "营业结果",
+              "start": 1,
+              "end": 3,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 100898,
+        "shape": {
+          "nodes": 3,
+          "roots": 3,
+          "maxDepth": 0,
+          "validRanges": 3,
+          "coveredPhysicalPages": 3,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 3,
+          "locations": [
+            {
+              "title": "营业结果",
+              "start": 1,
+              "end": 2,
+              "depth": 0
+            },
+            {
+              "title": "营业结果",
+              "start": 2,
+              "end": 3,
+              "depth": 0
+            },
+            {
+              "title": "营业结果",
+              "start": 3,
+              "end": 3,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": [
+        {
+          "question": "cjk-qualifiers",
+          "ts": true,
+          "python": true
+        }
+      ]
+    },
+    {
+      "mode": "standard",
+      "file": "rotated.pdf",
+      "sha256": "145dbe98778762e0b0640763e831f39e62dc1b9042bb1f1dc1a79ca16cb87d0f",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 16757,
+        "usage": {
+          "elapsedMs": 16542,
+          "modelCalls": 1,
+          "inputTokens": 289,
+          "outputTokens": 95
+        },
+        "shape": {
+          "nodes": 1,
+          "roots": 1,
+          "maxDepth": 0,
+          "validRanges": 1,
+          "coveredPhysicalPages": 1,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 1,
+          "locations": [
+            {
+              "title": "Rotated source",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 40915,
+        "shape": {
+          "nodes": 1,
+          "roots": 1,
+          "maxDepth": 0,
+          "validRanges": 1,
+          "coveredPhysicalPages": 1,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 1,
+          "locations": [
+            {
+              "title": "Rotated source",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": []
+    },
+    {
+      "mode": "standard",
+      "file": "bookmarks.pdf",
+      "sha256": "2d4b638d6af94338a118234b3bfe059407dc8817eaf099f70b6fb0108a7a1500",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 53724,
+        "usage": {
+          "elapsedMs": 53530,
+          "modelCalls": 5,
+          "inputTokens": 3040,
+          "outputTokens": 634
+        },
+        "shape": {
+          "nodes": 4,
+          "roots": 1,
+          "maxDepth": 2,
+          "validRanges": 4,
+          "coveredPhysicalPages": 6,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 4,
+          "locations": [
+            {
+              "title": "Annual Report 2026",
+              "start": 1,
+              "end": 6,
+              "depth": 0
+            },
+            {
+              "title": "1 Overview",
+              "start": 2,
+              "end": 4,
+              "depth": 1
+            },
+            {
+              "title": "1.1 Scope",
+              "start": 2,
+              "end": 4,
+              "depth": 2
+            },
+            {
+              "title": "2 Results",
+              "start": 4,
+              "end": 6,
+              "depth": 1
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 148277,
+        "shape": {
+          "nodes": 4,
+          "roots": 4,
+          "maxDepth": 0,
+          "validRanges": 4,
+          "coveredPhysicalPages": 6,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 4,
+          "locations": [
+            {
+              "title": "Annual Report 2026",
+              "start": 1,
+              "end": 2,
+              "depth": 0
+            },
+            {
+              "title": "1 Overview",
+              "start": 2,
+              "end": 4,
+              "depth": 0
+            },
+            {
+              "title": "2 Results",
+              "start": 4,
+              "end": 6,
+              "depth": 0
+            },
+            {
+              "title": "Appendix",
+              "start": 6,
+              "end": 6,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": []
+    },
+    {
+      "mode": "standard",
+      "file": "toc-offset.pdf",
+      "sha256": "3cd5cfa70b5ea8c52aef0989a43bb7a9a7d3cad0619834bdc3cfdd80717d12c0",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 19571,
+        "usage": {
+          "elapsedMs": 19435,
+          "modelCalls": 3,
+          "inputTokens": 1532,
+          "outputTokens": 260
+        },
+        "shape": {
+          "nodes": 4,
+          "roots": 4,
+          "maxDepth": 0,
+          "validRanges": 4,
+          "coveredPhysicalPages": 8,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 4,
+          "locations": [
+            {
+              "title": "Front matter",
+              "start": 1,
+              "end": 3,
+              "depth": 0
+            },
+            {
+              "title": "Overview",
+              "start": 3,
+              "end": 5,
+              "depth": 0
+            },
+            {
+              "title": "Results",
+              "start": 5,
+              "end": 7,
+              "depth": 0
+            },
+            {
+              "title": "Appendix",
+              "start": 7,
+              "end": 8,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 120557,
+        "shape": {
+          "nodes": 4,
+          "roots": 4,
+          "maxDepth": 0,
+          "validRanges": 4,
+          "coveredPhysicalPages": 8,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 4,
+          "locations": [
+            {
+              "title": "Preface",
+              "start": 1,
+              "end": 3,
+              "depth": 0
+            },
+            {
+              "title": "Overview",
+              "start": 3,
+              "end": 5,
+              "depth": 0
+            },
+            {
+              "title": "Results",
+              "start": 5,
+              "end": 7,
+              "depth": 0
+            },
+            {
+              "title": "Appendix",
+              "start": 7,
+              "end": 8,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": [
+        {
+          "question": "printed-toc",
+          "ts": true,
+          "python": true
+        }
+      ]
+    },
+    {
+      "mode": "standard",
+      "file": "no-toc.pdf",
+      "sha256": "1bc7b7e1ee7651e382058b97fd94596702cc77a967a3b915b27029fcb7d40120",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real-regression.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 54599,
+        "usage": {
+          "elapsedMs": 54343,
+          "modelCalls": 9,
+          "inputTokens": 8127,
+          "outputTokens": 635
+        },
+        "shape": {
+          "nodes": 5,
+          "roots": 4,
+          "maxDepth": 1,
+          "validRanges": 5,
+          "coveredPhysicalPages": 21,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 5,
+          "locations": [
+            {
+              "title": "Annual Report 2026",
+              "start": 1,
+              "end": 9,
+              "depth": 0
+            },
+            {
+              "title": "1 Overview",
+              "start": 2,
+              "end": 9,
+              "depth": 1
+            },
+            {
+              "title": "Acme 2026 domestic revenue and net profit",
+              "start": 9,
+              "end": 11,
+              "depth": 0
+            },
+            {
+              "title": "2 Results",
+              "start": 11,
+              "end": 17,
+              "depth": 0
+            },
+            {
+              "title": "Acme 2025 audited domestic revenue and net profit",
+              "start": 17,
+              "end": 21,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 196234,
+        "shape": {
+          "nodes": 4,
+          "roots": 4,
+          "maxDepth": 0,
+          "validRanges": 4,
+          "coveredPhysicalPages": 21,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 4,
+          "locations": [
+            {
+              "title": "Preface",
+              "start": 1,
+              "end": 2,
+              "depth": 0
+            },
+            {
+              "title": "1 Overview",
+              "start": 2,
+              "end": 11,
+              "depth": 0
+            },
+            {
+              "title": "2 Results",
+              "start": 11,
+              "end": 21,
+              "depth": 0
+            },
+            {
+              "title": "Appendix",
+              "start": 21,
+              "end": 21,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": [
+        {
+          "question": "long-navigation",
+          "ts": true,
+          "python": true
+        },
+        {
+          "question": "long-navigation",
+          "ts": true,
+          "python": true
+        },
+        {
+          "question": "mixed-20-21",
+          "ts": true,
+          "python": true
+        }
+      ]
+    },
+    {
+      "mode": "standard",
+      "file": "large-section.pdf",
+      "sha256": "bc79654c4fc3dee6c358a253f1b6b8ddb74b5567add188970cdbf7e97067d04b",
+      "ts": {
+        "report": "docs/evaluation/pageindex-large-final.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 146309,
+        "usage": {
+          "elapsedMs": 78943,
+          "modelCalls": 11,
+          "inputTokens": 17522,
+          "outputTokens": 728
+        },
+        "shape": {
+          "nodes": 5,
+          "roots": 4,
+          "maxDepth": 1,
+          "validRanges": 5,
+          "coveredPhysicalPages": 24,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 5,
+          "locations": [
+            {
+              "title": "1 Operating Results",
+              "start": 1,
+              "end": 9,
+              "depth": 0
+            },
+            {
+              "title": "Acme 2026 Domestic Financial Results",
+              "start": 9,
+              "end": 13,
+              "depth": 0
+            },
+            {
+              "title": "Regional Operating Details",
+              "start": 11,
+              "end": 13,
+              "depth": 1
+            },
+            {
+              "title": "Acme 2025 Audited Domestic Financial Results",
+              "start": 13,
+              "end": 17,
+              "depth": 0
+            },
+            {
+              "title": "Acme 2025 audited domestic revenue and net profit",
+              "start": 17,
+              "end": 24,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "failed",
+        "error": {
+          "type": "Exception",
+          "message": "Processing failed"
+        },
+        "elapsedMs": 109803,
+        "shape": {
+          "nodes": 0,
+          "roots": 0,
+          "maxDepth": 0,
+          "validRanges": 0,
+          "coveredPhysicalPages": 0,
+          "completePageCoverage": false,
+          "nodesWithSummaries": 0,
+          "locations": []
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": []
+    },
+    {
+      "mode": "standard",
+      "file": "inadequate.pdf",
+      "sha256": "72b962657e63d5abc08910f3fbb724083118b8eca3530ada39e43450ee0d411a",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real-regression.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 84773,
+        "usage": {
+          "elapsedMs": 84448,
+          "modelCalls": 12,
+          "inputTokens": 10540,
+          "outputTokens": 965
+        },
+        "shape": {
+          "nodes": 4,
+          "roots": 4,
+          "maxDepth": 0,
+          "validRanges": 4,
+          "coveredPhysicalPages": 25,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 4,
+          "locations": [
+            {
+              "title": "Acme 2026 Domestic Operations: Revenue and Net Profit",
+              "start": 1,
+              "end": 9,
+              "depth": 0
+            },
+            {
+              "title": "Acme 2026 domestic operations: revenue and net profit",
+              "start": 9,
+              "end": 13,
+              "depth": 0
+            },
+            {
+              "title": "Acme 2025 audited domestic totals: revenue and net profit",
+              "start": 13,
+              "end": 17,
+              "depth": 0
+            },
+            {
+              "title": "Acme 2025 audited domestic revenue and net profit",
+              "start": 17,
+              "end": 25,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "failed",
+        "error": {
+          "type": "Exception",
+          "message": "Processing failed"
+        },
+        "elapsedMs": 174845,
+        "shape": {
+          "nodes": 0,
+          "roots": 0,
+          "maxDepth": 0,
+          "validRanges": 0,
+          "coveredPhysicalPages": 0,
+          "completePageCoverage": false,
+          "nodesWithSummaries": 0,
+          "locations": []
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": []
+    },
+    {
+      "mode": "standard",
+      "file": "scanned.pdf",
+      "sha256": "89445c8c5eae28ec27d44db0b5d368f02875f6ecddfe6462437c4bc1850339e3",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "unsupported",
+        "reason": "text_layer_required",
+        "elapsedMs": 309,
+        "usage": {
+          "modelCalls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0
+        },
+        "shape": {
+          "nodes": 0,
+          "roots": 0,
+          "maxDepth": 0,
+          "validRanges": 0,
+          "coveredPhysicalPages": 0,
+          "completePageCoverage": false,
+          "nodesWithSummaries": 0,
+          "locations": []
+        }
+      },
+      "python": {
+        "status": "failed",
+        "error": {
+          "type": "ValueError",
+          "message": "unreadable_text_layer"
+        },
+        "elapsedMs": 2,
+        "shape": {
+          "nodes": 0,
+          "roots": 0,
+          "maxDepth": 0,
+          "validRanges": 0,
+          "coveredPhysicalPages": 0,
+          "completePageCoverage": false,
+          "nodesWithSummaries": 0,
+          "locations": []
+        }
+      },
+      "extraction": {
+        "bothExtracted": false,
+        "samePageCount": false,
+        "sameCharacters": false,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": []
+    },
+    {
+      "mode": "standard",
+      "file": "encrypted.pdf",
+      "sha256": "ed81615f32e052a0597fce88cc09a4f86bdf954e44e7e2b812212750b9224c57",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "unsupported",
+        "reason": "encrypted_pdf_unsupported",
+        "elapsedMs": 302,
+        "usage": {
+          "modelCalls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0
+        },
+        "shape": {
+          "nodes": 0,
+          "roots": 0,
+          "maxDepth": 0,
+          "validRanges": 0,
+          "coveredPhysicalPages": 0,
+          "completePageCoverage": false,
+          "nodesWithSummaries": 0,
+          "locations": []
+        }
+      },
+      "python": {
+        "status": "failed",
+        "error": {
+          "type": "FileNotDecryptedError",
+          "message": "File has not been decrypted"
+        },
+        "elapsedMs": 6,
+        "shape": {
+          "nodes": 0,
+          "roots": 0,
+          "maxDepth": 0,
+          "validRanges": 0,
+          "coveredPhysicalPages": 0,
+          "completePageCoverage": false,
+          "nodesWithSummaries": 0,
+          "locations": []
+        }
+      },
+      "extraction": {
+        "bothExtracted": false,
+        "samePageCount": false,
+        "sameCharacters": false,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": []
+    },
+    {
+      "mode": "standard",
+      "file": "malformed.pdf",
+      "sha256": "d6022836fb9329611bcc28a265a024bb8efd1b21b48ce41685068a4a4c787cf9",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "failed",
+        "reason": "malformed_or_unreadable_pdf",
+        "elapsedMs": 325,
+        "usage": {
+          "modelCalls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0
+        },
+        "shape": {
+          "nodes": 0,
+          "roots": 0,
+          "maxDepth": 0,
+          "validRanges": 0,
+          "coveredPhysicalPages": 0,
+          "completePageCoverage": false,
+          "nodesWithSummaries": 0,
+          "locations": []
+        }
+      },
+      "python": {
+        "status": "failed",
+        "error": {
+          "type": "PdfReadError",
+          "message": "EOF marker not found"
+        },
+        "elapsedMs": 1,
+        "shape": {
+          "nodes": 0,
+          "roots": 0,
+          "maxDepth": 0,
+          "validRanges": 0,
+          "coveredPhysicalPages": 0,
+          "completePageCoverage": false,
+          "nodesWithSummaries": 0,
+          "locations": []
+        }
+      },
+      "extraction": {
+        "bothExtracted": false,
+        "samePageCount": false,
+        "sameCharacters": false,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": []
+    },
+    {
+      "mode": "standard",
+      "file": "conflicting-source.pdf",
+      "sha256": "fc120c6c1875393a40c0bda1d2a431d6654f2a08d9476298a1dbe06d41a78f3c",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 18964,
+        "usage": {
+          "elapsedMs": 18808,
+          "modelCalls": 1,
+          "inputTokens": 318,
+          "outputTokens": 106
+        },
+        "shape": {
+          "nodes": 1,
+          "roots": 1,
+          "maxDepth": 0,
+          "validRanges": 1,
+          "coveredPhysicalPages": 1,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 1,
+          "locations": [
+            {
+              "title": "Acme Independent Audit 2026",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 26617,
+        "shape": {
+          "nodes": 1,
+          "roots": 1,
+          "maxDepth": 0,
+          "validRanges": 1,
+          "coveredPhysicalPages": 1,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 1,
+          "locations": [
+            {
+              "title": "Acme Independent Audit 2026",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": true
+      },
+      "evidenceReachability": [
+        {
+          "question": "conflict",
+          "ts": true,
+          "python": true
+        }
+      ]
+    },
+    {
+      "mode": "standard",
+      "file": "other-company.pdf",
+      "sha256": "3ac83f71b659fb38293e26c5b0af2b5e93ff688e148723092aa7221593d2f735",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 7392,
+        "usage": {
+          "elapsedMs": 7086,
+          "modelCalls": 1,
+          "inputTokens": 315,
+          "outputTokens": 135
+        },
+        "shape": {
+          "nodes": 1,
+          "roots": 1,
+          "maxDepth": 0,
+          "validRanges": 1,
+          "coveredPhysicalPages": 1,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 1,
+          "locations": [
+            {
+              "title": "Beta Annual Report 2026",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 48054,
+        "shape": {
+          "nodes": 1,
+          "roots": 1,
+          "maxDepth": 0,
+          "validRanges": 1,
+          "coveredPhysicalPages": 1,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 1,
+          "locations": [
+            {
+              "title": "Beta Annual Report 2026",
+              "start": 1,
+              "end": 1,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": true
+      },
+      "evidenceReachability": [
+        {
+          "question": "distinct-sources",
+          "ts": true,
+          "python": true
+        },
+        {
+          "question": "library-clear",
+          "ts": true,
+          "python": true
+        }
+      ]
+    },
+    {
+      "mode": "standard",
+      "file": "boundary-20.pdf",
+      "sha256": "1e0db5c64c63a0f25a16b1f210b8f020a392007ce43deaa9e79e88e8d9f26c1d",
+      "ts": {
+        "report": "docs/evaluation/pageindex-real-regression.json",
+        "status": "ready",
+        "reason": null,
+        "elapsedMs": 66259,
+        "usage": {
+          "elapsedMs": 65998,
+          "modelCalls": 9,
+          "inputTokens": 7886,
+          "outputTokens": 788
+        },
+        "shape": {
+          "nodes": 5,
+          "roots": 4,
+          "maxDepth": 1,
+          "validRanges": 5,
+          "coveredPhysicalPages": 20,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 5,
+          "locations": [
+            {
+              "title": "Annual Report 2026",
+              "start": 1,
+              "end": 9,
+              "depth": 0
+            },
+            {
+              "title": "1 Overview",
+              "start": 2,
+              "end": 9,
+              "depth": 1
+            },
+            {
+              "title": "Acme 2026 domestic revenue and net profit",
+              "start": 9,
+              "end": 11,
+              "depth": 0
+            },
+            {
+              "title": "2 Results",
+              "start": 11,
+              "end": 17,
+              "depth": 0
+            },
+            {
+              "title": "Acme 2025 audited domestic revenue and net profit",
+              "start": 17,
+              "end": 20,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "python": {
+        "status": "completed",
+        "error": null,
+        "elapsedMs": 210185,
+        "shape": {
+          "nodes": 3,
+          "roots": 3,
+          "maxDepth": 0,
+          "validRanges": 3,
+          "coveredPhysicalPages": 20,
+          "completePageCoverage": true,
+          "nodesWithSummaries": 3,
+          "locations": [
+            {
+              "title": "Preface",
+              "start": 1,
+              "end": 2,
+              "depth": 0
+            },
+            {
+              "title": "1 Overview",
+              "start": 2,
+              "end": 10,
+              "depth": 0
+            },
+            {
+              "title": "2 Results",
+              "start": 11,
+              "end": 20,
+              "depth": 0
+            }
+          ]
+        }
+      },
+      "extraction": {
+        "bothExtracted": true,
+        "samePageCount": true,
+        "sameCharacters": true,
+        "differingPhysicalPages": [],
+        "sameOrder": false
+      },
+      "evidenceReachability": [
+        {
+          "question": "mixed-20-21",
+          "ts": true,
+          "python": true
+        }
+      ]
+    }
+  ],
+  "qaChecks": [
+    {
+      "mode": "flash",
+      "id": "revenue",
+      "report": "docs/evaluation/pageindex-real-regression.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": false,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 18105,
+      "usage": {
+        "elapsedMs": 17915,
+        "readPages": 2,
+        "toolCalls": 2,
+        "modelCalls": 3,
+        "inputTokens": 7650,
+        "outputTokens": 236
+      }
+    },
+    {
+      "mode": "flash",
+      "id": "follow-up",
+      "report": "docs/evaluation/pageindex-real.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 27395,
+      "usage": {
+        "elapsedMs": 27263,
+        "readPages": 2,
+        "toolCalls": 3,
+        "modelCalls": 4,
+        "inputTokens": 17852,
+        "outputTokens": 375
+      }
+    },
+    {
+      "mode": "flash",
+      "id": "missing-fact",
+      "report": "docs/evaluation/pageindex-real.json",
+      "status": "completed",
+      "outcome": "evidence_gap",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 47418,
+      "usage": {
+        "elapsedMs": 47141,
+        "readPages": 6,
+        "toolCalls": 2,
+        "modelCalls": 3,
+        "inputTokens": 8395,
+        "outputTokens": 279
+      }
+    },
+    {
+      "mode": "flash",
+      "id": "printed-toc",
+      "report": "docs/evaluation/pageindex-real.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 20350,
+      "usage": {
+        "elapsedMs": 20076,
+        "readPages": 8,
+        "toolCalls": 2,
+        "modelCalls": 3,
+        "inputTokens": 8589,
+        "outputTokens": 296
+      }
+    },
+    {
+      "mode": "flash",
+      "id": "long-navigation",
+      "report": "docs/evaluation/pageindex-real-regression.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 35564,
+      "usage": {
+        "elapsedMs": 35458,
+        "readPages": 2,
+        "toolCalls": 3,
+        "modelCalls": 4,
+        "inputTokens": 11979,
+        "outputTokens": 467
+      }
+    },
+    {
+      "mode": "flash",
+      "id": "mixed-20-21",
+      "report": "docs/evaluation/pageindex-real-regression.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 29723,
+      "usage": {
+        "elapsedMs": 29466,
+        "readPages": 2,
+        "toolCalls": 5,
+        "modelCalls": 4,
+        "inputTokens": 15719,
+        "outputTokens": 564
+      }
+    },
+    {
+      "mode": "flash",
+      "id": "cjk-qualifiers",
+      "report": "docs/evaluation/pageindex-real-regression.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 25408,
+      "usage": {
+        "elapsedMs": 25326,
+        "readPages": 3,
+        "toolCalls": 2,
+        "modelCalls": 3,
+        "inputTokens": 7641,
+        "outputTokens": 469
+      }
+    },
+    {
+      "mode": "flash",
+      "id": "conflict",
+      "report": "docs/evaluation/pageindex-real.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 39846,
+      "usage": {
+        "elapsedMs": 39454,
+        "readPages": 7,
+        "toolCalls": 4,
+        "modelCalls": 3,
+        "inputTokens": 10673,
+        "outputTokens": 804
+      }
+    },
+    {
+      "mode": "flash",
+      "id": "distinct-sources",
+      "report": "docs/evaluation/pageindex-real.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 23602,
+      "usage": {
+        "elapsedMs": 23426,
+        "readPages": 2,
+        "toolCalls": 4,
+        "modelCalls": 3,
+        "inputTokens": 9760,
+        "outputTokens": 464
+      }
+    },
+    {
+      "mode": "flash",
+      "id": "library-clear",
+      "report": "docs/evaluation/pageindex-real.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 48132,
+      "usage": {
+        "elapsedMs": 47953,
+        "readPages": 1,
+        "toolCalls": 3,
+        "modelCalls": 4,
+        "inputTokens": 9389,
+        "outputTokens": 264
+      }
+    },
+    {
+      "mode": "flash",
+      "id": "library-ambiguous",
+      "report": "docs/evaluation/pageindex-real.json",
+      "status": "completed",
+      "outcome": "clarification",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 14965,
+      "usage": {
+        "elapsedMs": 14908,
+        "readPages": 0,
+        "toolCalls": 0,
+        "modelCalls": 1,
+        "inputTokens": 1661,
+        "outputTokens": 52
+      }
+    },
+    {
+      "mode": "flash",
+      "id": "mcp-revenue",
+      "report": "docs/evaluation/pageindex-real-regression.json",
+      "status": "completed",
+      "outcome": "answer",
+      "elapsedMs": 18400,
+      "usage": {
+        "modelCalls": 3,
+        "inputTokens": 7652,
+        "outputTokens": 226,
+        "toolCalls": 2,
+        "readPages": 2,
+        "elapsedMs": 18293
+      }
+    },
+    {
+      "mode": "standard",
+      "id": "revenue",
+      "report": "docs/evaluation/pageindex-real-regression.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": false,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 22191,
+      "usage": {
+        "elapsedMs": 22031,
+        "readPages": 6,
+        "toolCalls": 2,
+        "modelCalls": 3,
+        "inputTokens": 8323,
+        "outputTokens": 232
+      }
+    },
+    {
+      "mode": "standard",
+      "id": "follow-up",
+      "report": "docs/evaluation/pageindex-real.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 20569,
+      "usage": {
+        "elapsedMs": 20284,
+        "readPages": 2,
+        "toolCalls": 2,
+        "modelCalls": 3,
+        "inputTokens": 14330,
+        "outputTokens": 346
+      }
+    },
+    {
+      "mode": "standard",
+      "id": "missing-fact",
+      "report": "docs/evaluation/pageindex-real.json",
+      "status": "completed",
+      "outcome": "evidence_gap",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 20105,
+      "usage": {
+        "elapsedMs": 19878,
+        "readPages": 6,
+        "toolCalls": 2,
+        "modelCalls": 3,
+        "inputTokens": 8366,
+        "outputTokens": 334
+      }
+    },
+    {
+      "mode": "standard",
+      "id": "printed-toc",
+      "report": "docs/evaluation/pageindex-real.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 17321,
+      "usage": {
+        "elapsedMs": 17071,
+        "readPages": 8,
+        "toolCalls": 2,
+        "modelCalls": 3,
+        "inputTokens": 8548,
+        "outputTokens": 268
+      }
+    },
+    {
+      "mode": "standard",
+      "id": "long-navigation",
+      "report": "docs/evaluation/pageindex-real-regression.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 27223,
+      "usage": {
+        "elapsedMs": 26958,
+        "readPages": 2,
+        "toolCalls": 3,
+        "modelCalls": 4,
+        "inputTokens": 12020,
+        "outputTokens": 457
+      }
+    },
+    {
+      "mode": "standard",
+      "id": "mixed-20-21",
+      "report": "docs/evaluation/pageindex-real-regression.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 34554,
+      "usage": {
+        "elapsedMs": 34213,
+        "readPages": 2,
+        "toolCalls": 5,
+        "modelCalls": 3,
+        "inputTokens": 11787,
+        "outputTokens": 652
+      }
+    },
+    {
+      "mode": "standard",
+      "id": "cjk-qualifiers",
+      "report": "docs/evaluation/pageindex-real-regression.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 21388,
+      "usage": {
+        "elapsedMs": 21292,
+        "readPages": 3,
+        "toolCalls": 2,
+        "modelCalls": 3,
+        "inputTokens": 7723,
+        "outputTokens": 381
+      }
+    },
+    {
+      "mode": "standard",
+      "id": "conflict",
+      "report": "docs/evaluation/pageindex-real.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 35062,
+      "usage": {
+        "elapsedMs": 34873,
+        "readPages": 7,
+        "toolCalls": 4,
+        "modelCalls": 3,
+        "inputTokens": 10723,
+        "outputTokens": 771
+      }
+    },
+    {
+      "mode": "standard",
+      "id": "distinct-sources",
+      "report": "docs/evaluation/pageindex-real.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 23933,
+      "usage": {
+        "elapsedMs": 23662,
+        "readPages": 7,
+        "toolCalls": 4,
+        "modelCalls": 3,
+        "inputTokens": 10651,
+        "outputTokens": 463
+      }
+    },
+    {
+      "mode": "standard",
+      "id": "library-clear",
+      "report": "docs/evaluation/pageindex-real.json",
+      "status": "completed",
+      "outcome": "answer",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 63094,
+      "usage": {
+        "elapsedMs": 62970,
+        "readPages": 1,
+        "toolCalls": 3,
+        "modelCalls": 4,
+        "inputTokens": 9475,
+        "outputTokens": 271
+      }
+    },
+    {
+      "mode": "standard",
+      "id": "library-ambiguous",
+      "report": "docs/evaluation/pageindex-real.json",
+      "status": "completed",
+      "outcome": "clarification",
+      "checks": {
+        "expectedOutcome": true,
+        "lexicalFacts": true,
+        "citedExpectedOriginals": true
+      },
+      "elapsedMs": 16674,
+      "usage": {
+        "elapsedMs": 16624,
+        "readPages": 0,
+        "toolCalls": 0,
+        "modelCalls": 1,
+        "inputTokens": 1661,
+        "outputTokens": 48
+      }
+    },
+    {
+      "mode": "standard",
+      "id": "mcp-revenue",
+      "report": "docs/evaluation/pageindex-real-regression.json",
+      "status": "completed",
+      "outcome": "answer",
+      "elapsedMs": 18200,
+      "usage": {
+        "modelCalls": 3,
+        "inputTokens": 8321,
+        "outputTokens": 234,
+        "toolCalls": 2,
+        "readPages": 6,
+        "elapsedMs": 18050
+      }
+    }
+  ],
+  "semanticReview": "docs/evaluation/pageindex-semantic-review.md (agent review against recorded immutable original text; not a blind independent or population-scale benchmark)"
+}

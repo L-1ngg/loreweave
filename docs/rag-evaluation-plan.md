@@ -1,3 +1,7 @@
+> Historical record, retired by Spec #29. Source links resolve through the verified
+> recovery baseline described in docs/history/pageindex-retirement.md. Commands
+> and runtime behavior below are not current PageIndex instructions.
+
 # First-Version RAG Evaluation Plan
 
 Status: provisional defaults selected by the assistant on 2026-09-10 under the

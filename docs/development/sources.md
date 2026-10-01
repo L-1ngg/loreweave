@@ -1,3 +1,7 @@
+> Historical record, retired by Spec #29. Source links resolve through the verified
+> recovery baseline described in docs/history/pageindex-retirement.md. Commands
+> and runtime behavior below are not current PageIndex instructions.
+
 # Markdown sources
 
 Issue [#5](https://github.com/L-1ngg/loreweave/issues/5) adds durable imports to the

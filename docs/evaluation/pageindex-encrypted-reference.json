@@ -1,0 +1,51 @@
+{
+  "reference": "d2693d80791a86345ef78b3234834f5fe53a70a0",
+  "model": "gpt-6.1-sol",
+  "mode": "complete Flash full optimization and summaries; independent Standard tree/subdivision/summaries",
+  "settings": {
+    "flash_optimize": "full",
+    "summaries": true,
+    "flash_concurrency": 1,
+    "standard_max_pages": 12,
+    "standard_max_tokens": 4500,
+    "request_output_cap": 8192
+  },
+  "python": "3.12.13 (main, Apr  7 2026, 20:45:25) [Clang 22.1.1 ]",
+  "packages": {
+    "litellm": "1.97.0",
+    "pypdfium2": "5.13.0",
+    "PyPDF2": "3.0.1",
+    "pycryptodome": "3.23.0",
+    "sortedcontainers": "2.4.0",
+    "regex": "2026.9.29",
+    "python-dotenv": "1.2.2",
+    "pyyaml": "6.0.2"
+  },
+  "fixtures": [
+    {
+      "mode": "flash",
+      "file": "encrypted.pdf",
+      "sha256": "ed81615f32e052a0597fce88cc09a4f86bdf954e44e7e2b812212750b9224c57",
+      "status": "failed",
+      "error": {
+        "type": "FileNotDecryptedError",
+        "message": "File has not been decrypted"
+      },
+      "elapsedMs": 19
+    },
+    {
+      "mode": "standard",
+      "file": "encrypted.pdf",
+      "sha256": "ed81615f32e052a0597fce88cc09a4f86bdf954e44e7e2b812212750b9224c57",
+      "status": "failed",
+      "error": {
+        "type": "FileNotDecryptedError",
+        "message": "File has not been decrypted"
+      },
+      "elapsedMs": 6
+    }
+  ],
+  "selection": [
+    "encrypted.pdf"
+  ]
+}

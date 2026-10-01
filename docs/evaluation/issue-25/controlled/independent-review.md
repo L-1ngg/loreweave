@@ -1,3 +1,6 @@
+> Historical evaluation of the retired runtime. Source links resolve through
+> docs/history/pageindex-retirement.md; these results do not certify Spec #29.
+
 # Controlled 比较独立 agent 评分
 
 已审查 24 题 × 4 profiles 的全部 96 条结果。每题的答案文本及完整引用数组在四个 profile 间逐项相同，因此可共享该题语义判断；仍对每条结果的全部 64 次引用解析对应 originals 版本与 passage，并核对原文和回答归属。没有采用 certificate 的 supported 判决作为分数。

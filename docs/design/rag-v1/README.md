@@ -1,4 +1,12 @@
+> Historical record, retired by Spec #29. Source links resolve through the verified
+> recovery baseline described in docs/history/pageindex-retirement.md. Commands
+> and runtime behavior below are not current PageIndex instructions.
+
 # RAG v1 construction modules
+
+Historical module map: superseded by [Spec #29](https://github.com/L-1ngg/loreweave/issues/29)
+and [the PageIndex v1 module map](../pageindex-v1/README.md). The original contracts
+below remain recovery/provenance records for the retired architecture.
 
 Status: first aligned construction baseline, 2026-09-10. Module boundaries and
 work-item granularity are selected under the user's design delegation. Product

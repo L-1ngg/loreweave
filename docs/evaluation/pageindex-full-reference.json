@@ -1,0 +1,1727 @@
+{
+  "reference": "d2693d80791a86345ef78b3234834f5fe53a70a0",
+  "model": "gpt-6.1-sol",
+  "mode": "complete Flash full optimization and summaries; independent Standard tree/subdivision/summaries",
+  "settings": {
+    "flash_optimize": "full",
+    "summaries": true,
+    "flash_concurrency": 1,
+    "standard_max_pages": 12,
+    "standard_max_tokens": 4500,
+    "request_output_cap": 8192
+  },
+  "python": "3.12.13 (main, Apr  7 2026, 20:45:25) [Clang 22.1.1 ]",
+  "packages": {
+    "litellm": "1.97.0",
+    "pypdfium2": "5.13.0",
+    "PyPDF2": "3.0.1",
+    "sortedcontainers": "2.4.0",
+    "regex": "2026.9.29",
+    "python-dotenv": "1.2.2",
+    "pyyaml": "6.0.2"
+  },
+  "fixtures": [
+    {
+      "mode": "flash",
+      "file": "single-column.pdf",
+      "sha256": "0d45d88d4be7c4c2872d4641a69dc72557fc3d5e2eec833b9c60d46c640415f5",
+      "pages": [
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 1\nAnnual Report 2026\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 2\n1 Overview\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 3\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 4\n2 Results\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 5\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 6\nAppendix\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n"
+      ],
+      "pageCount": 6,
+      "refusal": null,
+      "status": "completed",
+      "tree": {
+        "doc_name": "single-column.pdf",
+        "doc_title": "Annual Report 2026",
+        "structure": [
+          {
+            "title": "Preface",
+            "start_index": 1,
+            "end_index": 1,
+            "node_id": "0000",
+            "summary": "LOREWEAVE FIXED EVIDENCE\nAnnual Report 2026\nAcme 2026 revenue was 120 million USD. It covers domestic operations only, not subsidiaries. Acme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD. It covers domestic operations only, not subsidiaries. Acme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD. It covers domestic operations only, not subsidiaries. Acme 2026 net profit was 12 million USD.\nPhysical page 1"
+          },
+          {
+            "title": "1 Overview",
+            "node_id": "0001",
+            "start_index": 2,
+            "end_index": 3,
+            "summary": "The text, titled “LOREWEAVE FIXED EVIDENCE,” contains a section labeled “1 Overview” and physical page markers for pages 2 and 3. It repeats six times that Acme’s 2026 revenue was USD 120 million, covering domestic operations only and excluding subsidiaries, and that its 2026 net profit was USD 12 million."
+          },
+          {
+            "title": "2 Results",
+            "node_id": "0002",
+            "start_index": 4,
+            "end_index": 5,
+            "summary": "The text, labeled “LOREWEAVE FIXED EVIDENCE,” contains a “2 Results” section spanning physical pages 4 and 5. It repeatedly states that Acme’s audited domestic-only totals for 2025 were USD 100 million in revenue and USD 9 million in net profit."
+          },
+          {
+            "title": "Appendix ",
+            "node_id": "0003",
+            "start_index": 6,
+            "end_index": 6,
+            "summary": "LOREWEAVE FIXED EVIDENCE\nAppendix\nAcme 2025 revenue was 100 million USD. Acme 2025 net profit was 9 million USD. These are audited domestic-only totals. Acme 2025 revenue was 100 million USD. Acme 2025 net profit was 9 million USD. These are audited domestic-only totals. Acme 2025 revenue was 100 million USD. Acme 2025 net profit was 9 million USD. These are audited domestic-only totals.\nPhysical page 6"
+          }
+        ],
+        "has_abstract_or_references_section": false,
+        "toc_source": "detected",
+        "optimize": {
+          "merges": 0,
+          "expands": 0,
+          "same_page_merges": 0,
+          "same_page_dropped": 0,
+          "kept_collapsed": 0,
+          "before": {
+            "total_pages": 6,
+            "frontier_nodes": 4,
+            "worst_case_search_complexity": 3,
+            "average_search_complexity": 2.333,
+            "normalized_worst_case_complexity": 0.5,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          },
+          "after": {
+            "total_pages": 6,
+            "frontier_nodes": 4,
+            "worst_case_search_complexity": 3,
+            "average_search_complexity": 2.333,
+            "normalized_worst_case_complexity": 0.5,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          }
+        }
+      },
+      "elapsedMs": 16896
+    },
+    {
+      "mode": "flash",
+      "file": "multi-column.pdf",
+      "sha256": "84a343a4175b393e1b1b0094299a0145a2fcbf445882ae959212ef2aababc8ad",
+      "pages": [
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 1\n1 Two-column Analysis\nLeft step 1. Qualified source.\nRight step 1. Other source.\n Left step 2. Qualified source.\nRight step 2. Other source.\n Left step 3. Qualified source.\nRight step 3. Other source.\n Left step 4. Qualified source.\nRight step 4. Other source.\n Left step 5. Qualified source.\nRight step 5. Other source.\n Left step 6. Qualified source.\nRight step 6. Other source.\n Left step 7. Qualified source.\nRight step 7. Other source.\n Left step 8. Qualified source.\nRight step 8. Other source.\nOnly audited totals apply.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 2\n2 Two-column Analysis\nLeft step 1. Qualified source.\nRight step 1. Other source.\n Left step 2. Qualified source.\nRight step 2. Other source.\n Left step 3. Qualified source.\nRight step 3. Other source.\n Left step 4. Qualified source.\nRight step 4. Other source.\n Left step 5. Qualified source.\nRight step 5. Other source.\n Left step 6. Qualified source.\nRight step 6. Other source.\n Left step 7. Qualified source.\nRight step 7. Other source.\n Left step 8. Qualified source.\nRight step 8. Other source.\nOnly audited totals apply.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 3\n3 Two-column Analysis\nLeft step 1. Qualified source.\nRight step 1. Other source.\n Left step 2. Qualified source.\nRight step 2. Other source.\n Left step 3. Qualified source.\nRight step 3. Other source.\n Left step 4. Qualified source.\nRight step 4. Other source.\n Left step 5. Qualified source.\nRight step 5. Other source.\n Left step 6. Qualified source.\nRight step 6. Other source.\n Left step 7. Qualified source.\nRight step 7. Other source.\n Left step 8. Qualified source.\nRight step 8. Other source.\nOnly audited totals apply.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 4\n4 Two-column Analysis\nLeft step 1. Qualified source.\nRight step 1. Other source.\n Left step 2. Qualified source.\nRight step 2. Other source.\n Left step 3. Qualified source.\nRight step 3. Other source.\n Left step 4. Qualified source.\nRight step 4. Other source.\n Left step 5. Qualified source.\nRight step 5. Other source.\n Left step 6. Qualified source.\nRight step 6. Other source.\n Left step 7. Qualified source.\nRight step 7. Other source.\n Left step 8. Qualified source.\nRight step 8. Other source.\nOnly audited totals apply.\n"
+      ],
+      "pageCount": 4,
+      "refusal": null,
+      "status": "completed",
+      "tree": {
+        "doc_name": "multi-column.pdf",
+        "doc_title": "1 Two-column Analysis",
+        "structure": [
+          {
+            "title": "Page 1",
+            "node_id": "0000",
+            "start_index": 1,
+            "end_index": 1,
+            "summary": "LOREWEAVE FIXED EVIDENCE\n1 Two-column Analysis\nLeft step 1. Qualified source. Left step 2. Qualified source. Left step 3. Qualified source. Left step 4. Qualified source. Left step 5. Qualified source. Left step 6. Qualified source. Left step 7. Qualified source. Left step 8. Qualified source.\nRight step 1. Other source. Right step 2. Other source. Right step 3. Other source. Right step 4. Other source. Right step 5. Other source. Right step 6. Other source. Right step 7. Other source. Right step 8. Other source.\nOnly audited totals apply. Physical page 1"
+          },
+          {
+            "title": "Page 2",
+            "node_id": "0001",
+            "start_index": 2,
+            "end_index": 2,
+            "summary": "LOREWEAVE FIXED EVIDENCE\n2 Two-column Analysis\nLeft step 1. Qualified source. Left step 2. Qualified source. Left step 3. Qualified source. Left step 4. Qualified source. Left step 5. Qualified source. Left step 6. Qualified source. Left step 7. Qualified source. Left step 8. Qualified source.\nRight step 1. Other source. Right step 2. Other source. Right step 3. Other source. Right step 4. Other source. Right step 5. Other source. Right step 6. Other source. Right step 7. Other source. Right step 8. Other source.\nOnly audited totals apply. Physical page 2"
+          },
+          {
+            "title": "Page 3",
+            "node_id": "0002",
+            "start_index": 3,
+            "end_index": 3,
+            "summary": "LOREWEAVE FIXED EVIDENCE\n3 Two-column Analysis\nLeft step 1. Qualified source. Left step 2. Qualified source. Left step 3. Qualified source. Left step 4. Qualified source. Left step 5. Qualified source. Left step 6. Qualified source. Left step 7. Qualified source. Left step 8. Qualified source.\nRight step 1. Other source. Right step 2. Other source. Right step 3. Other source. Right step 4. Other source. Right step 5. Other source. Right step 6. Other source. Right step 7. Other source. Right step 8. Other source.\nOnly audited totals apply. Physical page 3"
+          },
+          {
+            "title": "Page 4",
+            "node_id": "0003",
+            "start_index": 4,
+            "end_index": 4,
+            "summary": "LOREWEAVE FIXED EVIDENCE\n4 Two-column Analysis\nLeft step 1. Qualified source. Left step 2. Qualified source. Left step 3. Qualified source. Left step 4. Qualified source. Left step 5. Qualified source. Left step 6. Qualified source. Left step 7. Qualified source. Left step 8. Qualified source.\nRight step 1. Other source. Right step 2. Other source. Right step 3. Other source. Right step 4. Other source. Right step 5. Other source. Right step 6. Other source. Right step 7. Other source. Right step 8. Other source.\nOnly audited totals apply. Physical page 4"
+          }
+        ],
+        "has_abstract_or_references_section": false,
+        "toc_source": "pages",
+        "optimize": {
+          "merges": 0,
+          "expands": 0,
+          "same_page_merges": 0,
+          "same_page_dropped": 0,
+          "kept_collapsed": 0,
+          "before": {
+            "total_pages": 4,
+            "frontier_nodes": 4,
+            "worst_case_search_complexity": 2,
+            "average_search_complexity": 2.0,
+            "normalized_worst_case_complexity": 0.5,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          },
+          "after": {
+            "total_pages": 4,
+            "frontier_nodes": 4,
+            "worst_case_search_complexity": 2,
+            "average_search_complexity": 2.0,
+            "normalized_worst_case_complexity": 0.5,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          }
+        }
+      },
+      "elapsedMs": 78
+    },
+    {
+      "mode": "flash",
+      "file": "mixed-cjk.pdf",
+      "sha256": "4541dc2c2626addd505e3a61636e71618286a21461a46d8c11056a88b52212f8",
+      "pages": [
+        "上海公司 年度报告\n物理页 1\n1 营业结果\n上海公司2026年收入为120万元，仅指境内业务。\n2025年收入为100万元；不同币种不得合并。\n",
+        "上海公司 年度报告\n物理页 2\n2 营业结果\n上海公司2026年收入为120万元，仅指境内业务。\n2025年收入为100万元；不同币种不得合并。\n",
+        "上海公司 年度报告\n物理页 3\n3 营业结果\n上海公司2026年收入为120万元，仅指境内业务。\n2025年收入为100万元；不同币种不得合并。\n"
+      ],
+      "pageCount": 3,
+      "refusal": null,
+      "status": "completed",
+      "tree": {
+        "doc_name": "mixed-cjk.pdf",
+        "doc_title": "1 营业结果",
+        "structure": [
+          {
+            "title": "Page 1",
+            "node_id": "0000",
+            "start_index": 1,
+            "end_index": 1,
+            "summary": "上海公司 年度报告\n1 营业结果\n上海公司2026年收入为120万元，仅指境内业务。 2025年收入为100万元；不同币种不得合并。\n物理页 1"
+          },
+          {
+            "title": "Page 2",
+            "node_id": "0001",
+            "start_index": 2,
+            "end_index": 2,
+            "summary": "上海公司 年度报告\n2 营业结果\n上海公司2026年收入为120万元，仅指境内业务。 2025年收入为100万元；不同币种不得合并。\n物理页 2"
+          },
+          {
+            "title": "Page 3",
+            "node_id": "0002",
+            "start_index": 3,
+            "end_index": 3,
+            "summary": "上海公司 年度报告\n3 营业结果\n上海公司2026年收入为120万元，仅指境内业务。 2025年收入为100万元；不同币种不得合并。\n物理页 3"
+          }
+        ],
+        "has_abstract_or_references_section": false,
+        "toc_source": "pages",
+        "optimize": {
+          "merges": 0,
+          "expands": 0,
+          "same_page_merges": 0,
+          "same_page_dropped": 0,
+          "kept_collapsed": 0,
+          "before": {
+            "total_pages": 3,
+            "frontier_nodes": 3,
+            "worst_case_search_complexity": 2,
+            "average_search_complexity": 2.0,
+            "normalized_worst_case_complexity": 0.6667,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          },
+          "after": {
+            "total_pages": 3,
+            "frontier_nodes": 3,
+            "worst_case_search_complexity": 2,
+            "average_search_complexity": 2.0,
+            "normalized_worst_case_complexity": 0.6667,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          }
+        }
+      },
+      "elapsedMs": 30
+    },
+    {
+      "mode": "flash",
+      "file": "rotated.pdf",
+      "sha256": "145dbe98778762e0b0640763e831f39e62dc1b9042bb1f1dc1a79ca16cb87d0f",
+      "pages": [
+        "1 Rotated sourcePhysical rotation does not change the revenue: 120 million."
+      ],
+      "pageCount": 1,
+      "refusal": null,
+      "status": "completed",
+      "tree": {
+        "doc_name": "rotated.pdf",
+        "doc_title": null,
+        "structure": [
+          {
+            "title": "Page 1",
+            "node_id": "0000",
+            "start_index": 1,
+            "end_index": 1,
+            "summary": "Physical rotation does not change the revenue: 120 million.\n1 Rotated source"
+          }
+        ],
+        "has_abstract_or_references_section": false,
+        "toc_source": "pages",
+        "optimize": {
+          "merges": 0,
+          "expands": 0,
+          "same_page_merges": 0,
+          "same_page_dropped": 0,
+          "kept_collapsed": 0,
+          "before": {
+            "total_pages": 1,
+            "frontier_nodes": 1,
+            "worst_case_search_complexity": 2,
+            "average_search_complexity": 2.0,
+            "normalized_worst_case_complexity": 2.0,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          },
+          "after": {
+            "total_pages": 1,
+            "frontier_nodes": 1,
+            "worst_case_search_complexity": 2,
+            "average_search_complexity": 2.0,
+            "normalized_worst_case_complexity": 2.0,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          }
+        }
+      },
+      "elapsedMs": 7
+    },
+    {
+      "mode": "flash",
+      "file": "bookmarks.pdf",
+      "sha256": "2d4b638d6af94338a118234b3bfe059407dc8817eaf099f70b6fb0108a7a1500",
+      "pages": [
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 1\nAnnual Report 2026\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 2\n1 Overview\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n1.1 Scope\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 3\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 4\n2 Results\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 5\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 6\nAppendix\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n"
+      ],
+      "pageCount": 6,
+      "refusal": null,
+      "status": "completed",
+      "tree": {
+        "doc_name": "bookmarks.pdf",
+        "doc_title": "Annual Report 2026",
+        "structure": [
+          {
+            "title": "Preface",
+            "start_index": 1,
+            "end_index": 1,
+            "node_id": "0000",
+            "summary": "LOREWEAVE FIXED EVIDENCE\nAnnual Report 2026\nAcme 2026 revenue was 120 million USD. It covers domestic operations only, not subsidiaries. Acme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD. It covers domestic operations only, not subsidiaries. Acme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD. It covers domestic operations only, not subsidiaries. Acme 2026 net profit was 12 million USD.\nPhysical page 1"
+          },
+          {
+            "title": "1 Overview",
+            "node_id": "0001",
+            "start_index": 2,
+            "end_index": 3,
+            "key_items": [
+              "1.1 Scope"
+            ],
+            "summary": "The text is titled “LOREWEAVE FIXED EVIDENCE” and contains an Overview section with subsection 1.1, “Scope.” It states repeatedly that Acme’s 2026 revenue was 120 million USD, covering domestic operations only and excluding subsidiaries, and that 2026 net profit was 12 million USD. The same information appears multiple times across the document, including references to physical pages 2 and 3."
+          },
+          {
+            "title": "2 Results",
+            "node_id": "0002",
+            "start_index": 4,
+            "end_index": 5,
+            "summary": "The text, labeled “LOREWEAVE FIXED EVIDENCE,” contains a “2 Results” section spanning physical pages 4 and 5. It repeatedly states that Acme’s 2025 revenue was USD 100 million and net profit was USD 9 million, specifying that these figures are audited, domestic-only totals."
+          },
+          {
+            "title": "Appendix ",
+            "node_id": "0003",
+            "start_index": 6,
+            "end_index": 6,
+            "summary": "LOREWEAVE FIXED EVIDENCE\nAppendix\nAcme 2025 revenue was 100 million USD. Acme 2025 net profit was 9 million USD. These are audited domestic-only totals. Acme 2025 revenue was 100 million USD. Acme 2025 net profit was 9 million USD. These are audited domestic-only totals. Acme 2025 revenue was 100 million USD. Acme 2025 net profit was 9 million USD. These are audited domestic-only totals.\nPhysical page 6"
+          }
+        ],
+        "has_abstract_or_references_section": false,
+        "toc_source": "detected",
+        "optimize": {
+          "merges": 1,
+          "expands": 0,
+          "same_page_merges": 0,
+          "same_page_dropped": 0,
+          "kept_collapsed": 0,
+          "before": {
+            "total_pages": 6,
+            "frontier_nodes": 4,
+            "worst_case_search_complexity": 4,
+            "average_search_complexity": 2.667,
+            "normalized_worst_case_complexity": 0.6667,
+            "max_depth": 2,
+            "mean_depth": 1.25,
+            "probability_mass": 1.0
+          },
+          "after": {
+            "total_pages": 6,
+            "frontier_nodes": 4,
+            "worst_case_search_complexity": 3,
+            "average_search_complexity": 2.333,
+            "normalized_worst_case_complexity": 0.5,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          }
+        }
+      },
+      "elapsedMs": 11703
+    },
+    {
+      "mode": "flash",
+      "file": "toc-offset.pdf",
+      "sha256": "3cd5cfa70b5ea8c52aef0989a43bb7a9a7d3cad0619834bdc3cfdd80717d12c0",
+      "pages": [
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 1\nAnnual Report 2026\nFront matter and qualifications are retained.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 2\nContents\n1 Overview ....................................... 1\n2 Results ......................................... 3\nAppendix .......................................... 5\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 3\n1 Overview\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 4\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 5\n2 Results\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 6\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 7\nAppendix\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 8\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n"
+      ],
+      "pageCount": 8,
+      "refusal": null,
+      "status": "completed",
+      "tree": {
+        "doc_name": "toc-offset.pdf",
+        "doc_title": "Annual Report 2026",
+        "structure": [
+          {
+            "title": "Preface",
+            "start_index": 1,
+            "end_index": 2,
+            "node_id": "0000",
+            "summary": "LOREWEAVE FIXED EVIDENCE\nAnnual Report 2026\nFront matter and qualifications are retained.\nPhysical page 1LOREWEAVE FIXED EVIDENCE\nContents\n1 Overview ....................................... 1\n2 Results ......................................... 3\nAppendix .......................................... 5\nPhysical page 2"
+          },
+          {
+            "title": "1 Overview",
+            "node_id": "0001",
+            "start_index": 3,
+            "end_index": 4,
+            "summary": "The text, labeled “LOREWEAVE FIXED EVIDENCE,” includes a “1 Overview” section and physical page markers for pages 3 and 4. It repeats six times that Acme’s 2026 revenue was USD 120 million, covering domestic operations only and excluding subsidiaries, and that its 2026 net profit was USD 12 million."
+          },
+          {
+            "title": "2 Results",
+            "node_id": "0002",
+            "start_index": 5,
+            "end_index": 6,
+            "summary": "The text, labeled “LOREWEAVE FIXED EVIDENCE,” contains a “2 Results” section spanning physical pages 5 and 6. It repeatedly states that Acme’s audited, domestic-only totals for 2025 were USD 100 million in revenue and USD 9 million in net profit."
+          },
+          {
+            "title": "Appendix ",
+            "node_id": "0003",
+            "start_index": 7,
+            "end_index": 8,
+            "summary": "The “LOREWEAVE FIXED EVIDENCE” appendix, spanning physical pages 7 and 8, repeatedly states that Acme’s 2025 revenue was USD 100 million and its net profit was USD 9 million. These figures are audited totals covering domestic operations only."
+          }
+        ],
+        "has_abstract_or_references_section": false,
+        "toc_source": "detected",
+        "optimize": {
+          "merges": 0,
+          "expands": 0,
+          "same_page_merges": 0,
+          "same_page_dropped": 0,
+          "kept_collapsed": 0,
+          "before": {
+            "total_pages": 8,
+            "frontier_nodes": 4,
+            "worst_case_search_complexity": 3,
+            "average_search_complexity": 2.5,
+            "normalized_worst_case_complexity": 0.375,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          },
+          "after": {
+            "total_pages": 8,
+            "frontier_nodes": 4,
+            "worst_case_search_complexity": 3,
+            "average_search_complexity": 2.5,
+            "normalized_worst_case_complexity": 0.375,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          }
+        }
+      },
+      "elapsedMs": 17825
+    },
+    {
+      "mode": "flash",
+      "file": "no-toc.pdf",
+      "sha256": "1bc7b7e1ee7651e382058b97fd94596702cc77a967a3b915b27029fcb7d40120",
+      "pages": [
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 1\nAnnual Report 2026\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 2\n1 Overview\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 3\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 4\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 5\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 6\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 7\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 8\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 9\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 10\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 11\n2 Results\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 12\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 13\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 14\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 15\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 16\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 17\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 18\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 19\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 20\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 21\nAppendix\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n"
+      ],
+      "pageCount": 21,
+      "refusal": null,
+      "status": "completed",
+      "tree": {
+        "doc_name": "no-toc.pdf",
+        "doc_title": "Annual Report 2026",
+        "structure": [
+          {
+            "title": "Preface",
+            "start_index": 1,
+            "end_index": 1,
+            "node_id": "0000",
+            "summary": "LOREWEAVE FIXED EVIDENCE\nAnnual Report 2026\nAcme 2026 revenue was 120 million USD. It covers domestic operations only, not subsidiaries. Acme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD. It covers domestic operations only, not subsidiaries. Acme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD. It covers domestic operations only, not subsidiaries. Acme 2026 net profit was 12 million USD.\nPhysical page 1"
+          },
+          {
+            "title": "1 Overview",
+            "node_id": "0001",
+            "start_index": 2,
+            "end_index": 10,
+            "summary": "The text, titled “LOREWEAVE FIXED EVIDENCE,” includes an “Overview” section and repeatedly states that Acme’s 2026 revenue was USD 120 million, covering domestic operations only and excluding subsidiaries, and that its 2026 net profit was USD 12 million. These identical statements recur throughout the chunk, alongside repeated document headers and physical-page markers numbered 2 through 10."
+          },
+          {
+            "title": "2 Results",
+            "node_id": "0002",
+            "start_index": 11,
+            "end_index": 20,
+            "summary": "The text, labeled “LOREWEAVE FIXED EVIDENCE” and headed “2 Results,” repeatedly states that Acme’s 2025 revenue was USD 100 million and net profit was USD 9 million. These figures are explicitly described as audited, domestic-only totals. The same statements recur throughout the excerpt, which includes physical page markers 11–20, without additional findings or variations."
+          },
+          {
+            "title": "Appendix ",
+            "node_id": "0003",
+            "start_index": 21,
+            "end_index": 21,
+            "summary": "LOREWEAVE FIXED EVIDENCE\nAppendix\nAcme 2025 revenue was 100 million USD. Acme 2025 net profit was 9 million USD. These are audited domestic-only totals. Acme 2025 revenue was 100 million USD. Acme 2025 net profit was 9 million USD. These are audited domestic-only totals. Acme 2025 revenue was 100 million USD. Acme 2025 net profit was 9 million USD. These are audited domestic-only totals.\nPhysical page 21"
+          }
+        ],
+        "has_abstract_or_references_section": false,
+        "toc_source": "detected",
+        "optimize": {
+          "merges": 0,
+          "expands": 0,
+          "same_page_merges": 0,
+          "same_page_dropped": 0,
+          "kept_collapsed": 0,
+          "before": {
+            "total_pages": 21,
+            "frontier_nodes": 4,
+            "worst_case_search_complexity": 11,
+            "average_search_complexity": 5.857,
+            "normalized_worst_case_complexity": 0.5238,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          },
+          "after": {
+            "total_pages": 21,
+            "frontier_nodes": 4,
+            "worst_case_search_complexity": 11,
+            "average_search_complexity": 5.857,
+            "normalized_worst_case_complexity": 0.5238,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          }
+        }
+      },
+      "elapsedMs": 25782
+    },
+    {
+      "mode": "flash",
+      "file": "large-section.pdf",
+      "sha256": "bc79654c4fc3dee6c358a253f1b6b8ddb74b5567add188970cdbf7e97067d04b",
+      "pages": [
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 1\n1 Operating Results\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 2\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 3\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 4\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 5\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 6\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 7\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 8\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 9\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 10\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 11\nRegional Operating Details\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 12\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 13\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 14\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 15\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 16\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 17\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 18\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 19\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 20\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 21\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 22\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 23\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 24\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n"
+      ],
+      "pageCount": 24,
+      "refusal": "PageIndex Flash found no layout structure in this document (24 pages); try mode='standard', which builds the structure with the model.",
+      "status": "rejected",
+      "tree": {
+        "doc_name": "large-section.pdf",
+        "doc_title": "1 Operating Results",
+        "structure": [
+          {
+            "title": "Page 1",
+            "node_id": "0000",
+            "start_index": 1,
+            "end_index": 1
+          },
+          {
+            "title": "Page 2",
+            "node_id": "0001",
+            "start_index": 2,
+            "end_index": 2
+          },
+          {
+            "title": "Page 3",
+            "node_id": "0002",
+            "start_index": 3,
+            "end_index": 3
+          },
+          {
+            "title": "Page 4",
+            "node_id": "0003",
+            "start_index": 4,
+            "end_index": 4
+          },
+          {
+            "title": "Page 5",
+            "node_id": "0004",
+            "start_index": 5,
+            "end_index": 5
+          },
+          {
+            "title": "Page 6",
+            "node_id": "0005",
+            "start_index": 6,
+            "end_index": 6
+          },
+          {
+            "title": "Page 7",
+            "node_id": "0006",
+            "start_index": 7,
+            "end_index": 7
+          },
+          {
+            "title": "Page 8",
+            "node_id": "0007",
+            "start_index": 8,
+            "end_index": 8
+          },
+          {
+            "title": "Page 9",
+            "node_id": "0008",
+            "start_index": 9,
+            "end_index": 9
+          },
+          {
+            "title": "Page 10",
+            "node_id": "0009",
+            "start_index": 10,
+            "end_index": 10
+          },
+          {
+            "title": "Page 11",
+            "node_id": "0010",
+            "start_index": 11,
+            "end_index": 11
+          },
+          {
+            "title": "Page 12",
+            "node_id": "0011",
+            "start_index": 12,
+            "end_index": 12
+          },
+          {
+            "title": "Page 13",
+            "node_id": "0012",
+            "start_index": 13,
+            "end_index": 13
+          },
+          {
+            "title": "Page 14",
+            "node_id": "0013",
+            "start_index": 14,
+            "end_index": 14
+          },
+          {
+            "title": "Page 15",
+            "node_id": "0014",
+            "start_index": 15,
+            "end_index": 15
+          },
+          {
+            "title": "Page 16",
+            "node_id": "0015",
+            "start_index": 16,
+            "end_index": 16
+          },
+          {
+            "title": "Page 17",
+            "node_id": "0016",
+            "start_index": 17,
+            "end_index": 17
+          },
+          {
+            "title": "Page 18",
+            "node_id": "0017",
+            "start_index": 18,
+            "end_index": 18
+          },
+          {
+            "title": "Page 19",
+            "node_id": "0018",
+            "start_index": 19,
+            "end_index": 19
+          },
+          {
+            "title": "Page 20",
+            "node_id": "0019",
+            "start_index": 20,
+            "end_index": 20
+          },
+          {
+            "title": "Page 21",
+            "node_id": "0020",
+            "start_index": 21,
+            "end_index": 21
+          },
+          {
+            "title": "Page 22",
+            "node_id": "0021",
+            "start_index": 22,
+            "end_index": 22
+          },
+          {
+            "title": "Page 23",
+            "node_id": "0022",
+            "start_index": 23,
+            "end_index": 23
+          },
+          {
+            "title": "Page 24",
+            "node_id": "0023",
+            "start_index": 24,
+            "end_index": 24
+          }
+        ],
+        "has_abstract_or_references_section": false,
+        "toc_source": "pages"
+      },
+      "elapsedMs": 655
+    },
+    {
+      "mode": "flash",
+      "file": "inadequate.pdf",
+      "sha256": "72b962657e63d5abc08910f3fbb724083118b8eca3530ada39e43450ee0d411a",
+      "pages": [
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 1\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 2\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 3\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 4\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 5\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 6\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 7\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 8\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 9\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 10\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 11\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 12\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 13\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 14\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 15\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 16\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 17\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 18\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 19\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 20\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 21\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 22\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 23\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 24\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 25\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n"
+      ],
+      "pageCount": 25,
+      "refusal": "PageIndex Flash found no layout structure in this document (25 pages); try mode='standard', which builds the structure with the model.",
+      "status": "rejected",
+      "tree": {
+        "doc_name": "inadequate.pdf",
+        "doc_title": null,
+        "structure": [
+          {
+            "title": "Page 1",
+            "node_id": "0000",
+            "start_index": 1,
+            "end_index": 1
+          },
+          {
+            "title": "Page 2",
+            "node_id": "0001",
+            "start_index": 2,
+            "end_index": 2
+          },
+          {
+            "title": "Page 3",
+            "node_id": "0002",
+            "start_index": 3,
+            "end_index": 3
+          },
+          {
+            "title": "Page 4",
+            "node_id": "0003",
+            "start_index": 4,
+            "end_index": 4
+          },
+          {
+            "title": "Page 5",
+            "node_id": "0004",
+            "start_index": 5,
+            "end_index": 5
+          },
+          {
+            "title": "Page 6",
+            "node_id": "0005",
+            "start_index": 6,
+            "end_index": 6
+          },
+          {
+            "title": "Page 7",
+            "node_id": "0006",
+            "start_index": 7,
+            "end_index": 7
+          },
+          {
+            "title": "Page 8",
+            "node_id": "0007",
+            "start_index": 8,
+            "end_index": 8
+          },
+          {
+            "title": "Page 9",
+            "node_id": "0008",
+            "start_index": 9,
+            "end_index": 9
+          },
+          {
+            "title": "Page 10",
+            "node_id": "0009",
+            "start_index": 10,
+            "end_index": 10
+          },
+          {
+            "title": "Page 11",
+            "node_id": "0010",
+            "start_index": 11,
+            "end_index": 11
+          },
+          {
+            "title": "Page 12",
+            "node_id": "0011",
+            "start_index": 12,
+            "end_index": 12
+          },
+          {
+            "title": "Page 13",
+            "node_id": "0012",
+            "start_index": 13,
+            "end_index": 13
+          },
+          {
+            "title": "Page 14",
+            "node_id": "0013",
+            "start_index": 14,
+            "end_index": 14
+          },
+          {
+            "title": "Page 15",
+            "node_id": "0014",
+            "start_index": 15,
+            "end_index": 15
+          },
+          {
+            "title": "Page 16",
+            "node_id": "0015",
+            "start_index": 16,
+            "end_index": 16
+          },
+          {
+            "title": "Page 17",
+            "node_id": "0016",
+            "start_index": 17,
+            "end_index": 17
+          },
+          {
+            "title": "Page 18",
+            "node_id": "0017",
+            "start_index": 18,
+            "end_index": 18
+          },
+          {
+            "title": "Page 19",
+            "node_id": "0018",
+            "start_index": 19,
+            "end_index": 19
+          },
+          {
+            "title": "Page 20",
+            "node_id": "0019",
+            "start_index": 20,
+            "end_index": 20
+          },
+          {
+            "title": "Page 21",
+            "node_id": "0020",
+            "start_index": 21,
+            "end_index": 21
+          },
+          {
+            "title": "Page 22",
+            "node_id": "0021",
+            "start_index": 22,
+            "end_index": 22
+          },
+          {
+            "title": "Page 23",
+            "node_id": "0022",
+            "start_index": 23,
+            "end_index": 23
+          },
+          {
+            "title": "Page 24",
+            "node_id": "0023",
+            "start_index": 24,
+            "end_index": 24
+          },
+          {
+            "title": "Page 25",
+            "node_id": "0024",
+            "start_index": 25,
+            "end_index": 25
+          }
+        ],
+        "has_abstract_or_references_section": false,
+        "toc_source": "pages"
+      },
+      "elapsedMs": 347
+    },
+    {
+      "mode": "flash",
+      "file": "scanned.pdf",
+      "sha256": "89445c8c5eae28ec27d44db0b5d368f02875f6ecddfe6462437c4bc1850339e3",
+      "pages": [
+        "",
+        ""
+      ],
+      "pageCount": 2,
+      "refusal": "PageIndex Flash found no text layer in this PDF (scanned or image-only); run OCR before indexing it.",
+      "status": "rejected",
+      "tree": {
+        "doc_name": "scanned.pdf",
+        "doc_title": null,
+        "structure": [],
+        "has_abstract_or_references_section": false,
+        "toc_source": "unreadable"
+      },
+      "elapsedMs": 4
+    },
+    {
+      "mode": "flash",
+      "file": "encrypted.pdf",
+      "sha256": "ed81615f32e052a0597fce88cc09a4f86bdf954e44e7e2b812212750b9224c57",
+      "status": "failed",
+      "error": {
+        "type": "DependencyError",
+        "message": "PyCryptodome is required for AES algorithm"
+      },
+      "elapsedMs": 1
+    },
+    {
+      "mode": "flash",
+      "file": "malformed.pdf",
+      "sha256": "d6022836fb9329611bcc28a265a024bb8efd1b21b48ce41685068a4a4c787cf9",
+      "status": "failed",
+      "error": {
+        "type": "PdfReadError",
+        "message": "EOF marker not found"
+      },
+      "elapsedMs": 1
+    },
+    {
+      "mode": "flash",
+      "file": "conflicting-source.pdf",
+      "sha256": "fc120c6c1875393a40c0bda1d2a431d6654f2a08d9476298a1dbe06d41a78f3c",
+      "pages": [
+        "Acme Independent Audit 2026\nAcme 2026 revenue was 130 million USD.\nAudited domestic operations only, excluding subsidiaries.\nThis source reports 2026 domestic net profit of 13 million USD.\n"
+      ],
+      "pageCount": 1,
+      "refusal": null,
+      "status": "completed",
+      "tree": {
+        "doc_name": "conflicting-source.pdf",
+        "doc_title": "Acme Independent Audit 2026",
+        "structure": [
+          {
+            "title": "Page 1",
+            "node_id": "0000",
+            "start_index": 1,
+            "end_index": 1,
+            "summary": "Acme Independent Audit 2026\nAcme 2026 revenue was 130 million USD. Audited domestic operations only, excluding subsidiaries. This source reports 2026 domestic net profit of 13 million USD."
+          }
+        ],
+        "has_abstract_or_references_section": false,
+        "toc_source": "pages",
+        "optimize": {
+          "merges": 0,
+          "expands": 0,
+          "same_page_merges": 0,
+          "same_page_dropped": 0,
+          "kept_collapsed": 0,
+          "before": {
+            "total_pages": 1,
+            "frontier_nodes": 1,
+            "worst_case_search_complexity": 2,
+            "average_search_complexity": 2.0,
+            "normalized_worst_case_complexity": 2.0,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          },
+          "after": {
+            "total_pages": 1,
+            "frontier_nodes": 1,
+            "worst_case_search_complexity": 2,
+            "average_search_complexity": 2.0,
+            "normalized_worst_case_complexity": 2.0,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          }
+        }
+      },
+      "elapsedMs": 11
+    },
+    {
+      "mode": "flash",
+      "file": "other-company.pdf",
+      "sha256": "3ac83f71b659fb38293e26c5b0af2b5e93ff688e148723092aa7221593d2f735",
+      "pages": [
+        "Beta Annual Report 2026\nBeta 2026 revenue was 999 million EUR.\nIt covers global operations including subsidiaries.\nThis is Beta, not Acme. Do not combine different companies or currencies.\n"
+      ],
+      "pageCount": 1,
+      "refusal": null,
+      "status": "completed",
+      "tree": {
+        "doc_name": "other-company.pdf",
+        "doc_title": "Beta Annual Report 2026",
+        "structure": [
+          {
+            "title": "Page 1",
+            "node_id": "0000",
+            "start_index": 1,
+            "end_index": 1,
+            "summary": "Beta Annual Report 2026\nBeta 2026 revenue was 999 million EUR. It covers global operations including subsidiaries. This is Beta, not Acme. Do not combine different companies or currencies."
+          }
+        ],
+        "has_abstract_or_references_section": false,
+        "toc_source": "pages",
+        "optimize": {
+          "merges": 0,
+          "expands": 0,
+          "same_page_merges": 0,
+          "same_page_dropped": 0,
+          "kept_collapsed": 0,
+          "before": {
+            "total_pages": 1,
+            "frontier_nodes": 1,
+            "worst_case_search_complexity": 2,
+            "average_search_complexity": 2.0,
+            "normalized_worst_case_complexity": 2.0,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          },
+          "after": {
+            "total_pages": 1,
+            "frontier_nodes": 1,
+            "worst_case_search_complexity": 2,
+            "average_search_complexity": 2.0,
+            "normalized_worst_case_complexity": 2.0,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          }
+        }
+      },
+      "elapsedMs": 13
+    },
+    {
+      "mode": "flash",
+      "file": "boundary-20.pdf",
+      "sha256": "1e0db5c64c63a0f25a16b1f210b8f020a392007ce43deaa9e79e88e8d9f26c1d",
+      "pages": [
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 1\nAnnual Report 2026\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 2\n1 Overview\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 3\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 4\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 5\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 6\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 7\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 8\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 9\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 10\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 11\n2 Results\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 12\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 13\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 14\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 15\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 16\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 17\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 18\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 19\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 20\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n"
+      ],
+      "pageCount": 20,
+      "refusal": null,
+      "status": "completed",
+      "tree": {
+        "doc_name": "boundary-20.pdf",
+        "doc_title": "Annual Report 2026",
+        "structure": [
+          {
+            "title": "Preface",
+            "start_index": 1,
+            "end_index": 1,
+            "node_id": "0000",
+            "summary": "LOREWEAVE FIXED EVIDENCE\nAnnual Report 2026\nAcme 2026 revenue was 120 million USD. It covers domestic operations only, not subsidiaries. Acme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD. It covers domestic operations only, not subsidiaries. Acme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD. It covers domestic operations only, not subsidiaries. Acme 2026 net profit was 12 million USD.\nPhysical page 1"
+          },
+          {
+            "title": "1 Overview",
+            "node_id": "0001",
+            "start_index": 2,
+            "end_index": 10,
+            "summary": "The text, titled “LOREWEAVE FIXED EVIDENCE,” includes an “Overview” section and repeatedly states that Acme’s 2026 revenue was USD 120 million, covering domestic operations only and excluding subsidiaries, and that its 2026 net profit was USD 12 million. These identical financial statements recur throughout the chunk, alongside repeated document headers and physical page markers numbered 2 through 10. No additional substantive information is provided."
+          },
+          {
+            "title": "2 Results",
+            "node_id": "0002",
+            "start_index": 11,
+            "end_index": 20,
+            "summary": "The text, labeled “LOREWEAVE FIXED EVIDENCE” and headed “2 Results,” repeatedly reports Acme’s 2025 revenue of USD 100 million and net profit of USD 9 million. It specifies that these figures are audited domestic-only totals. Identical statements recur throughout the chunk, which includes physical page markers 11–20, with no additional financial information or analysis."
+          }
+        ],
+        "has_abstract_or_references_section": false,
+        "toc_source": "detected",
+        "optimize": {
+          "merges": 0,
+          "expands": 0,
+          "same_page_merges": 0,
+          "same_page_dropped": 0,
+          "kept_collapsed": 0,
+          "before": {
+            "total_pages": 20,
+            "frontier_nodes": 3,
+            "worst_case_search_complexity": 11,
+            "average_search_complexity": 6.05,
+            "normalized_worst_case_complexity": 0.55,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          },
+          "after": {
+            "total_pages": 20,
+            "frontier_nodes": 3,
+            "worst_case_search_complexity": 11,
+            "average_search_complexity": 6.05,
+            "normalized_worst_case_complexity": 0.55,
+            "max_depth": 1,
+            "mean_depth": 1.0,
+            "probability_mass": 1.0
+          }
+        }
+      },
+      "elapsedMs": 29593
+    },
+    {
+      "mode": "standard",
+      "file": "single-column.pdf",
+      "sha256": "0d45d88d4be7c4c2872d4641a69dc72557fc3d5e2eec833b9c60d46c640415f5",
+      "pages": [
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 1\nAnnual Report 2026\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 2\n1 Overview\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 3\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 4\n2 Results\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 5\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 6\nAppendix\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n"
+      ],
+      "pageCount": 6,
+      "status": "completed",
+      "tree": {
+        "doc_name": "single-column.pdf",
+        "structure": [
+          {
+            "title": "Preface",
+            "node_id": "0000",
+            "start_index": 1,
+            "end_index": 2,
+            "summary": "The partial document contains the opening two pages of Acme’s 2026 Annual Report, including the title page and the “1 Overview” section. It repeatedly reports revenue of USD 120 million and net profit of USD 12 million for 2026, specifying that the figures cover domestic operations only and exclude subsidiaries."
+          },
+          {
+            "title": "1 Overview",
+            "node_id": "0001",
+            "start_index": 2,
+            "end_index": 4,
+            "summary": "The partial document presents Acme’s financial figures for 2026 and 2025. The Overview section on physical pages 2–3 reports 2026 revenue of USD 120 million and net profit of USD 12 million, covering domestic operations only and excluding subsidiaries. The Results section on physical page 4 reports audited, domestic-only 2025 revenue of USD 100 million and net profit of USD 9 million. Each set of figures is repeated several times."
+          },
+          {
+            "title": "2 Results",
+            "node_id": "0002",
+            "start_index": 4,
+            "end_index": 6,
+            "summary": "The partial document covers Acme’s 2025 financial results, reporting audited domestic-only revenue of USD 100 million and net profit of USD 9 million. These figures are repeated throughout physical pages 4–6, including the Results section and Appendix, without additional financial details."
+          },
+          {
+            "title": "Appendix",
+            "node_id": "0003",
+            "start_index": 6,
+            "end_index": 6,
+            "summary": "The appendix states that Acme’s audited domestic-only 2025 revenue was 100 million USD and net profit was 9 million USD. These figures are repeated three times."
+          }
+        ]
+      },
+      "elapsedMs": 150862
+    },
+    {
+      "mode": "standard",
+      "file": "multi-column.pdf",
+      "sha256": "84a343a4175b393e1b1b0094299a0145a2fcbf445882ae959212ef2aababc8ad",
+      "pages": [
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 1\n1 Two-column Analysis\nLeft step 1. Qualified source.\nRight step 1. Other source.\n Left step 2. Qualified source.\nRight step 2. Other source.\n Left step 3. Qualified source.\nRight step 3. Other source.\n Left step 4. Qualified source.\nRight step 4. Other source.\n Left step 5. Qualified source.\nRight step 5. Other source.\n Left step 6. Qualified source.\nRight step 6. Other source.\n Left step 7. Qualified source.\nRight step 7. Other source.\n Left step 8. Qualified source.\nRight step 8. Other source.\nOnly audited totals apply.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 2\n2 Two-column Analysis\nLeft step 1. Qualified source.\nRight step 1. Other source.\n Left step 2. Qualified source.\nRight step 2. Other source.\n Left step 3. Qualified source.\nRight step 3. Other source.\n Left step 4. Qualified source.\nRight step 4. Other source.\n Left step 5. Qualified source.\nRight step 5. Other source.\n Left step 6. Qualified source.\nRight step 6. Other source.\n Left step 7. Qualified source.\nRight step 7. Other source.\n Left step 8. Qualified source.\nRight step 8. Other source.\nOnly audited totals apply.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 3\n3 Two-column Analysis\nLeft step 1. Qualified source.\nRight step 1. Other source.\n Left step 2. Qualified source.\nRight step 2. Other source.\n Left step 3. Qualified source.\nRight step 3. Other source.\n Left step 4. Qualified source.\nRight step 4. Other source.\n Left step 5. Qualified source.\nRight step 5. Other source.\n Left step 6. Qualified source.\nRight step 6. Other source.\n Left step 7. Qualified source.\nRight step 7. Other source.\n Left step 8. Qualified source.\nRight step 8. Other source.\nOnly audited totals apply.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 4\n4 Two-column Analysis\nLeft step 1. Qualified source.\nRight step 1. Other source.\n Left step 2. Qualified source.\nRight step 2. Other source.\n Left step 3. Qualified source.\nRight step 3. Other source.\n Left step 4. Qualified source.\nRight step 4. Other source.\n Left step 5. Qualified source.\nRight step 5. Other source.\n Left step 6. Qualified source.\nRight step 6. Other source.\n Left step 7. Qualified source.\nRight step 7. Other source.\n Left step 8. Qualified source.\nRight step 8. Other source.\nOnly audited totals apply.\n"
+      ],
+      "pageCount": 4,
+      "status": "completed",
+      "tree": {
+        "doc_name": "multi-column.pdf",
+        "structure": [
+          {
+            "title": "Two-column Analysis",
+            "node_id": "0000",
+            "start_index": 1,
+            "end_index": 2,
+            "summary": "The excerpt from “LOREWEAVE FIXED EVIDENCE” contains two physical pages, each presenting an identical eight-step, two-column analysis. Every left-column step is labeled “Qualified source,” while every corresponding right-column step is labeled “Other source.” Both pages state that only audited totals apply. No specific evidence, source details, or numerical totals are provided."
+          },
+          {
+            "title": "Two-column Analysis",
+            "node_id": "0001",
+            "start_index": 2,
+            "end_index": 3,
+            "summary": "The excerpt covers physical pages 2 and 3 of “LOREWEAVE FIXED EVIDENCE.” Both pages present the same two-column analysis with eight numbered steps, contrasting a “Qualified source” on the left with an “Other source” on the right. Each page emphasizes that only audited totals apply."
+          },
+          {
+            "title": "Two-column Analysis",
+            "node_id": "0002",
+            "start_index": 3,
+            "end_index": 4,
+            "summary": "The document contains pages 3 and 4 of “LOREWEAVE FIXED EVIDENCE,” each presenting a two-column analysis with eight steps. The left column lists “Qualified source” for every step, while the right column lists “Other source.” Both pages emphasize that only audited totals apply."
+          },
+          {
+            "title": "Two-column Analysis",
+            "node_id": "0003",
+            "start_index": 4,
+            "end_index": 4,
+            "summary": "This section, titled “Two-column Analysis” on physical page 4 of “LOREWEAVE FIXED EVIDENCE,” presents eight numbered steps comparing a “Qualified source” in the left column with an “Other source” in the right column. It specifies that only audited totals apply."
+          }
+        ]
+      },
+      "elapsedMs": 133715
+    },
+    {
+      "mode": "standard",
+      "file": "mixed-cjk.pdf",
+      "sha256": "4541dc2c2626addd505e3a61636e71618286a21461a46d8c11056a88b52212f8",
+      "pages": [
+        "上海公司 年度报告\n物理页 1\n1 营业结果\n上海公司2026年收入为120万元，仅指境内业务。\n2025年收入为100万元；不同币种不得合并。\n",
+        "上海公司 年度报告\n物理页 2\n2 营业结果\n上海公司2026年收入为120万元，仅指境内业务。\n2025年收入为100万元；不同币种不得合并。\n",
+        "上海公司 年度报告\n物理页 3\n3 营业结果\n上海公司2026年收入为120万元，仅指境内业务。\n2025年收入为100万元；不同币种不得合并。\n"
+      ],
+      "pageCount": 3,
+      "status": "completed",
+      "tree": {
+        "doc_name": "mixed-cjk.pdf",
+        "structure": [
+          {
+            "title": "营业结果",
+            "node_id": "0000",
+            "start_index": 1,
+            "end_index": 2,
+            "summary": "该部分为上海公司年度报告的营业结果内容，分别出现在物理页1和第2页，内容重复。报告列示2026年收入为120万元，且仅涵盖境内业务；2025年收入为100万元，并明确不同币种的收入不得合并。"
+          },
+          {
+            "title": "营业结果",
+            "node_id": "0001",
+            "start_index": 2,
+            "end_index": 3,
+            "summary": "该部分为上海公司年度报告的“营业结果”内容，分别出现在物理页2和物理页3，两页内容重复。报告列明2026年收入为120万元，且仅指境内业务；2025年收入为100万元，并明确不同币种不得合并。"
+          },
+          {
+            "title": "营业结果",
+            "node_id": "0002",
+            "start_index": 3,
+            "end_index": 3,
+            "summary": "该部分为上海公司年度报告第3页“营业结果”，披露2026年收入为120万元，且仅涵盖境内业务；2025年收入为100万元，并明确不同币种的收入不得合并。"
+          }
+        ]
+      },
+      "elapsedMs": 100898
+    },
+    {
+      "mode": "standard",
+      "file": "rotated.pdf",
+      "sha256": "145dbe98778762e0b0640763e831f39e62dc1b9042bb1f1dc1a79ca16cb87d0f",
+      "pages": [
+        "1 Rotated sourcePhysical rotation does not change the revenue: 120 million."
+      ],
+      "pageCount": 1,
+      "status": "completed",
+      "tree": {
+        "doc_name": "rotated.pdf",
+        "structure": [
+          {
+            "title": "Rotated source",
+            "node_id": "0000",
+            "start_index": 1,
+            "end_index": 1,
+            "summary": "The excerpt states that physically rotating the source does not affect revenue, which remains at 120 million."
+          }
+        ]
+      },
+      "elapsedMs": 40915
+    },
+    {
+      "mode": "standard",
+      "file": "bookmarks.pdf",
+      "sha256": "2d4b638d6af94338a118234b3bfe059407dc8817eaf099f70b6fb0108a7a1500",
+      "pages": [
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 1\nAnnual Report 2026\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 2\n1 Overview\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n1.1 Scope\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 3\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 4\n2 Results\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 5\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 6\nAppendix\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n"
+      ],
+      "pageCount": 6,
+      "status": "completed",
+      "tree": {
+        "doc_name": "bookmarks.pdf",
+        "structure": [
+          {
+            "title": "Annual Report 2026",
+            "node_id": "0000",
+            "start_index": 1,
+            "end_index": 2,
+            "summary": "The excerpt from Acme’s Annual Report 2026 covers the opening page and the beginning of the Overview section, ending at the “1.1 Scope” heading. It repeatedly reports 2026 revenue of USD 120 million and net profit of USD 12 million, clarifying that the figures cover domestic operations only and exclude subsidiaries."
+          },
+          {
+            "title": "1 Overview",
+            "node_id": "0001",
+            "start_index": 2,
+            "end_index": 4,
+            "key_items": [
+              "1.1 Scope"
+            ],
+            "summary": "The excerpt covers Acme’s financial figures in the Overview, Scope, and Results sections across physical pages 2–4. It reports 2026 revenue of USD 120 million and net profit of USD 12 million, covering domestic operations only and excluding subsidiaries. The Results section reports audited domestic-only totals for 2025: revenue of USD 100 million and net profit of USD 9 million. These figures and scope statements are repeated throughout the excerpt."
+          },
+          {
+            "title": "2 Results",
+            "node_id": "0002",
+            "start_index": 4,
+            "end_index": 6,
+            "summary": "The excerpt covers physical pages 4–6 of “LOREWEAVE FIXED EVIDENCE,” including the Results section and an Appendix. It repeatedly reports Acme’s 2025 revenue of USD 100 million and net profit of USD 9 million, emphasizing that these figures are audited, domestic-only totals. No additional findings or details are provided."
+          },
+          {
+            "title": "Appendix",
+            "node_id": "0003",
+            "start_index": 6,
+            "end_index": 6,
+            "summary": "Appendix documenting Acme’s audited domestic-only 2025 financial results: revenue of USD 100 million and net profit of USD 9 million, with the same figures repeated three times."
+          }
+        ]
+      },
+      "elapsedMs": 148277
+    },
+    {
+      "mode": "standard",
+      "file": "toc-offset.pdf",
+      "sha256": "3cd5cfa70b5ea8c52aef0989a43bb7a9a7d3cad0619834bdc3cfdd80717d12c0",
+      "pages": [
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 1\nAnnual Report 2026\nFront matter and qualifications are retained.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 2\nContents\n1 Overview ....................................... 1\n2 Results ......................................... 3\nAppendix .......................................... 5\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 3\n1 Overview\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 4\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 5\n2 Results\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 6\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 7\nAppendix\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 8\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n"
+      ],
+      "pageCount": 8,
+      "status": "completed",
+      "tree": {
+        "doc_name": "toc-offset.pdf",
+        "structure": [
+          {
+            "title": "Preface",
+            "node_id": "0000",
+            "start_index": 1,
+            "end_index": 3,
+            "summary": "The excerpt contains the front matter, contents, and opening overview of Acme’s 2026 Annual Report. The contents list Overview, Results, and an Appendix. The overview reports revenue of USD 120 million and net profit of USD 12 million for 2026, with the qualification that the figures cover domestic operations only and exclude subsidiaries. These financial figures and the scope qualification are repeated three times."
+          },
+          {
+            "title": "Overview",
+            "node_id": "0001",
+            "start_index": 3,
+            "end_index": 5,
+            "summary": "The partial document covers Acme’s domestic financial results for 2026 and 2025. The Overview section on pages 3–4 reports 2026 revenue of USD 120 million and net profit of USD 12 million, excluding subsidiaries. The Results section on page 5 reports audited, domestic-only totals for 2025: revenue of USD 100 million and net profit of USD 9 million. The same financial statements are repeated several times within each section."
+          },
+          {
+            "title": "Results",
+            "node_id": "0002",
+            "start_index": 5,
+            "end_index": 7,
+            "summary": "The partial document covers Acme’s audited 2025 financial results, reporting revenue of USD 100 million and net profit of USD 9 million. It explicitly states that these figures are domestic-only totals. The same information is repeated across physical pages 5–7, including the “2 Results” section and an appendix, under the header “LOREWEAVE FIXED EVIDENCE.”"
+          },
+          {
+            "title": "Appendix",
+            "node_id": "0003",
+            "start_index": 7,
+            "end_index": 8,
+            "summary": "The excerpt covers physical pages 7–8 of “LOREWEAVE FIXED EVIDENCE,” with page 7 labeled “Appendix.” It repeatedly states that Acme’s audited 2025 domestic-only revenue was USD 100 million and net profit was USD 9 million. Both pages repeat the same figures without adding further details."
+          }
+        ]
+      },
+      "elapsedMs": 120557
+    },
+    {
+      "mode": "standard",
+      "file": "no-toc.pdf",
+      "sha256": "1bc7b7e1ee7651e382058b97fd94596702cc77a967a3b915b27029fcb7d40120",
+      "pages": [
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 1\nAnnual Report 2026\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 2\n1 Overview\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 3\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 4\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 5\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 6\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 7\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 8\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 9\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 10\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 11\n2 Results\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 12\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 13\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 14\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 15\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 16\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 17\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 18\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 19\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 20\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 21\nAppendix\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n"
+      ],
+      "pageCount": 21,
+      "status": "completed",
+      "tree": {
+        "doc_name": "no-toc.pdf",
+        "structure": [
+          {
+            "title": "Preface",
+            "node_id": "0000",
+            "start_index": 1,
+            "end_index": 2,
+            "summary": "The excerpt from Acme’s Annual Report 2026 includes the title page and “1 Overview” section. It repeatedly reports 2026 revenue of USD 120 million and net profit of USD 12 million, specifying that the figures cover domestic operations only and exclude subsidiaries."
+          },
+          {
+            "title": "1 Overview",
+            "node_id": "0001",
+            "start_index": 2,
+            "end_index": 11,
+            "summary": "This excerpt covers Acme’s domestic financial results for 2026 and 2025. The Overview section on physical pages 2–10 repeatedly reports 2026 revenue of USD 120 million and net profit of USD 12 million, specifying that coverage is limited to domestic operations and excludes subsidiaries. The Results section on physical page 11 reports 2025 revenue of USD 100 million and net profit of USD 9 million, identifying these as audited, domestic-only totals."
+          },
+          {
+            "title": "2 Results",
+            "node_id": "0002",
+            "start_index": 11,
+            "end_index": 21,
+            "summary": "This excerpt covers the Results section on physical pages 11–20 and the beginning of the Appendix on page 21. It repeatedly reports Acme’s 2025 revenue of USD 100 million and net profit of USD 9 million, emphasizing that these figures are audited domestic-only totals. The same information appears throughout the excerpt under the “LOREWEAVE FIXED EVIDENCE” header, with no additional results or analysis."
+          },
+          {
+            "title": "Appendix",
+            "node_id": "0003",
+            "start_index": 21,
+            "end_index": 21,
+            "summary": "The appendix on physical page 21 reports Acme’s audited domestic-only financial totals for 2025: revenue of 100 million USD and net profit of 9 million USD. The same figures and scope statement are repeated three times."
+          }
+        ]
+      },
+      "elapsedMs": 196234
+    },
+    {
+      "mode": "standard",
+      "file": "large-section.pdf",
+      "sha256": "bc79654c4fc3dee6c358a253f1b6b8ddb74b5567add188970cdbf7e97067d04b",
+      "pages": [
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 1\n1 Operating Results\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 2\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 3\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 4\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 5\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 6\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 7\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 8\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 9\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 10\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 11\nRegional Operating Details\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 12\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 13\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 14\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 15\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 16\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 17\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 18\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 19\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 20\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 21\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 22\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 23\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 24\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\n"
+      ],
+      "pageCount": 24,
+      "status": "failed",
+      "error": {
+        "type": "Exception",
+        "message": "Processing failed"
+      },
+      "elapsedMs": 109803
+    },
+    {
+      "mode": "standard",
+      "file": "inadequate.pdf",
+      "sha256": "72b962657e63d5abc08910f3fbb724083118b8eca3530ada39e43450ee0d411a",
+      "pages": [
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 1\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 2\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 3\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 4\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 5\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 6\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 7\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 8\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 9\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 10\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 11\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 12\nContinuous narrative about a supported text layer.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 13\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 14\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 15\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 16\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 17\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 18\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 19\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 20\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 21\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 22\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 23\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 24\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 25\nContinuous narrative about a supported text layer.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n"
+      ],
+      "pageCount": 25,
+      "status": "failed",
+      "error": {
+        "type": "Exception",
+        "message": "Processing failed"
+      },
+      "elapsedMs": 174845
+    },
+    {
+      "mode": "standard",
+      "file": "scanned.pdf",
+      "sha256": "89445c8c5eae28ec27d44db0b5d368f02875f6ecddfe6462437c4bc1850339e3",
+      "pages": [
+        "",
+        ""
+      ],
+      "pageCount": 2,
+      "status": "failed",
+      "error": {
+        "type": "ValueError",
+        "message": "unreadable_text_layer"
+      },
+      "elapsedMs": 2
+    },
+    {
+      "mode": "standard",
+      "file": "encrypted.pdf",
+      "sha256": "ed81615f32e052a0597fce88cc09a4f86bdf954e44e7e2b812212750b9224c57",
+      "status": "failed",
+      "error": {
+        "type": "DependencyError",
+        "message": "PyCryptodome is required for AES algorithm"
+      },
+      "elapsedMs": 1
+    },
+    {
+      "mode": "standard",
+      "file": "malformed.pdf",
+      "sha256": "d6022836fb9329611bcc28a265a024bb8efd1b21b48ce41685068a4a4c787cf9",
+      "status": "failed",
+      "error": {
+        "type": "PdfReadError",
+        "message": "EOF marker not found"
+      },
+      "elapsedMs": 1
+    },
+    {
+      "mode": "standard",
+      "file": "conflicting-source.pdf",
+      "sha256": "fc120c6c1875393a40c0bda1d2a431d6654f2a08d9476298a1dbe06d41a78f3c",
+      "pages": [
+        "Acme Independent Audit 2026\nAcme 2026 revenue was 130 million USD.\nAudited domestic operations only, excluding subsidiaries.\nThis source reports 2026 domestic net profit of 13 million USD.\n"
+      ],
+      "pageCount": 1,
+      "status": "completed",
+      "tree": {
+        "doc_name": "conflicting-source.pdf",
+        "structure": [
+          {
+            "title": "Acme Independent Audit 2026",
+            "node_id": "0000",
+            "start_index": 1,
+            "end_index": 1,
+            "summary": "The partial document presents Acme’s 2026 independent audit, reporting revenue of USD 130 million and domestic net profit of USD 13 million. The audit covers domestic operations only and excludes subsidiaries."
+          }
+        ]
+      },
+      "elapsedMs": 26617
+    },
+    {
+      "mode": "standard",
+      "file": "other-company.pdf",
+      "sha256": "3ac83f71b659fb38293e26c5b0af2b5e93ff688e148723092aa7221593d2f735",
+      "pages": [
+        "Beta Annual Report 2026\nBeta 2026 revenue was 999 million EUR.\nIt covers global operations including subsidiaries.\nThis is Beta, not Acme. Do not combine different companies or currencies.\n"
+      ],
+      "pageCount": 1,
+      "status": "completed",
+      "tree": {
+        "doc_name": "other-company.pdf",
+        "structure": [
+          {
+            "title": "Beta Annual Report 2026",
+            "node_id": "0000",
+            "start_index": 1,
+            "end_index": 1,
+            "summary": "The document is Beta’s 2026 annual report, covering its global operations and subsidiaries. It reports revenue of EUR 999 million and emphasizes that the information pertains exclusively to Beta, not Acme, with no mixing of companies or currencies."
+          }
+        ]
+      },
+      "elapsedMs": 48054
+    },
+    {
+      "mode": "standard",
+      "file": "boundary-20.pdf",
+      "sha256": "1e0db5c64c63a0f25a16b1f210b8f020a392007ce43deaa9e79e88e8d9f26c1d",
+      "pages": [
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 1\nAnnual Report 2026\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 2\n1 Overview\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 3\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 4\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 5\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 6\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 7\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 8\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 9\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 10\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 11\n2 Results\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 12\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 13\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 14\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 15\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 16\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 17\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 18\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 19\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n",
+        "LOREWEAVE FIXED EVIDENCE\nPhysical page 20\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\n"
+      ],
+      "pageCount": 20,
+      "status": "completed",
+      "tree": {
+        "doc_name": "boundary-20.pdf",
+        "structure": [
+          {
+            "title": "Preface",
+            "node_id": "0000",
+            "start_index": 1,
+            "end_index": 2,
+            "summary": "This excerpt from Acme’s 2026 Annual Report includes the opening page and the “1 Overview” section. It reports revenue of USD 120 million and net profit of USD 12 million for 2026, specifying that the figures cover domestic operations only and exclude subsidiaries. These same financial figures and scope limitations are repeated across both pages."
+          },
+          {
+            "title": "1 Overview",
+            "node_id": "0001",
+            "start_index": 2,
+            "end_index": 10,
+            "summary": "The document repeatedly presents Acme’s 2026 financial overview: revenue of USD 120 million and net profit of USD 12 million. It clarifies that the figures cover domestic operations only and exclude subsidiaries. The same information is duplicated across physical pages 2–10."
+          },
+          {
+            "title": "2 Results",
+            "node_id": "0002",
+            "start_index": 11,
+            "end_index": 20,
+            "summary": "The excerpt covers Section 2, “Results,” on physical pages 11–20. It reports Acme’s audited 2025 domestic-only financial totals: revenue of USD 100 million and net profit of USD 9 million. These same figures and their scope are repeated three times on each page, with no additional results or analysis."
+          }
+        ]
+      },
+      "elapsedMs": 210185
+    }
+  ]
+}

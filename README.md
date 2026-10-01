@@ -1,236 +1,104 @@
 # LoreWeave
 
-Current direct-answer, worker, import/index and recovery behavior is specified in the [Issue 28 runtime contract](docs/design/rag-v1/issue-28-adoption.md). Real-provider BGE-M3 startup requires `bun run prepare:tokenizer`; review `RAG_EMBEDDING_REVISION` before an index-profile change.
+LoreWeave provides local PDF document-tree question answering under
+[Spec #29](https://github.com/L-1ngg/loreweave/issues/29).
+The [construction blueprint](docs/pageindex-v1-blueprint.md) and live issues
+#30-#47 define delivery. The complete replacement and required local acceptance
+are implemented; [AC01-AC35 evidence](docs/evaluation/pageindex-acceptance.md) and
+[measured results](docs/evaluation/pageindex-results.md) record outcomes and limits.
 
-An agent-powered knowledge base with a living wiki, graph-assisted retrieval,
-and source-backed answers.
+The retired Forge/Wiki/graph/vector runtime has been removed after an external
+archive and isolated restore. Its data and uncommitted source remain recoverable
+through [the retirement record](docs/history/pageindex-retirement.md).
 
-**Current capability: authenticated Markdown conversations, versioned sources, evidenced identities, reviewed Wiki/graph maintenance and read-only MCP access.**
-Members import versioned originals, ask questions through Forge, and open exact
-passages behind answer citations. PostgreSQL lexical/vector retrieval uses RRF;
-the answer pipeline validates claim spans and citations, performs a separate
-original-support review, and rechecks source versions before delivery. Cancellation,
-reconnect, source activation and operation receipts persist in PostgreSQL.
+## Local startup
 
-The local runtime uses deterministic embedding and extractive generation/review
-fixtures. It verifies the execution and validation contracts; it does not measure
-semantic model quality, independent factual truth or production capacity. Wiki and graph maintenance use scripted models; their scheduling, provenance and
-recovery are checked separately from real-model quality.
-
-An explicit **real-provider mode** is available through `bun run dev:real`, using
-the existing `RAG_CHAT_*` and `RAG_EMBEDDING_*` settings. See
-[provider setup and verification boundaries](docs/development/providers.md).
-Default `dev` still uses the fixtures described below; real integration smoke
-results do not establish final quality or capacity acceptance.
-
-## Run locally
-
-Use Bun 1.3.12 and Node.js 24 (Vite runs through its Node CLI):
+Use Bun 1.3.12 and PostgreSQL 17:
 
 ```sh
 bun install --frozen-lockfile
+bun run setup
 docker compose up -d --wait postgres
-export DATABASE_URL=postgres://loreweave:loreweave_local@127.0.0.1:45432/loreweave
-export LOREWEAVE_ORGANIZATION=local
-export LOREWEAVE_BOOTSTRAP_USERNAME=admin
-# Enter a password of at least 12 characters, then press Enter (Bash/zsh).
-read -r -s LOREWEAVE_BOOTSTRAP_PASSWORD
-export LOREWEAVE_BOOTSTRAP_PASSWORD
-bun run bootstrap:admin
-unset LOREWEAVE_BOOTSTRAP_PASSWORD
 bun run dev
 ```
 
-Runtime configuration is parsed from one typed configuration module in
-`src/config.ts`. `DATABASE_URL`, `LOREWEAVE_*`, and the provider settings listed
-in [provider setup](docs/development/providers.md) are the current configuration
-contract. The retired Python `RAG_DATABASE_URL`, Elasticsearch, S3, and MinerU
-settings are not read by the TypeScript runtime. Use `.env.example` as the
-starting point for a local `.env`.
+Setup generates a private `.pageindex.env` with a random access password and
+wrapping key. The new database is `loreweave_pageindex` on port 45434 and
+originals use `.pageindex-data/originals`. Old configuration and data are never
+loaded implicitly. Setup selects fixture mode, which accepts only loopback
+providers. For normal use set `LOREWEAVE_MODE=real` in `.pageindex.env` or the
+process environment. `LOREWEAVE_PORT` defaults to 41737; an occupied port is
+preserved and the next available port is printed.
 
-`LOREWEAVE_SOURCE_PREPARATION_SECONDS` sets the total source preparation budget
-(default `1800`; integer seconds from `1` to `86400`). Acceptance persists an
-absolute PostgreSQL deadline, including queue time. Restart, retry, and later
-configuration changes preserve that deadline for already accepted sources;
-expiry fails preparation without activating an incomplete source. This is a
-resource bound, not a completion SLA.
+For the compiled Bun entry:
 
-Open <http://127.0.0.1:41735>. The API binds to `127.0.0.1:41736` and the scripted
-model server uses a dynamically assigned loopback port. No provider credentials are required. The database is a dedicated local instance;
-startup applies the reviewed Drizzle SQL migrations. If either fixed port is occupied, stop this
-new process and resolve the conflict explicitly; it never replaces another service.
-The dev command disables automatic `.env` loading for its backend.
+```sh
+bun run build
+bun run start
+```
 
-`src/development/main.ts` owns configuration loading and process signals.
-`createRuntime(config)` in `src/development/runtime.ts` owns application setup,
-with `start()` and `close()` as its lifecycle. Setup failure releases resources
-already acquired. Shutdown stops HTTP, settles the host and current background
-work, then releases the provider and database connections. Repeated close calls
-wait for the same cleanup; one cleanup failure does not skip remaining resources.
-The lifecycle regression cases run as part of `bun run test`.
+Open the printed URL and log in with `LOREWEAVE_ACCESS_PASSWORD` from the private
+configuration. Settings saves encrypted server-held OpenAI/compatible connections
+and separate `index`/`qa` model roles. Use a Base URL ending in the provider's API
+prefix (usually `/v1`), then verify each role. Accepted work captures its connection
+revision, Model ID and finite budgets; later edits apply to new work.
 
-Log in with organization `local`, username `admin` and the password you chose.
-Use “成员与项目管理” to create members, revoke their existing logins and create
-project classifications. A selected project also searches applicable shared material;
-projects do not create member visibility ACLs. Import a document, ask about its contents and follow a citation. The development
-model quotes matching originals with attribution; it is not a general answering model. Runs and Forge history persist across process restarts. Imports preserve original UTF-8 bytes, versioned passages and Chinese/technical lexical fields.
-Choose a Markdown file (up to 1 MiB), then use “直接导入” or ask “请把附件导入知识库”.
-Source preparation survives browser and process restarts; the source becomes searchable
-only after all vectors and lexical records are committed. The current embedding adapter
-is a deterministic integration fixture, not a semantic model. Identity, Wiki and graph
-maintenance run in the background, with independent readiness and failure states. The question-answer
-fixture now retrieves those imported originals. The conversation URL restores progress without submitting another turn. This entry point remains a local scripted development service.
+Document library imports text-layer PDFs with Flash selected by default or
+independent Standard indexing. Both produce navigation summaries; Flash also
+merges and subdivides sections. Indexing continues after navigation or closure.
+Failed/interrupted imports require explicit retry. Update file targets one
+document, while another ordinary upload creates an independent document even
+with the same filename. Removing an item from the current library retains its
+historical originals and citations.
 
-Open a current source and use “更新此文档” → “提交新版本” to replace that
-selected document. Preparation keeps the prior source effective; historical links
-remain readable after activation. During generation/review, a serial 100 ms source
-check cancels obsolete provider I/O and waits for it to settle. The host may refresh
-once using an unused original retrieval round and the remaining generation/review
-slots; it never restarts Forge or resets the deadline. If changes continue or slots
-are exhausted, only independently reviewed, still-current claims with complete
-premises can survive as a partial answer; otherwise the run reports a source-change gap.
-Source freshness is checked at final admission, not promised indefinitely after delivery.
+Conversation supports saved history, current-library discovery, selected-document
+scope, streamed reading activity and physical-page citations. Refresh/closure
+detaches the observer while accepted questions continue. Stop explicitly cancels
+the run. Startup marks unfinished prior work interrupted without model replay.
+Desktop citations show the bound original alongside the answer; mobile opens the
+original separately and returns to the originating conversation position.
 
-Source pages also record exact source mentions and expose identity explanations.
-Names alone stay distinct. The current conservative checker recognizes explicit
-quoted equivalence statements and structured `service-id` / `repository-url`
-assertions; uncertain prose stays unresolved. Identity validity checks transitive
-original leaves and binding revisions before consumers can join facts, with durable
-20-record revalidation batches after source activation. See the
-[identity runtime boundary](docs/development/identity.md) for supported forms,
-scopes, correction commands and verification limits.
+Settings issues named MCP tokens once and revokes each independently. Connect an
+external client to `<printed URL>/mcp` with `Authorization: Bearer <token>`.
+The five tools are `browse_documents`, `get_document`, `get_document_structure`,
+`get_page_content` and independent `question_answer`. Immutable page resources
+use `loreweave://sources/<versionId>/pages/<page>`. Tokens cannot administer the
+Web library or settings.
 
-## Checks
+## Verification
 
 ```sh
 bun run typecheck
-bun run format:check
-bun run check:docs
-bun run check:vendor
 bun run test
-bun run test:upstream
-# Use a separate disposable PostgreSQL database for the following tests.
-docker run --rm -d --name loreweave-test -p 127.0.0.1:45433:5432 \
-  -e POSTGRES_USER=loreweave -e POSTGRES_PASSWORD=loreweave_test \
-  -e POSTGRES_DB=loreweave_test pgvector/pgvector:0.8.2-pg17
-# Wait until: docker exec loreweave-test pg_isready -U loreweave
-export TEST_DATABASE_URL=postgres://loreweave:loreweave_test@127.0.0.1:45433/loreweave_test
-bun run test:persistence
-bun run test:access
-bun run test:sources
-bun run test:evidence
-bun run test:updates
-bun run test:identity
-bun run test:wiki
-bun x playwright install chromium
-bun run test:browser
+bun run test:conformance
 bun run build
-docker stop loreweave-test
+bun run check:baseline
+bun run test:browser
+bun run check:docs
+bun run format:check
 ```
 
-Host/HTTP tests use real loopback provider requests and observable outcomes.
-Browser and persistence tests require `TEST_DATABASE_URL` and exercise real
-PostgreSQL; the browser server uses this test URL, never silently the development
-database. CI provisions its own disposable database. The persistence suite injects
-storage errors and terminates a conversation database session, so use an isolated
-test database. Real-provider answer quality and capacity acceptance remain later work. `build` emits the browser bundle; `dev` is the current local
-runtime, not a production deployment command.
+[Baseline evidence](docs/development/pageindex-baseline.md) explains the exact
+package/runtime probes and observed adapter details. Controlled probes verify
+protocol and lifecycle behavior. Real-model quality has separate original-evidence
+review in the final evaluation; neither fixture results nor upstream scores are
+substituted for measured TS answers. Captured limits are in
+[work bounds](docs/development/pageindex-limits.md).
 
-## Topic Wiki
+The final corpus has 15 inputs per mode, with Flash 11/15 and Standard 12/15 ready.
+The latest 22 Web and two independent MCP outcomes were reviewed against their
+immutable originals. Rejected imports, failed earlier trials, provider usage/cost,
+latency and review limitations remain in the measured report. Use `bun run
+eval:compare` and `bun run eval:report` to recompute its artifact metrics without
+making model calls. Paid re-execution is documented separately in that report.
 
-Choose “浏览知识主题” after importing Markdown. The scripted maintenance adapter
-recognizes log retention, release/deployment and backup fixtures, synthesizes
-attributed originals, and reviews each generated block in a separate request.
-Unknown material is recorded as unresolved; this adapter is not general semantic
-extraction or a quality benchmark. Project topics remain scoped; shared-topic
-links create navigation without copying project-only facts into shared pages.
+The browser suite creates and removes a disposable real PostgreSQL database and
+artifact directory. Persistence conformance uses Node 24 for its Vitest tool,
+while application dev/build/compiled serving runs on Bun. Paid evaluation is
+opt-in through `LOREWEAVE_EVAL_PROVIDER_FILE`; its private JSON contains
+`baseURL`, `model`, `apiKey` and `maxUSD` (at most 10). The accounting proxy
+requires the selected gateway's `/v1/usage` contract. It never runs inside the
+application or silently loads an old connection.
 
-Topic discovery records all source ranges, bounded overflow, four catalogue routes
-(Top 20 each, RRF 60, Top 40), an 8-to-16 card pass, and detailed original-support
-windows. Final decisions read those windows; publication rechecks their source
-and page versions. At most three planner requests and seven inspection requests
-share durable operation limits. Generation/review use at most three requests each
-per block. UTF-8 byte bounds conservatively limit source packets, routing text,
-planner inputs/outputs and generated blocks without assuming a provider tokenizer.
-Related discovery edits publish atomically with catalogue changes, reservations
-and revision checks; mandatory page work coalesces matching revision results.
-Each affected page has a required refresh result. Counters, hashes,
-remaining ranges and failure reasons are available through the maintenance read API.
-
-`GET /api/wiki` and `GET /api/wiki/:id?version=...` expose pages and original
-citations; `GET /api/wiki-operations/:operationId` exposes discovery progress.
-Eligible Wiki search adds original evidence to the answer pipeline, deduplicated
-by original version/passage. Old source/identity dependencies immediately make
-Wiki prose ineligible. Missing vectors permit lexical publication and original
-fallback; novelty waits for a catalogue revision/projection event within its
-existing deadline. `WikiService.retryProjection` provides an idempotent repair
-entry for catalogue recovery. Source/identity changes now enumerate all historical
-dependents in batches of 20, coalesce discovery with page revalidation, and retire
-or revive the same page ID after complete support review. Source receipts expose
-aggregate Wiki readiness separately from source searchability. See the
-[refresh and correction runtime](docs/development/wiki-refresh.md) for attributed
-member notes, retained guidance, natural-language fixtures, maintenance UI and
-explicit repair. Merge/split/restore execution uses versioned edit sets; discovery records
-those proposals without executing them.
-
-## Interrupted execution
-
-A lost browser connection leaves execution on the server. A lost database writer
-faults execution; acquiring its lock does not prove external work has terminated.
-Inspection reports interrupted generation without restarting it, preserving the
-original deadline, budgets and draft identity. No same-conversation writer may
-pass an unsettled predecessor.
-
-After an operator has confirmed the old process and started tool I/O have ended:
-
-```sh
-bun run reconcile:run RUN_ID --execution-terminated
-```
-
-Without the flag, the command records interruption but does not settle execution.
-It cannot take a lock away from a live writer. This command never replays tools or
-repairs missing historical tool results; those require domain-operation reconciliation
-before the conversation can execute again. [Persistence details](docs/development/conversations.md)
-record the current boundary and deployment limits.
-
-## Construction and provenance
-
-- [Specification and live tasks](https://github.com/L-1ngg/loreweave/issues/1)
-- [Blueprint](docs/rag-v1-blueprint.md) and [nine-module contracts](docs/design/rag-v1/README.md)
-- [Task dependency map](.scratch/rag-v1/README.md)
-- [Confirmed decisions](docs/rag-optimization-design.md) and [domain terms](CONTEXT.md)
-- [Evaluation plan](docs/rag-evaluation-plan.md)
-- [Evidence retrieval and answer admission](docs/development/evidence.md)
-- [Markdown source behavior](docs/development/sources.md)
-- [Access and credential behavior](docs/development/access.md)
-- [Pinned Forge source and local patch](vendor/forge-agent/README.md)
-- [Retired Python baseline and behavior inventory](docs/history/retirement.md)
-- [LLM Wiki](docs/research/llm-wiki.zh-CN.md) and [GraphRAG](docs/research/graphrag.zh-CN.md) learning material
-
-## External Agents (MCP)
-
-The local application exposes authenticated Streamable HTTP MCP at
-`http://127.0.0.1:41736/mcp`. It provides read-only `evidence_search`,
-`question_answer` and immutable original-passage resources. Requests use separate
-revocable API credentials, explicit project scope and the same evidence/answer
-services as browser requests. See [MCP usage and response contract](docs/development/mcp.md)
-for credential issuance, client configuration, scope, gaps and historical reads.
-Run `bun run test:mcp` with `TEST_DATABASE_URL` set to a disposable database.
-
-## Maintenance recovery
-
-Source, Wiki and graph outcomes are shown independently in import records.
-“查看处理记录” opens `/operations/<id>` with durable jobs and commit receipts.
-Administrators can reconcile uncertain outcomes without resubmitting source edits.
-See [maintenance recovery](docs/development/maintenance-recovery.md) for worker
-replacement, logical budgets, graph membership history and validation boundaries.
-
-Evaluation tooling and dataset preparation are described in
-[the evaluation harness guide](docs/development/evaluation.md). Use root
-`test:evaluation`, `eval:fixture`, `eval:run` and `eval:grade`; real quality and
-capacity acceptance remain separate from controlled fixture verification.
-
-[Capacity tooling and acceptance preparation](docs/development/capacity.md)
-provide `test:capacity`, `eval:capacity-fixture`, `eval:capacity` and `eval:prepare`.
-The last command records missing prerequisites and compares supplied independent
-question grades; it does not certify release acceptance.
+Application deployment packaging is deferred. The Compose service provisions
+only the independent local development database.

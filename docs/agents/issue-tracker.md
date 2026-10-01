@@ -1,13 +1,14 @@
 # Issue tracker: GitHub Issues
 
-The user requested migration to `L-1ngg/loreweave` GitHub Issues on 2026-09-10.
-Start at the [construction specification](https://github.com/L-1ngg/loreweave/issues/1)
-and its 19 sub-issues. The [local navigation map](../../.scratch/rag-v1/README.md)
-links the original work-item numbers to their GitHub issues.
+Use [Spec #29](https://github.com/L-1ngg/loreweave/issues/29) for the current
+PageIndex-style replacement, then [the construction blueprint](../pageindex-v1-blueprint.md)
+and the selected live work item. The [ticket plan](../design/pageindex-v1/tickets/README.md)
+initially contains review/publication drafts; after publication it links live items.
+Draft IDs are not GitHub issue numbers or execution status.
 
-Repository retirement [#19](https://github.com/L-1ngg/loreweave/issues/19) is work
-item 00 and blocks the first product slice, #2. Its acceptance evidence concerns
-the repository baseline; application behavior begins with #2.
+Issues #1-#28 and the [old local navigation map](../../.scratch/rag-v1/README.md)
+are superseded historical records. Their old sub-issue/dependency graph and
+readiness do not gate or define the new replacement.
 
 - The specification issue owns product scope and numbered acceptance outcomes.
 - Each work-item issue owns its acceptance criteria, status and execution evidence.
@@ -26,7 +27,8 @@ the repository baseline; application behavior begins with #2.
   `ready-for-human`, or `wontfix` as needed. Create labels when first used.
 - Routine design/decomposition choices remain delegated; changes to confirmed
   product behavior must be explicit in the specification and decision record.
-- Forge integration defect reports use the separately authorized upstream tracker.
+- Old Forge integration evidence belongs to the historical scope; the replacement
+  uses its current specification and tracker rather than recreating old work items.
 
 Before implementation, read the live issue, parent specification, named module
 contracts and blockers' completion evidence. Afterward, record verification and

@@ -1,0 +1,148 @@
+{
+  "date": "2026-10-01T07:51:28.404Z",
+  "kind": "controlled protocol, not real model quality",
+  "index": {
+    "tree": [
+      {
+        "id": "4f44e54c-7fa3-410c-a578-4f2cac703025",
+        "end": 3,
+        "depth": 0,
+        "start": 1,
+        "title": "Front matter",
+        "origin": "coverage",
+        "summary": "LOREWEAVE FIXED EVIDENCE\nAnnual Report 2026\nFront matter and qualifications are retained.\nPhysical page 1\nLOREWEAVE FIXED EVIDENCE\nContents\n1 Overview ....................................... 1\n2 Results ......................................... 3\nAppendix .......................................... 5\nPhysical page 2\nLOREWEAVE FIXED EVIDENCE\n1 Overview\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nPhysical page 3",
+        "parentId": null,
+        "mergedTitles": []
+      },
+      {
+        "id": "8fd9b81a-a824-41b4-a459-026e6753bec9",
+        "end": 5,
+        "depth": 0,
+        "start": 3,
+        "title": "1 Overview",
+        "origin": "model",
+        "summary": "LOREWEAVE FIXED EVIDENCE\n1 Overview\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nPhysical page 3\nLOREWEAVE FIXED EVIDENCE\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nAcme 2026 revenue was 120 million USD.\nIt covers domestic operations only, not subsidiaries.\nAcme 2026 net profit was 12 million USD.\nPhysical page 4\nLOREWEAVE FIXED EVIDENCE\n2 Results\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 ",
+        "parentId": null,
+        "mergedTitles": []
+      },
+      {
+        "id": "37978c59-4651-40df-b52c-e7109a32af75",
+        "end": 7,
+        "depth": 0,
+        "start": 5,
+        "title": "2 Results",
+        "origin": "model",
+        "summary": "LOREWEAVE FIXED EVIDENCE\n2 Results\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nPhysical page 5\nLOREWEAVE FIXED EVIDENCE\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nPhysical page 6\nLOREWEAVE FIXED EVIDENCE\nAppendix\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was ",
+        "parentId": null,
+        "mergedTitles": []
+      },
+      {
+        "id": "2228d2d0-0918-4001-b9e6-0e7ec8c78b49",
+        "end": 8,
+        "depth": 0,
+        "start": 7,
+        "title": "Appendix",
+        "origin": "model",
+        "summary": "LOREWEAVE FIXED EVIDENCE\nAppendix\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nPhysical page 7\nLOREWEAVE FIXED EVIDENCE\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nAcme 2025 revenue was 100 million USD.\nAcme 2025 net profit was 9 million USD.\nThese are audited domestic-only totals.\nPhysical page 8",
+        "parentId": null,
+        "mergedTitles": []
+      }
+    ],
+    "provenance": {
+      "mode": "standard",
+      "model": {
+        "model": "index-fixture",
+        "revisionId": "350505a5-3c75-4b96-abf7-8e113bfbf1b3"
+      },
+      "usage": {
+        "elapsedMs": 300,
+        "modelCalls": 3,
+        "inputTokens": 30,
+        "outputTokens": 15
+      },
+      "defaults": {
+        "maxDepth": 4,
+        "smallChars": 500,
+        "windowPages": 8,
+        "maxLeafChars": 18000,
+        "maxLeafPages": 12,
+        "summaryChars": 1600,
+        "shortLeafChars": 1200,
+        "smallMergedChars": 5000
+      },
+      "standard": {
+        "path": "printed-toc",
+        "repairs": [],
+        "revision": "standard-2"
+      },
+      "manifests": {
+        "summaries": {
+          "valid": true,
+          "digest": "4d62a895c4de688a5365ef803182fe16968fb47022dff7caa7af2f7bb05b1ab1",
+          "compatibility": "refinement-3:350505a5-3c75-4b96-abf7-8e113bfbf1b3:index-fixture",
+          "sourceVersion": "642c38d0-cdb8-4847-adca-48359dea95f0",
+          "extractorRevision": "pdfjs6-layout-1"
+        },
+        "extraction": {
+          "valid": true,
+          "digest": "bff3b38122cda22617eac346372249a4dc44fb4d46cdab99caa40eebe20ead4d",
+          "compatibility": "pdfjs6-layout-1",
+          "sourceVersion": "642c38d0-cdb8-4847-adca-48359dea95f0",
+          "extractorRevision": "pdfjs6-layout-1"
+        },
+        "construction": {
+          "valid": true,
+          "digest": "ffde5eb2421b8f2392cc153a7d83d7cbc1fc747c9b0bd437aca8ec613e3b2575",
+          "compatibility": "standard:standard-2:pdfjs6-layout-1",
+          "sourceVersion": "642c38d0-cdb8-4847-adca-48359dea95f0",
+          "extractorRevision": "pdfjs6-layout-1"
+        },
+        "optimization": {
+          "valid": true,
+          "digest": "ffde5eb2421b8f2392cc153a7d83d7cbc1fc747c9b0bd437aca8ec613e3b2575",
+          "compatibility": "standard:refinement-3:350505a5-3c75-4b96-abf7-8e113bfbf1b3:index-fixture",
+          "sourceVersion": "642c38d0-cdb8-4847-adca-48359dea95f0",
+          "extractorRevision": "pdfjs6-layout-1"
+        }
+      },
+      "reusedExtraction": false,
+      "extractorRevision": "pdfjs6-layout-1",
+      "refinementRevision": "refinement-3"
+    },
+    "mode": "standard"
+  },
+  "requests": [
+    {
+      "model": "index-fixture",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "authorized": true,
+      "task": "printed_toc"
+    },
+    {
+      "model": "index-fixture",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "authorized": true,
+      "task": "summarize_leaf"
+    },
+    {
+      "model": "index-fixture",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "authorized": true,
+      "task": "summarize_leaf"
+    },
+    {
+      "model": "index-fixture",
+      "stream": true,
+      "structured": true,
+      "tools": [],
+      "authorized": true,
+      "task": "printed_toc"
+    }
+  ]
+}

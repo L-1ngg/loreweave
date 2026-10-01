@@ -1,111 +1,118 @@
 # LoreWeave Context
 
-Domain language for questions and evidence grounded in imported documents.
+Domain language for document-tree question answering grounded in imported originals.
 
 ## Language
 
-**Traceable document question answering**:
-Answering a question from imported documents with supporting source passages and
-identifiable source locations. Missing support is an explicit evidence gap.
+**Instance owner**:
+The sole human owner of a local instance's document library, conversations and
+model configuration. An authorized MCP client acts within that owner's access;
+it is not another human account.
 
-**Evidence retrieval**:
-Finding original passages in imported documents that support a user's or external
-Agent's question, together with their source locations and necessary context.
+**Document library**:
+The owner's collection of currently available documents for browsing and new
+questions. Retained historical originals are distinct from current membership.
 
-**Wiki page**:
-A maintained, directly readable topic in the knowledge base whose claims are
-traceable to source material. A page may integrate several source documents,
-and one source document may support several pages; pages and graph entities
-need not correspond one to one.
+**Document**:
+A stable library item whose identity is independent of its filename. A document
+can have several immutable source versions while one is effective for new use.
 
-**Unresolved source conflict**:
-An incompatibility between source statements that cannot be resolved by their
-time, version, or scope of applicability. Both statements retain their source
-references and remain visibly disputed in relevant Wiki content and answers.
+**Source version**:
+An immutable supplied original and the original-page content extracted from it.
+A later upload to the same document creates another version rather than changing it.
 
-**Wiki content pending update**:
-Previously published Wiki content awaiting refresh after a source change affects
-its applicability. It remains visibly marked for readers while questions about
-the affected content use applicable original evidence instead.
+**Physical page**:
+A page's one-based position in its original PDF. A printed page label, including
+a Roman numeral, is display metadata and need not equal that position.
 
-**Knowledge entity**:
-A person, system, component, concept, or other identifiable subject represented
-with a shared identity across Wiki content and the knowledge graph. Identity is
-grounded in evidence about the subject; a shared name alone does not establish
-that two references denote the same entity.
+**Document tree**:
+A hierarchy of original-backed chapters/sections with titles and physical-page
+ranges. Its summaries and headings guide navigation rather than supply answer facts.
 
-**Graph relationship**:
-A source-supported connection between knowledge entities, retaining the source
-references and conditions needed to interpret it. It represents a source claim,
-including any stated temporal scope or planned status, rather than independent
-verification of that claim.
+**Index revision**:
+One versioned document-tree/artifact result for a source version. Tree-node
+identities and locations are interpreted within that revision.
 
-**Source reference**:
-A reference to an original passage in a specific source version that lets
-readers or the system trace Wiki content and graph relationships to their
-underlying evidence.
+**Flash**:
+The indexing mode whose initial hierarchy comes from PDF layout and trustworthy
+outlines, followed by optimization and navigation summaries.
+
+**Standard**:
+The indexing mode that constructs and verifies chapter structure with a model,
+including documents with or without a usable printed table of contents.
+
+**Navigation summary**:
+A derived description of a tree section used to choose original pages to read.
+It is not a substitute for factual support from those pages.
 
 **Source activation**:
-The point at which a prepared document version becomes the effective version
-for current retrieval and knowledge maintenance. Activation of one document
-does not by itself establish that its claims supersede a different source.
+The point at which a validated prepared source/index becomes effective for new
+use. Activation does not establish that one document supersedes another's claims.
 
-**Knowledge maintenance**:
-The upkeep of source-grounded Wiki topics, entity identities, and graph
-relationships as source material and user contributions change.
-
-**Knowledge Agent**:
-The conversational actor that interprets a member's request and selects knowledge
-operations or follow-up evidence retrieval within a bounded run. Its conversation
-history supports interaction and is not an independent knowledge source.
-
-**Organization**:
-The enterprise or team whose knowledge is maintained and used internally in the
-first version. Its knowledge includes organization-level material and material
-related to multiple projects.
-
-**Knowledge run**:
-A bounded attempt to handle a member's or external Agent's knowledge request,
-including its answer or clarification outcome. Its response can end before
-started work has finished settling.
+**Document retirement**:
+Removal from the current library and new-question eligibility, with historical
+originals/references retained. It is distinct from permanent original-file purging.
 
 **Knowledge operation**:
-An identifiable requested change to sources or maintained knowledge with a
-durable outcome. Its effects remain inspectable independently of the conversation
-that requested it.
+An identifiable accepted document import or update with durable progress and an
+inspectable outcome independent of a browser conversation.
 
-**Execution settlement**:
-The point at which a knowledge run's started model, tool and persistence work
-has finished or confirmed termination, so it no longer holds execution ownership.
+**Indexing attempt**:
+One bounded execution of a Knowledge operation under a chosen mode/configuration.
+A manual retry creates another attempt without another accepted document.
 
-**Organizational knowledge base**:
-The organization's unified logical collection of source material and organized
-knowledge, classified by organization-wide or project-specific affiliation.
-Project classification supports scoped retrieval and cross-project connections;
-it does not by itself grant access.
+**Knowledge Agent**:
+The conversational actor that interprets a question, chooses documents/pages and
+answers within a bounded run. Its history supports interaction, not independent facts.
 
-**Retired Wiki page**:
-A stable topic entry whose current content has no eligible support after completed
-review. Its historical versions remain readable; later supported content can
-reactivate the same entry. Retirement differs from a failed refresh or a merge redirect.
+**Knowledge run**:
+One bounded attempt to answer or clarify a Web or external Agent question, with
+its own scope, source bindings, reading records and observable outcome.
 
-**Identity proof**:
-Original-source evidence that identified mentions refer to the same entity,
-including the source dependencies of any intermediate equivalence decisions.
+**Query scope**:
+The authorized library or explicit document selection that limits one Knowledge
+run. Candidates discovered during a question do not redefine future scope.
 
-**Graph extraction generation**:
-A versioned set of extracted relationship supports with a manifest of the source
-packets processed and their coverage outcomes, published as one replacement set.
+**Page-read record**:
+The record that a particular original physical page was accessed in a Knowledge
+run, including authorized reuse of stored/cached page content.
+
+**Source reference**:
+A reference bound to an original source version and physical page that allows a
+reader to inspect the evidence used by a specific answer.
+
+**Traceable document question answering**:
+Answering from imported original pages with identifiable version/page references.
+Missing original support remains an explicit evidence gap.
+
+**Unresolved source conflict**:
+Incompatible original statements not reconciled by time, version or applicability.
+The answer preserves each statement's source and relevant qualifications.
+
+**Evidence gap**:
+A requested factual conclusion without sufficient original-page support in the
+run. It does not by itself establish absence from the whole library.
+
+**Incomplete search**:
+Discovery or reading whose coverage is limited by a bound, failure or unavailable
+material. It is distinct from a semantically unsupported conclusion.
+
+**Conversation**:
+An owner-held sequence of questions, answers and run outcomes with retained query
+scope. It is separate from the documents and originals its messages reference.
+
+**Run attachment**:
+Observation of an existing Knowledge run's saved and subsequent output. It is
+not another question or another model execution.
+
+**Stop**:
+Explicit intent to cancel accepted question execution. Losing a viewer connection
+alone is not that intent.
+
+**Interrupted run**:
+An unfinished execution whose application process did not complete it. Its
+committed history remains inspectable without automatic execution replay.
 
 **Support review**:
-A check that each material generated assertion faithfully represents its cited
-original evidence, including scope and qualifications; it is not independent
-verification of the original author's truthfulness.
-
-**Model HTTP capacity**:
-The shared allowance for admitted model connections, including orphaned requests
-without evidence that their client transport ended.
-
-**Remote outcome uncertainty**:
-A dispatched model request whose completion or termination has not been observed;
-its outcome remains unknown even when its client connection has ended.
+Assessment that a generated claim faithfully represents its cited original,
+including qualifications. Valid reference location is not proof of semantic support.

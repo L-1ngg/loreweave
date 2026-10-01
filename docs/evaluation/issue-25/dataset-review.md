@@ -1,3 +1,6 @@
+> Historical evaluation of the retired runtime. Source links resolve through
+> docs/history/pageindex-retirement.md; these results do not certify Spec #29.
+
 # Issue #25 题集独立审定
 
 本轮用户明确允许 subagent 审定题集并评分。本记录属于 **independent-agent review**，不是人工审定；审定者为 `issue-25-independent-agent`，时间见 `reviewed-questions.json`。审定时未读取新比较运行结果，题目与评分规则在运行前冻结。
