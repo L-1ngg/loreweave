@@ -12,16 +12,18 @@ import { mkdir } from "node:fs/promises";
 import { hashData } from "../src/server/library";
 
 const directory = "tests/fixtures/pdf";
-await mkdir(directory, { recursive: true });
-const fontPath =
-  process.env.LOREWEAVE_FIXTURE_FONT ??
-  "/home/l1ngg/.cache/loreweave-fixtures/NotoSansSC.ttf";
+const fontPath = process.env.LOREWEAVE_FIXTURE_FONT?.trim();
+if (!fontPath)
+  throw new Error(
+    "Set LOREWEAVE_FIXTURE_FONT to the pinned Noto Sans SC font file; see docs/development/testing.md#regenerating-fixtures.",
+  );
 const fontBytes = new Uint8Array(await Bun.file(fontPath).arrayBuffer());
 if (
   hashData(fontBytes) !==
   "a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da"
 )
   throw new Error("fixture_font_hash_changed");
+await mkdir(directory, { recursive: true });
 const manifest: Array<Record<string, unknown>> = [];
 async function create(name: string, pages: number, kind: string) {
   const pdf = await PDFDocument.create();

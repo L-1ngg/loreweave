@@ -25,7 +25,7 @@ export function inspectDocumentation(root: string, files: string[]) {
       if (/\/(?:tickets|issues)(?:\/|\.)|\/issue-\d+\.md$/.test(file))
         failures.push(`${file}: task copies belong in GitHub Issues`);
       if (
-        !/^docs\/(?:README\.md|history\.md|(?:guides|architecture|development|evaluation|adr)\/.+\.md|licenses\/[^/]+\.txt|assets\/.+\.(?:png|jpg|svg|webp|gif))$/.test(
+        !/^docs\/(?:README\.md|history\.md|(?:guides|architecture|development|adr)\/.+\.md|licenses\/[^/]+\.txt|assets\/.+\.(?:png|jpg|svg|webp|gif))$/.test(
           file,
         )
       )

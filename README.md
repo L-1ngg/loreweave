@@ -60,11 +60,11 @@ authorized historical originals and citations.
 
 [The documentation index](docs/README.md) links current architecture, configuration
 and development guidance. Start contributing with [CONTRIBUTING](CONTRIBUTING.md).
-The [version evaluation](docs/evaluation/pageindex-v1.md) separates controlled
+The [evaluation method](docs/development/evaluation.md) separates controlled
 protocol checks from real-provider measurements and their limits. Verify fixed
 test inputs with `bun run fixtures:verify`. Evaluation commands read explicitly
 selected local results and write to ignored directories. Raw run records stay
 outside Git.
 
-Source attribution is in [NOTICE](NOTICE.md); earlier implementations and recovery
-information are linked from [history](docs/history.md).
+Source attribution is in [NOTICE](NOTICE.md); earlier implementation revisions
+are linked from [history](docs/history.md).

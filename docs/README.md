@@ -36,9 +36,7 @@ maintain and evaluate it. [README](../README.md) provides local startup;
   public transports and desktop/mobile browser tests.
 - [Evaluation method](development/evaluation.md): frozen inputs, isolated
   comparison, real-provider runs and external evidence storage.
-- [PageIndex v1 results](evaluation/pageindex-v1.md): dated measurements and support
-  review, including failed trials and unverified boundaries.
-- [History and recovery](history.md): prior implementations and fixed revisions.
+- [History](history.md): prior implementations and fixed revisions.
 - [Source attribution](../NOTICE.md): pinned sources and retained licenses.
 
 Product scope and work status live in [GitHub Issues](https://github.com/L-1ngg/loreweave/issues).

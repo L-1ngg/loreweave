@@ -38,7 +38,6 @@ graphs are [historical context](docs/history.md), not current execution gates.
 | `CONTEXT.md`         | One domain glossary, limited to terms and meanings            |
 | `docs/adr/`          | Architectural choices, trade-offs and supersession            |
 | `docs/development/`  | Configuration, testing and evaluation methods                 |
-| `docs/evaluation/`   | Reviewed, dated result reports                                |
 | `tests/fixtures/`    | Reusable test inputs, source facts and checksum manifests     |
 | GitHub Issues        | Scope, acceptance criteria, work plans and execution journals |
 
@@ -67,12 +66,12 @@ external output directory. Preserve tracked documents and fixed test inputs.
 Raw outputs, screenshots, call/cost logs, delivery manifests and execution
 snapshots stay outside Git. Archive a run's complete evidence dependency set
 externally, including failures and rejected inputs, and record source/dataset/
-provider identity and checksums there. Publish only a concise, reviewed result
-report with provenance and limitations; task execution evidence stays in its issue.
+provider identity and checksums there. Record reviewed results, provenance and
+limitations in the live issue or an external report. Git keeps reusable evaluation
+methods and tools; private recovery instructions stay with the external archive.
 
 `bun run check:docs` verifies local targets, heading anchors, navigation coverage
 and document placement, including accidental tracked evaluation outputs.
 `bun run fixtures:verify` checks fixed PDF input hashes. CI also checks that
-validation leaves tracked files unchanged. Temporary
-files are removed after use; `.archify` artifacts and unrelated user work are
-preserved.
+validation leaves tracked files unchanged. Temporary files are removed after use;
+`.archify` artifacts and unrelated user work are preserved.

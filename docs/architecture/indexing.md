@@ -66,8 +66,9 @@ provenance and are generated after refinement.
 A failed required summary cannot be skipped to mark the index ready. Schema,
 range and coverage validation cannot guarantee semantic entailment of arbitrary
 summaries. They guide reading; factual conclusions still require original pages.
-The [dated evaluation](../evaluation/pageindex-v1.md) records a measured boundary
-summary defect, correction and remaining compression risk.
+Evaluate claims and qualifications against their original physical pages using
+the [evaluation method](../development/evaluation.md); summary compression can
+omit details even when structural validation succeeds.
 
 ## Attempts and publication
 

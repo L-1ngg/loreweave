@@ -61,5 +61,5 @@ and evaluation tools are development commands outside the product request path.
 Read [contracts](contracts.md) for invariants, [indexing](indexing.md) for PDF work,
 [runs and evidence](runs-and-evidence.md) for QA, and [Web/runtime](web-and-runtime.md)
 for transport and cache ownership. [Testing](../development/testing.md) and the
-[dated evaluation](../evaluation/pageindex-v1.md) distinguish behavior checks from
+[evaluation method](../development/evaluation.md) distinguish behavior checks from
 measured model quality.

@@ -2,9 +2,9 @@
 
 Evaluation separates protocol/lifecycle checks from model compatibility and
 semantic answer support. Git keeps reusable scripts, fixed test inputs, this
-method and concise [reviewed results](../evaluation/pageindex-v1.md). Raw reports,
-screenshots, call/cost logs and execution snapshots belong in ignored run
-directories or external archives.
+method. Reviewed results and acceptance evidence belong in the live issue or an
+external report. Raw reports, screenshots, call/cost logs and execution snapshots
+belong in ignored run directories or external archives.
 
 ## Fixed inputs and local comparison
 
@@ -113,7 +113,7 @@ and the provider-declared model identity.
 
 Archive a run's complete input/output dependency set externally, preserve failures
 and rejected inputs, and record source/dataset/provider identity and byte hashes.
-Keep private user content and credentials in private storage. The repository may
-publish a concise, dated, reviewed report with provenance and limitations; update
-the documentation index for a new report. Work-item execution evidence remains
-in its GitHub issue. Running a command does not publish its raw outputs to Git.
+Keep private user content, credentials and recovery instructions in private
+storage. Record dated results, provenance and limitations in the live issue or an
+external report. Git contains reusable methods, inputs and tools. Running a
+command does not publish its outputs to Git.

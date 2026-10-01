@@ -20,7 +20,6 @@ would create a second implementation to maintain. A Bun dependency and a pinned
 vendor/patch workflow are the resulting trade-offs, since the SDK is a private
 workspace package with no npm distribution or Node/Python compatibility promise.
 
-The former reuse investigation is retained in the
-[verified recovery baseline](../history.md#private-recovery). It records the
+The former reuse investigation is retained in the external recovery archive. It records the
 inspected revision, alternatives, fresh tests and known integration gaps. Source
 adoption and local patches were implementation work, not completed by this decision.

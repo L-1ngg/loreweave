@@ -12,8 +12,8 @@ Global communication and execution rules are in
 - For local setup and checks, use [README](README.md) and
   [testing](docs/development/testing.md); package scripts are the executable source.
 - For model/indexing evaluation, read [the method](docs/development/evaluation.md)
-  and [dated results](docs/evaluation/pageindex-v1.md). Distinguish
-  controlled behavior checks from actual-provider semantic evidence.
+  and the selected live issue's execution evidence. Distinguish controlled
+  behavior checks from actual-provider semantic evidence.
 - For documentation or tracker changes, read [CONTRIBUTING](CONTRIBUTING.md).
   [docs/README](docs/README.md) navigates current documents. GitHub Issues own
   scope, acceptance, dependencies, status and execution journals; local drafts
@@ -22,13 +22,15 @@ Global communication and execution rules are in
   [ADRs](docs/adr/README.md). Current replacement rationale is
   [ADR-0005](docs/adr/0005-pageindex-typescript-replacement.md) and
   [Spec #29](https://github.com/L-1ngg/loreweave/issues/29).
-- For retired behavior or recovery, read [history](docs/history.md); source
+- For retired behavior, read [history](docs/history.md); source
   attribution is in [NOTICE](NOTICE.md).
 
 Current documents explain implemented behavior and durable contracts. Evaluation
 outputs belong in ignored run directories or external archives; Git keeps reusable
-fixtures, scripts, methods and concise reviewed reports. Preserve unrelated user
-work, private configuration, originals, external evidence archives and `.archify/`.
+fixtures, scripts and methods. Trial reports belong in GitHub Issues or external
+storage; private recovery instructions stay with the external archive. Preserve
+unrelated user work, private configuration, originals, external evidence archives
+and `.archify/`.
 Routine choices are delegated; task scope comes from the active user request
 rather than ticket readiness.
 

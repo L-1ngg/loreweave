@@ -59,8 +59,8 @@ implementation, parser-parity, model-quality or deployment evidence.
 
 ## Related records
 
-[History and recovery](../history.md) identify the verified private archive and
-retired revisions. [Testing](../development/testing.md) describes required public
-integration checks. [The dated evaluation](../evaluation/pageindex-v1.md) records
-actual provider/reference results and their boundaries. These records separate
-controlled lifecycle guarantees from semantic support and remote billing uncertainty.
+[History](../history.md) identifies retired revisions. [Testing](../development/testing.md)
+describes required public integration checks. [Evaluation](../development/evaluation.md)
+describes provider/reference measurement methods and their evidence requirements.
+These records separate controlled lifecycle guarantees from semantic support and
+remote billing uncertainty.

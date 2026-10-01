@@ -14,7 +14,7 @@ only 280 ms remaining. No evidence established eight ongoing remote computations
 The synchronous SiliconFlow API provides a trace header and stream completion,
 but no inspected public contract for synchronous status lookup, disconnect
 cancellation, or maximum remote lifetime. The provider investigation is retained
-in the [verified recovery baseline](../history.md#private-recovery).
+in the external recovery archive.
 Indefinitely counting every unknown remote outcome makes a finite authority
 permanently unavailable after enough disconnects. Expiring a lease cannot resolve
 that uncertainty.

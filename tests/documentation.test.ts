@@ -33,12 +33,14 @@ test("documentation checks Unicode/duplicate anchors, images, navigation and tas
       "docs/guides/orphan.md",
       "docs/development/issue-99.md",
       "evaluation/result.json",
+      "docs/evaluation/trial.md",
     ]).failures;
     expect(failures.some((f) => f.includes("missing anchor"))).toBe(true);
     expect(failures.some((f) => f.includes("missing target"))).toBe(true);
     expect(failures.some((f) => f.includes("unreachable"))).toBe(true);
     expect(failures.some((f) => f.includes("task copies"))).toBe(true);
     expect(failures.some((f) => f.includes("outside Git"))).toBe(true);
+    expect(failures.some((f) => f.includes("unsupported document"))).toBe(true);
   } finally {
     await rm(root, { recursive: true });
   }
@@ -150,7 +152,7 @@ test("evaluation requires explicit run inputs and ledgers and leaves semantic re
 
 test("evaluation reads explicit local results and refuses tracked/symlink output targets", async () => {
   expect(() =>
-    evaluationOutputPath("result.json", "docs/evaluation/pageindex-v1.md"),
+    evaluationOutputPath("result.json", "docs/architecture/overview.md"),
   ).toThrow("ignored_run_directory");
   expect(() =>
     evaluationOutputPath("result.json", "tests/fixtures/questions.json"),

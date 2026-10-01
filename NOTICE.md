@@ -8,7 +8,8 @@ deliver Python or PageIndex Cloud as a runtime dependency. The corresponding
 license is retained in [docs/licenses/pageindex.txt](docs/licenses/pageindex.txt).
 Adaptations and evaluation differences are recorded in the
 [indexing documentation](docs/architecture/indexing.md) and
-[measured report](docs/evaluation/pageindex-v1.md).
+[evaluation method](docs/development/evaluation.md). Delivery measurements and
+limitations are recorded in [Issue #47](https://github.com/L-1ngg/loreweave/issues/47).
 
 TanStack packages, PostgreSQL.js, Drizzle, React and the MCP client retain their
 published licenses in installed packages. Mozilla PDF.js is Apache-2.0. The
@@ -17,8 +18,8 @@ minimal compiled Bun adapter follows TanStack Router's MIT-licensed
 
 The retired Forge Agent/Pi/skills notices are preserved in
 `docs/licenses/`; their exact pinned source/provenance and uncommitted
-changes remain in the verified external recovery archive described in
-[history and recovery](docs/history.md). Retention of these notices is attribution,
+changes remain in the external recovery archive. The corresponding implementations
+are listed in [history](docs/history.md). Retention of these notices is attribution,
 not an active execution dependency.
 
 Frozen development PDFs are generated from project-authored source/layouts.

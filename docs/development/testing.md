@@ -48,10 +48,25 @@ metadata and thread/run history are included.
 
 Routine checks preserve all tracked files and fixed test inputs. CI verifies
 this after the suite. Per-task `Ran / Not run / Why / Risk` belongs in the live
-issue; dated reviewed results belong in [evaluation](../evaluation/pageindex-v1.md).
+issue; dated reviewed results are kept with that issue or in external storage.
 
 Controlled fixtures establish protocol, scope and lifecycle behavior. Real model
 compatibility, citation semantic support and cost/latency require separate
 [evaluation](evaluation.md). A lexical substring assertion or valid citation
 location is not a semantic quality score. Report browser engines, provider profiles
 and optional skips actually covered by the run.
+
+## Regenerating fixtures
+
+Committed PDFs and their manifests are fixed test inputs. Tests verify their
+existing bytes; regeneration is a deliberate change to the input set. Keep the
+font file outside Git and set `LOREWEAVE_FIXTURE_FONT` explicitly:
+
+```sh
+LOREWEAVE_FIXTURE_FONT=/path/to/NotoSansSC.ttf bun run fixtures:generate
+```
+
+The required Noto Sans SC font identity and source are pinned in the
+[manifest](../../tests/fixtures/pdf/manifest.json). The generator verifies its
+SHA-256 before writing fixtures and preserves the existing encrypted fixture's
+bytes. Review changes to PDFs/manifests before committing them.
