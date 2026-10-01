@@ -1,8 +1,0 @@
-{
-  "case": "mixed",
-  "runId": "f7bd7692-cb40-42e2-a3bc-09b58e6001bf",
-  "source": "persisted assistant final text only; excludes reasoning blocks",
-  "stopReason": "stop",
-  "rawFinalText": "{\"basis\":\"mixed\",\"text\":\"日志保留的作用（通用解释）：日志是系统运行、调试和事后审计的关键依据。保留日志可用于：1) 故障排查与调试——在问题发生后回溯调用链、错误堆栈和运行状态；2) 安全与合规审计——满足监管或企业审计对操作记录的要求；3) 行为分析与性能优化——通过日志中保留的指标识别性能瓶颈或异常趋势；4) 责任追溯——配合发布、变更流程确认操作责任人。保留期限需要在取证价值、存储成本与隐私合规之间权衡，过长增加成本，过短则可能在需要回溯时丢失证据。\\n\\n星河项目调试日志保留期限（来源依据）：据星河项目运维规则文档记载（e3），［\"星河项目的生产日志保留 30 天。调试日志保留 7 天。\"］，即该项目的调试日志保留期限为 7 天（生产日志为 30 天）。\",\"citations\":[\"e3\"],\"gaps\":[],\"conflicts\":[]}",
-  "finding": "Provider returned unescaped double quotes inside the JSON text string. Completion ended normally; deterministic parser rejected malformed JSON. No automatic quote guessing."
-}

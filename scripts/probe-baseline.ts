@@ -20,6 +20,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { loadLocalConfiguration } from "./configuration";
 import { startProbeProvider } from "../tests/support/provider";
+import { evaluationOutputPath } from "./evaluation-artifacts";
 
 await loadLocalConfiguration();
 const url = new URL(process.env.LOREWEAVE_DATABASE_URL!);
@@ -267,7 +268,7 @@ try {
   assert.equal(bundle.exitCode, 1);
   evidence.serverOnlyBundle = "passed";
   await Bun.write(
-    "docs/development/pageindex-baseline-evidence.json",
+    evaluationOutputPath("pageindex-baseline-evidence.json"),
     JSON.stringify(evidence, null, 2) + "\n",
   );
   console.log(JSON.stringify(evidence, null, 2));

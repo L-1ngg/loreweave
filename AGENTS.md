@@ -1,54 +1,47 @@
-<!-- intent-skills:start -->
-## Skill Loading
-
-Use `bun run intent:list` and `bun run intent:load <package>#<skill>` in this
-checkout. Start's transitive dependency also claims the `intent` bin; these
-root scripts select the installed Intent CLI explicitly. For compatibility
-evidence, read `docs/development/pageindex-baseline.md`.
-
-Use the repository’s installed Intent. If it is unavailable, report the missing dependency instead of downloading a replacement.
-Before editing files for a substantial task:
-- Run `bunx --no-install --package @tanstack/intent intent list` from the workspace root to see available local skills.
-- If a listed skill matches the task, run `bunx --no-install --package @tanstack/intent intent load <package>#<skill>` before changing files.
-- Use the loaded `SKILL.md` guidance while making the change.
-- Monorepos: when working across packages, run the skill check from the workspace root and prefer the local skill for the package being changed.
-- Multiple matches: prefer the most specific local skill for the package or concern you are changing; load additional skills only when the task spans multiple packages or concerns.
-<!-- intent-skills:end -->
-
 # LoreWeave project guidance
 
-Global communication and execution rules remain in
+Global communication and execution rules are in
 [/home/l1ngg/.agents/AGENTS.md](/home/l1ngg/.agents/AGENTS.md).
 
-## Design and implementation context
+## Read by task
 
-For the replacement, start at [Spec #29](https://github.com/L-1ngg/loreweave/issues/29),
-[the construction blueprint](docs/pageindex-v1-blueprint.md) and
-[the module map](docs/design/pageindex-v1/README.md). Read the affected module's
-contract and relevant ADRs before changing behavior. The blueprint describes the
-target; current runtime/validation commands are in [README](README.md) and root
-package scripts. Read the selected live work item and its blockers before implementation.
-For retired Python/Forge/Wiki/graph behavior or recovery, use the historical
-[retirement record](docs/history/pageindex-retirement.md). For source attribution,
-read [NOTICE](NOTICE.md).
+- For product behavior or runtime changes, read the selected live issue and parent
+  specification, [architecture](docs/architecture/overview.md), affected
+  [contracts](docs/architecture/contracts.md) and relevant ADRs. Read blockers'
+  completion evidence before executing dependent work.
+- For local setup and checks, use [README](README.md) and
+  [testing](docs/development/testing.md); package scripts are the executable source.
+- For model/indexing evaluation, read [the method](docs/development/evaluation.md)
+  and [baseline provenance](evaluation/baselines/pageindex-v1/README.md). Distinguish
+  controlled behavior checks from actual-provider semantic evidence.
+- For documentation or tracker changes, read [CONTRIBUTING](CONTRIBUTING.md).
+  [docs/README](docs/README.md) navigates current documents. GitHub Issues own
+  scope, acceptance, dependencies, status and execution journals; local drafts
+  use ignored `.scratch/`.
+- For terminology/decisions, use the single [CONTEXT](CONTEXT.md) glossary and
+  [ADRs](docs/adr/README.md). Current replacement rationale is
+  [ADR-0005](docs/adr/0005-pageindex-typescript-replacement.md) and
+  [Spec #29](https://github.com/L-1ngg/loreweave/issues/29).
+- For retired behavior or recovery, read [history](docs/history.md); source
+  attribution is in [NOTICE](NOTICE.md).
 
-For domain terminology, read [CONTEXT.md](CONTEXT.md). Current decision provenance
-is in Spec #29's alignment notes and [ADR-0005](docs/adr/0005-pageindex-typescript-replacement.md).
-Routine design and evaluation choices are delegated; implementation and delivery
-scope come from the active user request, not a ticket's readiness label.
+Current documents explain implemented behavior and durable contracts. Preserve
+unrelated user work, private configuration, originals, historical evidence bytes
+and `.archify/`. Routine choices are delegated; task scope comes from the active
+user request rather than ticket readiness.
 
-## Agent skills
+<!-- intent-skills:start -->
 
-### Issue tracker
+## Installed package guidance
 
-Use [LoreWeave GitHub Issues](https://github.com/L-1ngg/loreweave/issues) for
-current specs, work items, dependencies and execution evidence. Read
-[tracker conventions](docs/agents/issue-tracker.md) when creating, refining or
-executing tickets. Local `.scratch/rag-v1` files are historical snapshots;
-[PageIndex ticket drafts](docs/design/pageindex-v1/tickets/README.md) are publication
-inputs, not an implementation tracker. Use the linked live issue after publication.
+Before changing a TanStack integration, run `bun run intent:list`, then
+`bun run intent:load <package>#<skill>` for matching installed guidance. Use
+installed source and official version-appropriate documentation when a package's
+skill is absent or stale. These scripts select the local Intent CLI explicitly
+because Start's transitive dependency also claims its executable.
 
-### Domain docs
-
-Use one project glossary and [docs/adr](docs/adr) for architectural rationale.
-Read [domain-document conventions](docs/agents/domain.md) when updating them.
+When updating generated mappings, inspect the same CLI's `install --dry-run`
+before applying them and preserve project rules. Intent is development guidance;
+it is separate from runtime model skills. Integration details are in
+[Web/runtime](docs/architecture/web-and-runtime.md#intent).
+<!-- intent-skills:end -->

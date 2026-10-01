@@ -1,196 +1,113 @@
-> Historical record, retired by Spec #29. Source links resolve through the verified
-> recovery baseline described in docs/history/pageindex-retirement.md. Commands
-> and runtime behavior below are not current PageIndex instructions.
+# Evaluation
 
-# Evaluation harness
+Evaluation separates protocol/lifecycle checks from model compatibility and
+semantic answer support. The current [reviewed report](../evaluation/pageindex-v1.md)
+has an immutable [baseline](../../evaluation/baselines/pageindex-v1/README.md).
+Routine commands create new outputs rather than overwriting that baseline.
 
-Issue #17 supplies executable source-answer evaluation; #20 owns real maintenance
-capture and #18 owns human/real-provider acceptance. Controlled fixtures establish
-report correctness and scheduling only. No real quality, latency or capacity target
-is certified by this harness.
+## Fixed inputs and offline recomputation
 
-Run against a disposable PostgreSQL database:
+[tests/fixtures](../../tests/fixtures/) contains project-authored PDFs, frozen
+questions, source/layout transformations and SHA-256 manifests. Cover all supplied
+inputs, including unsupported or failed imports, in each mode's denominator.
+Original facts and physical pages are the oracle; generated gold prose and upstream
+scores are not substitutes for measured TS answers.
 
-```sh
-TEST_DATABASE_URL=postgres://... bun run test:evaluation
-TEST_DATABASE_URL=postgres://... bun run eval:fixture /tmp/new-evaluation-output
-```
-
-The fixture creates an isolated organization, imports a separate Markdown original,
-then queries the real authenticated HTTP answer interface with a read-only member.
-It writes source manifests, development datasets and reports for a supported answer
-and a provider returning the wrong numeric fact. The latter must fail the product's
-support review and the evaluation. Missing Wiki/graph endpoints remain unavailable.
-No question, reference answer, rubric, human label or generated answer is imported.
-
-For a prepared corpus, use a session belonging to a member with only the `read`
-grant. Set `LOREWEAVE_EVAL_TOKEN` in the process environment. The harness checks the
-grant before answering, so benchmark instructions cannot execute knowledge edits.
-Start each experimental runtime with `LOREWEAVE_RETRIEVAL_PROFILE` set to `source`,
-`wiki`, `graph` or `combined`. All four include the original hybrid source baseline;
-Wiki and graph are optional additions. An explicit graph experimental profile
-attempts graph retrieval on every question. The ordinary development runtime keeps
-its existing automatic relationship routing when the variable is absent.
+Verify and recompute the preserved comparison without provider calls:
 
 ```sh
-bun run eval:run --manifest manifest.json --dataset development.json \
-  --source http://127.0.0.1:41736 --output new-report.json
+bun run eval:verify
+export LOREWEAVE_EVALUATION_OUTPUT_DIRECTORY=.pageindex-data/evaluation/runs/offline-review
+bun run eval:compare
+LOREWEAVE_COMPARE_INPUT="$LOREWEAVE_EVALUATION_OUTPUT_DIRECTORY/pageindex-paired-comparison.json" \
+  bun run eval:report
 ```
 
-Add `--wiki`, `--graph`, `--combined` with independently configured HTTP endpoints
-for the same frozen corpus. Runtime metadata is checked through `/api/runtime`;
-model, policy, retrieval, context and common budget identifiers must match. Profile
-mismatch or missing services yields unavailable cases with intact denominators.
-The default runtime uses controlled models. Set up the explicit
-[real-provider runtime](providers.md) before using these endpoints for real-model
-acceptance; report provenance alone does not configure a provider. Reports never contain session credentials.
+The baseline manifest maps historical embedded paths to byte-preserved files.
+Those paths, database names and URLs describe the original run, not current
+machine state. `eval:compare` and `eval:report` default to this baseline; arbitrary
+new reports are selected explicitly rather than by silently choosing the newest
+file. Input overrides are:
 
-Schemas are versioned in `src/evaluation/schema.ts`: the source manifest records
-immutable version IDs, SHA256 of exact decoded text, project scope, parser and
-embedding profiles. Each question records complexity, evidence-condition category,
-reviewed original references, required points, expected gaps, diagnostic tags and
-a paraphrase group. Hashes use SHA256 of `JSON.stringify` of schema-normalized
-objects. The fixture output is an executable format example.
+| Variable                       | Meaning                                                                                 |
+| ------------------------------ | --------------------------------------------------------------------------------------- |
+| `LOREWEAVE_COMPARE_CANDIDATES` | Ordered comma-separated TS reports; later explicit results supersede earlier selections |
+| `LOREWEAVE_COMPARE_REFERENCE`  | Main isolated full-reference report                                                     |
+| `LOREWEAVE_COMPARE_REFERENCES` | Additional explicit reference reports                                                   |
+| `LOREWEAVE_COMPARE_INPUT`      | Paired report to summarize                                                              |
+| `LOREWEAVE_REFERENCE_INPUT`    | Extraction reference for `eval:extraction` / `eval:flash-candidate`                     |
 
-Prepare 50 development questions (40 ordinary/10 complex). Separately prepare
-200 acceptance questions (160/40), including sufficient, missing and conflicting
-source evidence according to the evaluation plan. Human reviewers must check
-references and manually group paraphrases before freezing. The runner rejects
-unreviewed references, exact normalized question overlap and shared paraphrase
-groups; semantic overlap beyond that still requires the human preparation pass.
-Acceptance mode requires a frozen timestamp, the development dataset hash and
-`--development development.json`. There is no acceptance tuning or ingestion API.
+`eval:extraction` compares physical page counts and normalized non-whitespace
+characters. Content-stream vs geometric order is recorded separately and checked
+against authored column order. `eval:flash-candidate` measures initial structure,
+not full model-assisted optimization or answer quality. Both default to frozen
+reference input and make no model calls.
 
-Every submitted case remains in its category denominator, including errors,
-timeouts, partial answers and missing routes. Reports retain raw retrieved evidence,
-answers, certificates, actual locator/text/current-version/scope checks, exact
-reference recall (a diagnostic, not the final correctness criterion), completion,
-queue/retrieval/generation/review timing, model and embedding request counts.
-Delivery latency ends before evaluator citation/grade reads. Provider token usage
-and monetary cost currently remain unavailable, not fabricated zeros. Maintenance
-adapter records have explicit availability, versions and numerator/denominator;
-source-only runs cannot claim maintenance metrics.
+For a new candidate cohort, `eval:report` requires
+`LOREWEAVE_MEASUREMENT_LEDGERS` (comma-separated explicit ledgers). Its optional
+`LOREWEAVE_MEASUREMENT_CHECKPOINT` adds the selected accounting checkpoint. New
+model outputs cannot silently inherit baseline costs or its semantic support
+review. Their review remains pending until the new originals/claims are inspected.
 
-Fixture mode uses a labelled deterministic oracle. Human mode always leaves viable
-answers pending independent review; product support review is not a human score.
-Create a grades file matching `humanGradesSchema` in `src/evaluation/grading.ts`,
-with the exact report hash, case/profile identity, reviewer/time and separate
-correctness, completeness, citation support and gap/conflict judgments. Apply it
-without modifying the original report:
+## Isolated Python comparison
+
+`eval:reference` runs the pinned PageIndex extraction/initial Flash comparator
+with no model requests. `eval:full-reference` runs full Flash/Standard and **makes
+paid model calls**. Set `LOREWEAVE_PAGEINDEX_REFERENCE` to a clean external checkout
+at `d2693d80791a86345ef78b3234834f5fe53a70a0`; both commands check the revision.
+Python/uv dependencies are isolated development tools, never the app runtime.
+
+Accepted trees require valid original anchors, physical bounds, complete coverage
+and summaries. Exact reference hierarchy/IDs are not parity gates. Record reference
+package versions, parser failures, rejected inputs and comparisons for each mode.
+This comparator measures indexing and original reachability, not a Python QA score.
+
+## Real-provider execution
+
+Paid evaluation is opt-in. Supply a private JSON through
+`LOREWEAVE_EVAL_PROVIDER_FILE` with `baseURL`, `model`, `apiKey` and `maxUSD` (positive,
+at most 10), plus an owner-controlled key quota. The development accounting proxy
+requires that gateway's `/v1/usage` to report USD and `actual_cost`; it is not a
+generic runtime OpenAI requirement. Never commit the provider file.
 
 ```sh
-bun run eval:grade report.json human-grades.json new-graded-report.json
+export LOREWEAVE_EVAL_PROVIDER_FILE=/path/to/private-provider.json
+export LOREWEAVE_EVALUATION_OUTPUT_DIRECTORY=.pageindex-data/evaluation/runs/new-real-trial
+bun run eval:real
 ```
 
-Human grading may accept equivalent valid original evidence beyond the suggested
-reference locators. It cannot turn broken citations, failed requests or unavailable
-routes into passes. Record disagreements and resolution in review notes. Reports
-and grades are artifacts outside the knowledge corpus; output paths must be new.
+`eval:real` exercises compiled Start public HTTP, real PostgreSQL, actual index/QA
+roles and the official MCP client. It creates its own database/build copy/original
+directory. The report identifies retained execution resources; inspect it before
+removing resources needed for deliberate resume. It leaves other services and the
+main database/originals in place. Do not infer ongoing database availability from
+historical reports whose resources have already been removed.
 
-## Maintenance capture
+Select cohorts with `LOREWEAVE_EVAL_FIXTURES`, `LOREWEAVE_EVAL_QUESTIONS` and
+`LOREWEAVE_EVAL_MODES` (comma-separated). `LOREWEAVE_EVAL_LIFECYCLE=1` adds
+detach/Stop/process-loss checks. `LOREWEAVE_EVAL_RETRY_FAILED=1` deliberately invokes
+one retry; it is not automatic product fallback. `LOREWEAVE_EVAL_RESUME_FILE` must
+identify preserved compatible resources. `LOREWEAVE_REFERENCE_FIXTURES` selects
+the full Python comparator cohort.
 
-Issue #20 connects seven diagnostic adapters to actual authenticated operation,
-Wiki, identity and graph HTTP reads. Run the bounded integration fixture on a
-disposable database, or capture an existing operation without changing knowledge:
+Named output overrides are `LOREWEAVE_EVAL_REPORT`, `LOREWEAVE_EVAL_LEDGER` and
+`LOREWEAVE_REFERENCE_REPORT`. Destinations inside the repository must be under
+`.pageindex-data/evaluation/runs/`; external directories are also allowed. The
+helper refuses docs/baselines and their symlink aliases. Use a distinct output
+directory per trial so earlier failures remain inspectable.
 
-```sh
-TEST_DATABASE_URL=postgres://... bun run eval:maintenance-fixture /tmp/new-maintenance.json
-TEST_DATABASE_URL=postgres://... bun run test:maintenance-evaluation
-LOREWEAVE_EVAL_PROVENANCE=controlled-provider bun run eval:maintenance \
-  http://127.0.0.1:41736 OPERATION_ID new-maintenance.json routing-targets.json
-```
+## Review and baseline publication
 
-The last command also requires `LOREWEAVE_EVAL_TOKEN` with only the `read` grant;
-use `real-provider` provenance only for a runtime that actually uses real models.
-Routing targets are optional and never become model or ingestion input. Human
-runs require human-reviewed targets. Use `jobId:topic:0` to identify a decision
-unambiguously; `topic:0` alone is accepted only when exactly one job matches.
-Missing/ambiguous decisions remain in the target coverage and recall denominators.
-False-creation and missed-reuse rates cover matched decisions only, so inspect
-target coverage with those rates. A zero denominator means no observations.
+Inspect factual claims, arithmetic, qualifications and claim-adjacent cited
+originals. Distinguish supported answers, gaps, clarifications and incomplete
+search. Valid reference location and lexical matching do not establish entailment.
+Identify the reviewer and whether review was blind/independent. Disclose targeted
+reruns, latency/calls/usage, missing measurements, remote cancellation uncertainty
+and the provider-declared model identity.
 
-Each capture retains the actual candidate pool, per-route ranks, exclusions,
-catalogue revisions and pinned policy/index/model profiles. Recall@8/@16 counts
-reference page hits over all reviewed reference pages. Mandatory coverage counts
-completed dependency walks over all registered required walks, including those
-not yet started. Discovery uses the full root source obligation, including ranges
-without a child ledger; absent root manifests remain unavailable. Source-packet
-ledgers retain intermediate progress and exact unresolved obligations. Detail inspection counts completed versioned ranges per
-logical decision, with remaining ranges and terminal job reasons retained. These
-are coverage records, not proof of model routing quality.
-
-Lifecycle events are written in the publication transaction and attributed to
-that operation. Retirement/reactivation, failed refresh and historical page state
-are separate fields. Events before this migration are not reconstructed. Identity
-records expose actual proof validity, current/historical revisions and durable
-reconciliation batches. Graph records retain packet review/exclusion outcomes,
-generation profiles, source versions and replacement membership. The API adapter
-can additionally inspect specified mention and entity IDs for current proof and
-neighborhood support; operation-only captures do not claim that wider inspection.
-
-Work records distinguish budget admission, dispatch intent and completed validated
-responses. A durable dispatch timestamp precedes the external request; a crash or
-abort in that gap cannot prove the provider received it. Exact provider requests
-are therefore unavailable when dispatches have uncertain outcomes or historical
-telemetry is absent. Completed responses provide a lower bound; dispatch intents
-provide an upper bound for recorded attempts. Repeated requests with the same
-job/unit/phase/input hash are retries; different inspection windows are separate
-work. Generation/review phase and outcome remain available per request. Tokens
-and price are unavailable until the provider adapter supplies that telemetry.
-
-Source-searchable/Wiki-ready/graph-ready durations run from operation acceptance
-to the latest required successful receipt, including queue time. Failed, pending,
-outcome-unknown or superseded work cannot establish readiness. Retirement can
-successfully finish maintenance while producing no active prose; consult the
-separate lifecycle disposition. Later source changes may invalidate old readiness;
-the times describe completion of that operation, not present evidence eligibility.
-
-The controlled fixture imports its own originals and executes real maintenance:
-source replacement, retirement and revival of one stable topic, alternate graph
-support and empty replacement, immediate identity-proof invalidation followed by
-reconciliation, failed partial graph extraction, and six-window inspection
-termination with unresolved ranges, and source-extraction failure after the first
-packet. Pending dependency walks remain in the denominator. Reports contain public diagnostics and exact
-fixture inputs, not manually authored expected diagnostic records. This verifies
-reporting and finite scheduling; #18 still owns human/real-provider acceptance.
-
-## Route comparison (#25)
-
-For #25 the maintainer authorized independent agent review of the question set
-and answers. `mode: agent` and `review.kind: agent` are explicit development-only
-provenance; they do not satisfy #18's frozen human acceptance requirements.
-Agent annotations use `kind: independent-agent` plus the same hash-bound review
-fields as human grades. `eval:grade` selects the corresponding validator and
-retains `agentGrades`, never `humanGrades`. Failed or unavailable deliveries
-cannot become passes through annotation.
-
-The portable reviewed set in `docs/evaluation/issue-25/reviewed-questions.json`
-binds exact original text, file names and verbatim reference quotes. Its runner
-imports only originals into a new organization/project, maps quotes to current
-passage IDs, performs bounded maintenance before any answer and queries all four
-public HTTP routes against that shared snapshot. Model, context, policy and
-budgets are checked by the existing evaluation runner. The provider is selected
-explicitly; credentials are read from the existing provider environment:
-
-```sh
-TEST_DATABASE_URL=postgres://... bun run eval:routes \
-  --provider controlled --output new-controlled-directory
-TEST_DATABASE_URL=postgres://... bun --env-file=.env scripts/evaluate-routes.ts \
-  --provider real --output new-real-directory
-```
-
-The default maintenance admission window is 300 seconds across identity, Wiki
-and graph; `--maintenance-seconds` records an explicit alternative. An already
-admitted bounded operation settles before answering. Remaining maintenance is
-reported as unfinished; endpoint availability is not proof of useful derived
-coverage. Source versions, normalized dataset, originals, maintenance diagnostics,
-raw answers and per-case checkpoints are retained. No background maintenance runs
-during the four sequential route queries. This sequential small development
-comparison is not the randomized five-concurrency capacity protocol.
-
-`summary.json` separates ordinary/complex results, pending independent review,
-partial answers and timeouts. P50/P95 use nearest-rank, include failed attempted
-requests, and exclude unattempted unavailable routes; each stage reports observed
-and missing sample counts. Citation locator checks and exact evidence recall are
-diagnostics, not semantic citation-support grades. Request counts are separate
-from monetary cost, which remains unavailable without usage and pricing.
+Promote evidence only as a reviewed change: select its complete input dependency
+set, preserve failures, remove credentials/private user content, pin source/dataset/
+provider identity, hash the original bytes and write a dated report. Historical
+snapshots remain immutable; paths can be resolved through a new manifest without
+rewriting embedded provenance. Update the documentation index when publishing a
+new report. Work-item execution evidence remains in its GitHub issue.

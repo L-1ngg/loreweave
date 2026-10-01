@@ -1,29 +1,46 @@
 // Artifact comparison only. Semantic answer/citation review is recorded separately.
 import { hashData } from "../src/server/library";
+import {
+  evaluationInputPath,
+  evaluationOutputPath,
+  isReviewedBaselineComparison,
+  reviewedBaselineCandidates,
+  readEvaluationArtifact,
+} from "./evaluation-artifacts";
 
 const candidatePaths = (
   process.env.LOREWEAVE_COMPARE_CANDIDATES ??
-  "docs/evaluation/pageindex-real.json,docs/evaluation/pageindex-real-regression.json,docs/evaluation/pageindex-large-retry.json,docs/evaluation/pageindex-large-final.json"
-).split(",");
+  reviewedBaselineCandidates.join(",")
+)
+  .split(",")
+  .map(evaluationInputPath);
 const candidates = await Promise.all(
   candidatePaths.map(async (path) => ({
     path,
-    report: await Bun.file(path).json(),
+    report: await readEvaluationArtifact(path),
   })),
 );
-const referencePath = "docs/evaluation/pageindex-full-reference.json";
-const reference = await Bun.file(referencePath).json();
+const referencePath = evaluationInputPath(
+  process.env.LOREWEAVE_COMPARE_REFERENCE ?? "pageindex-full-reference.json",
+);
+const reference = await readEvaluationArtifact(referencePath);
 const additionalReferencePaths = (
   process.env.LOREWEAVE_COMPARE_REFERENCES ??
-  "docs/evaluation/pageindex-encrypted-reference.json"
+  "pageindex-encrypted-reference.json"
 )
   .split(",")
-  .filter(Boolean);
+  .filter(Boolean)
+  .map(evaluationInputPath);
+const frozenCandidates = isReviewedBaselineComparison({
+  candidatePaths,
+  referencePath,
+  additionalReferencePaths,
+});
 const referenceRecords = new Map(
   reference.fixtures.map((r: any) => [`${r.mode}:${r.file}`, r]),
 );
 for (const path of additionalReferencePaths) {
-  const report = await Bun.file(path).json();
+  const report = await readEvaluationArtifact(path);
   if (
     report.reference !== reference.reference ||
     report.model !== reference.model
@@ -281,11 +298,12 @@ const report = {
     elapsedMs: q.elapsedMs,
     usage: q.run?.usage ?? q.result?.usage,
   })),
-  semanticReview:
-    "docs/evaluation/pageindex-semantic-review.md (agent review against recorded immutable original text; not a blind independent or population-scale benchmark)",
+  semanticReview: frozenCandidates
+    ? "docs/evaluation/pageindex-v1.md (implementation-agent original-evidence review; not a blind independent or population-scale benchmark)"
+    : "pending explicit original-evidence review of this candidate cohort",
 };
 await Bun.write(
-  "docs/evaluation/pageindex-paired-comparison.json",
+  evaluationOutputPath("pageindex-paired-comparison.json"),
   JSON.stringify(report, null, 2) + "\n",
 );
 console.log(JSON.stringify(report.coverage, null, 2));

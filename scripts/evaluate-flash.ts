@@ -1,8 +1,12 @@
 import { extractPdf } from "../src/server/pdf-engine";
 import { buildFlash, validateTree } from "../src/server/trees";
-const reference = await Bun.file(
-  "docs/evaluation/pageindex-reference.json",
-).json();
+import {
+  evaluationOutputPath,
+  readEvaluationArtifact,
+} from "./evaluation-artifacts";
+const reference = await readEvaluationArtifact(
+  process.env.LOREWEAVE_REFERENCE_INPUT ?? "pageindex-reference.json",
+);
 const records = [];
 function flat(nodes: any[]): any[] {
   return nodes.flatMap((n) => [
@@ -57,7 +61,7 @@ const report = {
     "Every accepted tree requires physical bounds, verified start anchors, hierarchy and every-page reachability. Exact tree shape and IDs are not an acceptance target. Python's layout/bookmark classification differences are reported; no model quality is asserted by raw candidates.",
 };
 await Bun.write(
-  "docs/evaluation/pageindex-flash-candidate.json",
+  evaluationOutputPath("pageindex-flash-candidate.json"),
   JSON.stringify(report, null, 2) + "\n",
 );
 console.log(

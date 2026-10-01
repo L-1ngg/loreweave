@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import postgres from "postgres";
 import { loginPage, seedFixtureModels } from "../support/workspace";
+import { evaluationOutputPath } from "../../scripts/evaluation-artifacts";
 test("Standard printed TOC maps labels to verified physical originals and publishes summaries", async ({
   page,
 }) => {
@@ -81,7 +82,7 @@ test("Standard printed TOC maps labels to verified physical originals and publis
       await sql`select effective_index from documents where id=${failure.documentId}`;
     expect(failedDoc.effective_index).toBeNull();
     await Bun.write(
-      "docs/evaluation/pageindex-standard-toc.json",
+      evaluationOutputPath("pageindex-standard-toc.json"),
       JSON.stringify(
         {
           date: new Date().toISOString(),
@@ -158,7 +159,7 @@ test("Standard no-TOC and subdivision cover the frozen PDF families", async ({
     }
     expect(provider.requests.some((r) => r.task === "no_toc")).toBe(true);
     await Bun.write(
-      "docs/evaluation/pageindex-standard-indexing.json",
+      evaluationOutputPath("pageindex-standard-indexing.json"),
       JSON.stringify(
         {
           date: new Date().toISOString(),

@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import postgres from "postgres";
 import { loginPage, seedFixtureModels } from "../support/workspace";
+import { evaluationOutputPath } from "../../scripts/evaluation-artifacts";
 
 test("public immutable PDF import/extraction includes rejected inputs and durable idempotency", async ({
   page,
@@ -128,7 +129,7 @@ test("public immutable PDF import/extraction includes rejected inputs and durabl
     );
     expect(provider.requests.some((r) => r.task === "subdivide")).toBe(true);
     await Bun.write(
-      "docs/evaluation/pageindex-flash-indexing.json",
+      evaluationOutputPath("pageindex-flash-indexing.json"),
       JSON.stringify(
         {
           date: new Date().toISOString(),

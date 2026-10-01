@@ -17,8 +17,8 @@ This expands the current MCP-first design, which delegates Agent orchestration
 to external clients. It is an accepted redesign decision, not an implemented
 runtime change or a decision to remove external-client integration.
 [ADR-0003](0003-forge-agent-sdk-and-bun-host.md) selects Forge SDK reuse and a Bun
-host; the [blueprint](../rag-v1-blueprint.md) specifies conversation persistence,
+host; the [historical blueprint](https://github.com/L-1ngg/loreweave/blob/0553b1a0c10b5aa7d723e5b21b3d83355e97e42f/docs/rag-v1-blueprint.md) specifies conversation persistence,
 interface technology and execution-budget defaults. Q20 and Q22 in the
-[design discussion](../rag-optimization-design.md) establish bounded retrieval
+[historical design discussion](https://github.com/L-1ngg/loreweave/blob/0553b1a0c10b5aa7d723e5b21b3d83355e97e42f/docs/rag-optimization-design.md) establish bounded retrieval
 and the 60-second total budget for complex questions. Concrete model selection,
 monetary limits and integration verification remain preparation work.

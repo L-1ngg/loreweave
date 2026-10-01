@@ -1,7 +1,0 @@
-{
-  "startedAt": "2026-09-13T13:12:06.716Z",
-  "provider": "real",
-  "maintenanceBudgetMs": 300000,
-  "qualityAcceptance": false,
-  "note": "Development route comparison; independent grading required. Work budget excludes settling the current bounded operation."
-}

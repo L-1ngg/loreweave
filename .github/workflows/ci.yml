@@ -35,9 +35,15 @@ jobs:
       - run: bun run typecheck
       - run: bun run format:check
       - run: bun run check:docs
+      - run: bun run eval:verify
       - run: bun run test
       - run: bun run test:conformance
       - run: bun run build
       - run: bun x playwright install --with-deps chromium
       - run: bun run check:baseline
       - run: bun run test:browser
+      - name: Verify checks leave tracked files unchanged
+        run: |
+          bun run check:docs
+          bun run eval:verify
+          git diff --exit-code

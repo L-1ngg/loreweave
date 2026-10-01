@@ -1,12 +1,21 @@
 // Reproducible descriptive metrics; semantic support is reviewed separately.
-export {};
-const paired = await Bun.file(
-  "docs/evaluation/pageindex-paired-comparison.json",
-).json();
+import {
+  evaluationInputPath,
+  evaluationOutputPath,
+  isReviewedBaselineComparison,
+  readEvaluationArtifact,
+} from "./evaluation-artifacts";
+const comparisonPath =
+  process.env.LOREWEAVE_COMPARE_INPUT ?? "pageindex-paired-comparison.json";
+const paired = await readEvaluationArtifact(comparisonPath);
+const frozenCandidates = isReviewedBaselineComparison(paired);
+const selectedLedgers = process.env.LOREWEAVE_MEASUREMENT_LEDGERS;
+if (!frozenCandidates && !selectedLedgers)
+  throw new Error("new_candidate_ledger_selection_required");
 const candidates = await Promise.all(
   paired.candidatePaths.map(async (path: string) => ({
-    path,
-    report: await Bun.file(path).json(),
+    path: evaluationInputPath(path),
+    report: await readEvaluationArtifact(path),
   })),
 );
 const latestQuestions = new Map<string, any>();
@@ -133,22 +142,30 @@ const measurements = ["flash", "standard"].map((mode) => {
     },
   };
 });
-const ledgerPaths = [
-  "docs/evaluation/pageindex-real-preflight-failures.json",
-  "docs/evaluation/pageindex-real-initial-ledger.json",
-  "docs/evaluation/pageindex-real-ledger.json",
-  "docs/evaluation/pageindex-regression-real-ledger.json",
-  "docs/evaluation/pageindex-large-retry-ledger.json",
-  "docs/evaluation/pageindex-reference-real-ledger.json",
-  "docs/evaluation/pageindex-encrypted-reference-ledger.json",
-  "docs/evaluation/pageindex-large-final-ledger.json",
-];
+const ledgerPaths = selectedLedgers
+  ? selectedLedgers.split(",").filter(Boolean)
+  : [
+      "pageindex-real-preflight-failures.json",
+      "pageindex-real-initial-ledger.json",
+      "pageindex-real-ledger.json",
+      "pageindex-regression-real-ledger.json",
+      "pageindex-large-retry-ledger.json",
+      "pageindex-reference-real-ledger.json",
+      "pageindex-encrypted-reference-ledger.json",
+      "pageindex-large-final-ledger.json",
+    ];
+if (!ledgerPaths.length) throw new Error("measurement_ledger_selection_empty");
+const checkpointPath =
+  process.env.LOREWEAVE_MEASUREMENT_CHECKPOINT ??
+  (frozenCandidates && !selectedLedgers
+    ? "pageindex-real-index-checkpoint.json"
+    : undefined);
 const ledgers = await Promise.all(
   ledgerPaths.map(async (path) => {
-    const value = await Bun.file(path).json();
+    const value = await readEvaluationArtifact(path);
     const r = value.ledger ?? value;
     return {
-      path,
+      path: evaluationInputPath(path),
       observedCostUSD: r.observedCostUSD,
       walletDeltaUSD: r.walletDeltaUSD,
       previousCostUSD: r.previousProbeCostUSD,
@@ -192,7 +209,7 @@ const report = {
   date: new Date().toISOString(),
   method:
     "Latest explicitly selected result per mode/input/question, with all earlier trial failures retained in candidateTrials and ledgers. Descriptive fixed-corpus metrics, not a general quality guarantee. Latency is observed wall time and includes the serialized accounting proxy. Semantic support is in the named review, not inferred from lexical checks.",
-  comparison: "docs/evaluation/pageindex-paired-comparison.json",
+  comparison: evaluationInputPath(comparisonPath),
   measurements,
   ledgers,
   accountingIntervals: [
@@ -201,19 +218,23 @@ const report = {
       previousCostUSD: r.previousCostUSD,
       observedCostUSD: r.observedCostUSD,
     })),
-    {
-      path: "docs/evaluation/pageindex-real-index-checkpoint.json",
-      ...(
-        await Bun.file(
-          "docs/evaluation/pageindex-real-index-checkpoint.json",
-        ).json()
-      ).accounting,
-    },
+    ...(checkpointPath
+      ? [
+          {
+            path: evaluationInputPath(checkpointPath),
+            ...(await readEvaluationArtifact(checkpointPath)).accounting,
+          },
+        ]
+      : []),
   ],
   finalKeyAccounting: ledgers.at(-1)?.keyCumulative,
   lifecycle: candidates.flatMap((c) => c.report.observations ?? []),
-  semanticReview: "docs/evaluation/pageindex-semantic-review.md",
-  service: "docs/development/pageindex-local-service.json",
+  semanticReview: frozenCandidates
+    ? "docs/evaluation/pageindex-v1.md"
+    : "pending explicit original-evidence review of this candidate cohort",
+  service: frozenCandidates
+    ? evaluationInputPath("pageindex-local-service.json")
+    : null,
   boundaries: [
     "Synthetic acceptance originals; no population benchmark",
     "Implementation-agent original review; no blind independent reviewer",
@@ -223,7 +244,7 @@ const report = {
   ],
 };
 await Bun.write(
-  "docs/evaluation/pageindex-measurements.json",
+  evaluationOutputPath("pageindex-measurements.json"),
   JSON.stringify(report, null, 2) + "\n",
 );
 console.log(JSON.stringify(measurements, null, 2));

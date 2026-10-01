@@ -1,5 +1,10 @@
 import { resolve } from "node:path";
+import { evaluationOutputPath } from "./evaluation-artifacts";
 const source = process.env.LOREWEAVE_PAGEINDEX_REFERENCE;
+const reportPath = evaluationOutputPath(
+  "pageindex-reference.json",
+  process.env.LOREWEAVE_REFERENCE_REPORT,
+);
 if (!source)
   throw new Error(
     "Set LOREWEAVE_PAGEINDEX_REFERENCE to the external pinned checkout.",
@@ -44,10 +49,7 @@ const child = Bun.spawn(
 const text = await new Response(child.stdout).text();
 if (await child.exited) throw new Error("reference_comparison_failed");
 const result = JSON.parse(text);
-await Bun.write(
-  "docs/evaluation/pageindex-reference.json",
-  JSON.stringify(result, null, 2) + "\n",
-);
+await Bun.write(reportPath, JSON.stringify(result, null, 2) + "\n");
 console.log(
   `Pinned isolated reference: ${result.fixtures.length} fixtures, no model requests.`,
 );

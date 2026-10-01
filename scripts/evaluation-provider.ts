@@ -1,7 +1,12 @@
 // Development-only accounting proxy. Neither imported nor started by the app.
 import { z } from "zod";
+import { evaluationOutputPath } from "./evaluation-artifacts";
 
 export async function evaluationProvider() {
+  const ledger = evaluationOutputPath(
+    "pageindex-real-ledger.json",
+    process.env.LOREWEAVE_EVAL_LEDGER,
+  );
   const path = process.env.LOREWEAVE_EVAL_PROVIDER_FILE;
   if (!path) throw new Error("LOREWEAVE_EVAL_PROVIDER_FILE_required");
   const config = z
@@ -38,9 +43,6 @@ export async function evaluationProvider() {
   let tail = Promise.resolve();
   let closed = false;
   const calls: Array<Record<string, unknown>> = [];
-  const ledger =
-    process.env.LOREWEAVE_EVAL_LEDGER ??
-    "docs/evaluation/pageindex-real-ledger.json";
   const save = async () => {
     const current = await balance();
     await Bun.write(

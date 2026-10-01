@@ -1,6 +1,11 @@
 import { resolve } from "node:path";
 import { evaluationProvider } from "./evaluation-provider";
+import { evaluationOutputPath } from "./evaluation-artifacts";
 const source = process.env.LOREWEAVE_PAGEINDEX_REFERENCE;
+const reportPath = evaluationOutputPath(
+  "pageindex-full-reference.json",
+  process.env.LOREWEAVE_REFERENCE_REPORT,
+);
 if (!source) throw new Error("LOREWEAVE_PAGEINDEX_REFERENCE_required");
 const pinned = Bun.spawn(["git", "rev-parse", "HEAD"], {
   cwd: source,
@@ -39,10 +44,7 @@ const child = Bun.spawn(
     resolve("tests/comparison/full.py"),
     resolve(source),
     resolve("tests/fixtures/pdf"),
-    resolve(
-      process.env.LOREWEAVE_REFERENCE_REPORT ??
-        "docs/evaluation/pageindex-full-reference.json",
-    ),
+    reportPath,
   ],
   {
     cwd: source,

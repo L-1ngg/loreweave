@@ -8,8 +8,13 @@ import { rpc } from "../tests/support/rpc";
 import { mcpClient, toolValue } from "../tests/support/mcp";
 import { hashData } from "../src/server/library";
 import { chromium, expect } from "@playwright/test";
+import { evaluationOutputPath } from "./evaluation-artifacts";
 
 await loadLocalConfiguration();
+const reportPath = evaluationOutputPath(
+  "pageindex-real.json",
+  process.env.LOREWEAVE_EVAL_REPORT,
+);
 const provider = await evaluationProvider();
 const resume = process.env.LOREWEAVE_EVAL_RESUME_FILE
   ? await Bun.file(process.env.LOREWEAVE_EVAL_RESUME_FILE).json()
@@ -31,8 +36,6 @@ if (!artifacts.startsWith(join(tmpdir(), "loreweave-pageindex-evaluation-")))
 const compiled = await mkdtemp(join(tmpdir(), "loreweave-pageindex-build-"));
 await cp("dist", compiled, { recursive: true });
 await symlink(resolve("node_modules"), join(compiled, "node_modules"), "dir");
-const reportPath =
-  process.env.LOREWEAVE_EVAL_REPORT ?? "docs/evaluation/pageindex-real.json";
 const report: any = {
   date: new Date().toISOString(),
   model: provider.model,

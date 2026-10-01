@@ -1,8 +1,12 @@
 import { extractPdf, PdfFailure } from "../src/server/pdf-engine";
 import { hashData } from "../src/server/library";
-const reference = await Bun.file(
-  "docs/evaluation/pageindex-reference.json",
-).json();
+import {
+  evaluationOutputPath,
+  readEvaluationArtifact,
+} from "./evaluation-artifacts";
+const reference = await readEvaluationArtifact(
+  process.env.LOREWEAVE_REFERENCE_INPUT ?? "pageindex-reference.json",
+);
 const records = [];
 const characters = (text: string) =>
   Array.from(text.normalize("NFKC").replace(/\s/g, "")).sort().join("");
@@ -50,7 +54,7 @@ const report = {
     "Physical page count and non-whitespace character preservation are exact. Known two-column order is checked against fixture-authored source order; PyPDF2 content-stream order is recorded as a difference. No tree-shape or model-quality threshold is inferred from this extraction comparison.",
 };
 await Bun.write(
-  "docs/evaluation/pageindex-extraction.json",
+  evaluationOutputPath("pageindex-extraction.json"),
   JSON.stringify(report, null, 2) + "\n",
 );
 console.log(JSON.stringify(report, null, 2));

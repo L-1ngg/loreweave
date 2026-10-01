@@ -1,1 +1,0 @@
-{"reference": "d2693d80791a86345ef78b3234834f5fe53a70a0", "comparison": "upstream Standard physical validation and offset helpers plus shared tree validator; complete model pipeline not run", "tree_issues": [], "physical_probe": [{"physical_index": 3}, {"physical_index": null}], "offset_probe": 2}
