@@ -38,7 +38,15 @@ export const structureInput = documentReadInput
 export const pagesReadInput = documentReadInput
   .extend({
     pages: z.array(z.number().int().min(1)).min(1).max(8),
-    offset: z.number().int().min(0).max(1000000).default(0),
+    offset: z
+      .number()
+      .int()
+      .min(0)
+      .max(1000000)
+      .default(0)
+      .describe(
+        "Character offset in the first requested page; later pages start at zero.",
+      ),
   })
   .strict();
 export type ReadingContext = {
@@ -174,8 +182,6 @@ export async function getPages(ctx: ReadingContext, input: unknown) {
   const { document, pin } = await bindDocument(ctx, value);
   if (ctx.scope && pin.pageCount > 20 && !ctx.structureRead?.has(document.id))
     fail("structure_required_for_long_document", 409);
-  if (value.offset && value.pages.length !== 1)
-    fail("page_offset_requires_single_page");
   const pages: Array<{
     page: number;
     label: string | null;
@@ -213,7 +219,7 @@ export async function getPages(ctx: ReadingContext, input: unknown) {
     });
     remaining -= text.length;
     if (end < stored.page.text.length) {
-      next = { pages: [page], offset: end };
+      next = { pages: value.pages.slice(i), offset: end };
       break;
     }
     if (remaining <= 0 && i < value.pages.length - 1) {
@@ -256,7 +262,7 @@ export const readingDefinitions = {
     name: "get_page_content",
     metadata: { annotations: { readOnlyHint: true, destructiveHint: false } },
     description:
-      "Read stored ORIGINAL physical pages (1-based), at most 8 per call. Each actual read returns a referenceId; cite it as [Document name · pN](cite:referenceId). If complete is false, follow next and preserve qualifications. These originals, not summaries/history, support claims.",
+      "Read stored ORIGINAL physical pages (1-based), at most 8 per call. Each actual read returns a referenceId; cite it as [Document name · pN](cite:referenceId). If complete is false, pass next.pages and next.offset to continue all unfinished pages; offset applies only to the first requested page. Preserve qualifications. These originals, not summaries/history, support claims.",
     inputSchema: pagesReadInput,
   }),
 };

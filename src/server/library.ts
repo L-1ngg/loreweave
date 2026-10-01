@@ -8,6 +8,7 @@ import {
   asc,
   desc,
   inArray,
+  sql,
 } from "drizzle-orm";
 import { mkdir, open, unlink } from "node:fs/promises";
 import { join } from "node:path";
@@ -222,7 +223,7 @@ export async function listLibrary(
       stage: indexOperations.stage,
       reason: indexOperations.reason,
       pageCount: sourceVersions.pageCount,
-      mode: indexingAttempts.mode,
+      mode: sql<IndexMode>`coalesce(${indexRevisions.mode}, ${indexingAttempts.mode})`,
       createdAt: documents.createdAt,
     })
     .from(documents)
@@ -234,7 +235,14 @@ export async function listLibrary(
       indexingAttempts,
       eq(indexOperations.latestAttempt, indexingAttempts.id),
     )
-    .innerJoin(sourceVersions, eq(documents.latestVersion, sourceVersions.id))
+    .innerJoin(
+      sourceVersions,
+      eq(
+        sourceVersions.id,
+        sql`coalesce(${documents.effectiveVersion}, ${documents.latestVersion})`,
+      ),
+    )
+    .leftJoin(indexRevisions, eq(documents.effectiveIndex, indexRevisions.id))
     .where(
       and(
         eq(documents.ownerId, actor.ownerId),

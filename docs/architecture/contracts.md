@@ -58,6 +58,8 @@ Activation checks validated artifacts, matching operation/attempt/version,
 expected library revision and retirement state in one transaction. An older
 completion cannot overwrite a later activation or resurrect a retired document.
 Until activation, failed preparation leaves the prior effective source readable.
+Discovery's version, index, page count and mode describe that effective source;
+the latest operation's status and source identity describe pending or failed work.
 
 Retirement removes current discovery/new-question eligibility and retains
 authorized original, page, index and reference history. Conversation deletion
@@ -102,6 +104,8 @@ sources can resolve past citations without reentering new-question scope. Cache
 reuse still requires current checks and creates a read record for the new run.
 Normal page reads use stored artifacts instead of reparsing PDFs. Bounded/truncated
 output is visible and cannot prove exhaustive search.
+Page continuation retains every unfinished requested page. Its offset applies to
+the first page in the continuation, while later pages start at zero.
 
 ## M05: Runs, references and conversations
 

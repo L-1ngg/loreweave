@@ -8,7 +8,7 @@ import {
   Download,
 } from "lucide-react";
 import workerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
-import { getPage } from "../functions/documents";
+import { getPage, getSourceMetadata } from "../functions/documents";
 import { IconButton, errorMessage } from "./ui";
 
 export function PdfViewer({
@@ -22,16 +22,28 @@ export function PdfViewer({
 }) {
   const canvas = useRef<HTMLCanvasElement>(null),
     container = useRef<HTMLDivElement>(null);
-  const [count, setCount] = useState(0),
+  const [loadedPdf, setLoadedPdf] = useState<{
+      versionId: string;
+      count: number;
+    } | null>(null),
     [zoom, setZoom] = useState(1),
     [error, setError] = useState(""),
     [width, setWidth] = useState(600),
     [mode, setMode] = useState<"pdf" | "text">("pdf");
-  const { data: text } = useQuery({
+  const { data: source } = useQuery({
+    queryKey: ["source", versionId],
+    queryFn: () => getSourceMetadata({ data: { versionId } }),
+  });
+  const { data: text, error: textError } = useQuery({
     queryKey: ["page", versionId, page],
     queryFn: () => getPage({ data: { versionId, page } }),
     enabled: mode === "text",
   });
+  const count =
+    source?.pageCount ??
+    (loadedPdf?.versionId === versionId ? loadedPdf.count : 0);
+  const visibleError =
+    mode === "pdf" ? error : textError ? errorMessage(textError) : "";
   useEffect(() => {
     if (!container.current) return;
     const observer = new ResizeObserver((entries) =>
@@ -59,7 +71,7 @@ export function PdfViewer({
       try {
         const pdf = await task.promise;
         if (!live) return;
-        setCount(pdf.numPages);
+        setLoadedPdf({ versionId, count: pdf.numPages });
         if (page > pdf.numPages) throw new Error("page_out_of_bounds");
         const source = await pdf.getPage(page);
         const base = source.getViewport({ scale: 1 });
@@ -158,9 +170,9 @@ export function PdfViewer({
         </a>
       </div>
       <div className="pdf-surface" ref={container}>
-        {error ? (
+        {visibleError ? (
           <p role="alert" className="error">
-            {error}
+            {visibleError}
           </p>
         ) : mode === "pdf" ? (
           <canvas aria-label={`PDF 物理页 ${page}`} ref={canvas} />
